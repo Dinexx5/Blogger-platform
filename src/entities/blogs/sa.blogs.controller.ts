@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, Put, Query, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Put,
+  Query,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { paginatedViewModel } from '../../shared/models/pagination';
 import { Response } from 'express';
 import {
@@ -38,11 +48,11 @@ export class SuperAdminBlogsController {
   @UseGuards(AuthGuard)
   @Put(':blogId/ban')
   async banBlog(
-    @Param() params: blogParamModel,
+    @Param('blogId', ParseIntPipe) params: blogParamModel,
     @Body() inputModel: BanBlogModel,
     @Res() res: Response,
   ) {
-    await this.commandBus.execute(new BanBlogCommand(params.blogId, inputModel));
+    await this.commandBus.execute(new BanBlogCommand(+params.blogId, inputModel));
     return res.sendStatus(204);
   }
 }

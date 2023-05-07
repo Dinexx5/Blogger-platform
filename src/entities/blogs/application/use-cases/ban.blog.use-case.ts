@@ -4,9 +4,14 @@ import { BanBlogModel } from '../../blogs.models';
 import { BlogBansRepository } from '../../../bans/bans.blogs.repository';
 import { BlogsRepository } from '../../blogs.repository';
 import { NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Comment } from '../../../comments/domain/comment.entity';
+import { Repository } from 'typeorm';
+import { SaBlogBan } from '../../../bans/domain/saBlogBan.entity';
+import { BlogBansInfo } from '../../domain/blogBansInfo.entity';
 
 export class BanBlogCommand {
-  constructor(public blogId: string, public inputModel: BanBlogModel) {}
+  constructor(public blogId: number, public inputModel: BanBlogModel) {}
 }
 
 @CommandHandler(BanBlogCommand)
@@ -14,28 +19,40 @@ export class BansBlogUseCase implements ICommandHandler<BanBlogCommand> {
   constructor(
     protected blogsRepository: BlogsRepository,
     protected postsRepository: PostsRepository,
-    protected blogBansRepository: BlogBansRepository,
+    @InjectRepository(BlogBansInfo)
+    private readonly blogBansInfoRepository: Repository<BlogBansInfo>,
+    @InjectRepository(SaBlogBan)
+    private readonly blogBansRepository: Repository<SaBlogBan>,
   ) {}
   async execute(command: BanBlogCommand): Promise<boolean> {
     const blogId = command.blogId;
     const inputModel = command.inputModel;
     const isBanned = inputModel.isBanned;
-    const blog = await this.blogsRepository.findBlogInstance(blogId);
+    const blog = await this.blogsRepository.findBlogById(blogId);
     if (!blog) throw new NotFoundException();
     if (isBanned === true) {
-      const isBannedBefore = await this.blogBansRepository.findBanByBlogId(blogId);
+      const isBannedBefore = await this.blogBansRepository.findOneBy({ blogId: blogId });
       if (isBannedBefore) return;
-      const banDate = new Date().toISOString();
-      await this.blogsRepository.updateBanInfoForBan(blogId, banDate);
+      const banInfo = await this.blogBansInfoRepository.findOneBy({ blogId: blogId });
+      banInfo.isBanned = true;
+      banInfo.banDate = new Date().toISOString();
+      await this.blogBansInfoRepository.save(banInfo);
       const bannedPostsIds = await this.postsRepository.findPostsForUser([blogId]);
-      await this.blogBansRepository.createBan(blogId, isBanned, bannedPostsIds);
+      const newBan = await this.blogBansRepository.create();
+      newBan.isBanned = true;
+      newBan.bannedPostsIds = bannedPostsIds;
+      newBan.blogId = blogId;
+      await this.blogBansRepository.save(newBan);
       return;
     }
-    const banana = await this.blogBansRepository.findBanByBlogId(blogId);
-    if (!banana) {
+    const ban = await this.blogBansRepository.findOneBy({ blogId: blogId });
+    if (!ban) {
       return;
     }
-    await this.blogsRepository.updateBanInfoForUnban(blogId);
-    await this.blogBansRepository.unbanBlog(blogId);
+    const banInfo = await this.blogBansInfoRepository.findOneBy({ blogId: blogId });
+    banInfo.isBanned = false;
+    banInfo.banDate = null;
+    await this.blogBansInfoRepository.save(banInfo);
+    await this.blogBansRepository.remove(ban);
   }
 }

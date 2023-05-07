@@ -1,10 +1,20 @@
-import { Body, Controller, Get, Param, Put, Query, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Put,
+  Query,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Response } from 'express';
 import {
   BannedForBlogUserViewModel,
   BanUserModelForBlog,
-  UserBanParamModel,
+  UserToBanParamModel,
 } from '../users/userModels';
 import { CommandBus } from '@nestjs/cqrs';
 import { BanUserForBlogCommand } from './application/use-cases/ban.user.for.blog.use-case';
@@ -24,12 +34,12 @@ export class BloggerUsersController {
   @UseGuards(JwtAccessAuthGuard, isUserIdIntegerGuard)
   @Put(':userId/ban')
   async banUser(
-    @CurrentUser() userId,
-    @Param() param: UserBanParamModel,
+    @CurrentUser() ownerId,
+    @Param('userId', ParseIntPipe) param: UserToBanParamModel,
     @Body() inputModel: BanUserModelForBlog,
     @Res() res: Response,
   ) {
-    await this.commandBus.execute(new BanUserForBlogCommand(param.userId, inputModel, userId));
+    await this.commandBus.execute(new BanUserForBlogCommand(param.userId, inputModel, ownerId));
     return res.sendStatus(204);
   }
   @UseGuards(JwtAccessAuthGuard, isBlogIdIntegerGuard)
@@ -42,7 +52,7 @@ export class BloggerUsersController {
     const returnedUsers: paginatedViewModel<BannedForBlogUserViewModel[]> =
       await this.bloggerQueryRepository.getAllBannedUsersForBlog(
         paginationQuery,
-        param.blogId,
+        +param.blogId,
         userId,
       );
     return returnedUsers;

@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Param, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Put,
+  Query,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { paginatedViewModel, paginationQuerys } from '../../shared/models/pagination';
 import { Response } from 'express';
 import { PostsService } from './posts.service';
@@ -7,7 +18,7 @@ import { CommentsQueryRepository } from '../comments/comments.query-repo';
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../shared/decorators/current-user.decorator';
 import { GetUserGuard } from '../auth/guards/getuser.guard';
-import { CommentViewModel, CreateCommentModel, LikeInputModel } from '../comments/comments.models';
+import { CommentViewModel, UpdateCommentModel, LikeInputModel } from '../comments/comments.models';
 import { isPostIdIntegerGuard } from '../auth/guards/param.postId.isinteger.guard';
 import { PostViewModel } from './posts.models';
 
@@ -55,8 +66,8 @@ export class PostsController {
   @Post(':postId/comments')
   async createComment(
     @CurrentUser() userId,
-    @Param('postId') postId: string,
-    @Body() inputModel: CreateCommentModel,
+    @Param('postId', ParseIntPipe) postId: number,
+    @Body() inputModel: UpdateCommentModel,
     @Res() res: Response,
   ) {
     const newComment: CommentViewModel = await this.postsService.createComment(
@@ -71,7 +82,7 @@ export class PostsController {
   @Put('/:postId/like-status')
   async likePost(
     @CurrentUser() userId,
-    @Param('postId') postId: string,
+    @Param('postId', ParseIntPipe) postId: number,
     @Body() inputModel: LikeInputModel,
     @Res() res: Response,
   ) {

@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Query, Res, UseGuards } from '@nestjs/common';
 import { BlogsQueryRepository } from './blogs.query-repo';
 import { PostsQueryRepository } from '../posts/posts.query-repo';
 import { paginatedViewModel } from '../../shared/models/pagination';
@@ -24,7 +24,7 @@ export class BlogsController {
   }
   @UseGuards(isBlogIdIntegerGuard)
   @Get(':blogId')
-  async getBlog(@Param('blogId') id: string, @Res() res: Response) {
+  async getBlog(@Param('blogId', ParseIntPipe) id: number, @Res() res: Response) {
     const blog: BlogViewModel | null = await this.blogsQueryRepository.findBlogById(id);
     if (!blog) {
       return res.sendStatus(404);
@@ -35,7 +35,7 @@ export class BlogsController {
   @Get(':blogId/posts')
   async getPosts(
     @CurrentUser() userId,
-    @Param('blogId') blogId: string,
+    @Param('blogId', ParseIntPipe) blogId: number,
     @Query() paginationQuery,
     @Res() res: Response,
   ) {

@@ -2,12 +2,16 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-
-import { TokenRepository } from '../../tokens/token.repository';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Token } from '../../tokens/domain/token.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class RefreshJwtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
-  constructor(private readonly tokenRepository: TokenRepository) {
+  constructor(
+    @InjectRepository(Token)
+    private readonly tokenRepository: Repository<Token>,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (req: Request) => {
@@ -30,11 +34,13 @@ export class RefreshJwtStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
       throw new UnauthorizedException();
     }
     const expiredAt = new Date(payload.exp * 1000).toISOString();
-    const token = await this.tokenRepository.findToken(expiredAt);
+    const token = await this.tokenRepository.findOneBy({ expiredAt: expiredAt });
     if (!token) {
       throw new UnauthorizedException();
     }
-
-    return { ...payload, refreshToken };
+    const userId = +payload.userId;
+    const deviceId = payload.deviceId;
+    const exp = payload.exp;
+    return { userId, deviceId, exp, refreshToken };
   }
 }

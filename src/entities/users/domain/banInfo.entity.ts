@@ -5,9 +5,9 @@ import { User } from './user.entity';
 export class UserBanInfo {
   @Column()
   isBanned: boolean;
-  @Column()
+  @Column({ nullable: true })
   banDate: string;
-  @Column()
+  @Column({ nullable: true })
   banReason: string;
   @OneToOne(() => User)
   @JoinColumn()

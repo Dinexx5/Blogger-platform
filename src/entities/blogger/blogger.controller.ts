@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Post,
   Put,
   Query,
@@ -105,7 +106,7 @@ export class BloggerController {
     @Res() res: Response,
     @CurrentUser() userId,
   ) {
-    await this.postsService.deletePostById(params.postId, params.blogId, userId);
+    await this.postsService.deletePostById(+params.postId, +params.blogId, userId);
     return res.sendStatus(204);
   }
 }

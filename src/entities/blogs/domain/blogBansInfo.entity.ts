@@ -1,13 +1,21 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToOne,
+  PrimaryColumn,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Blog } from './blog.entity';
 
 @Entity()
 export class BlogBansInfo {
   @Column()
   isBanned: boolean;
-  @Column()
+  @Column({ nullable: true })
   banDate: string;
-  @OneToOne(() => Blog)
+  @ManyToOne(() => Blog)
   @JoinColumn()
   blog: Blog;
   @PrimaryColumn()

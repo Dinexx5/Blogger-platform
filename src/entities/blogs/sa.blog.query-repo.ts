@@ -1,10 +1,14 @@
 import { paginatedViewModel, paginationQuerys } from '../../shared/models/pagination';
 import { BlogSAViewModel } from './blogs.models';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { Blog } from './domain/blog.entity';
 
 export class BlogsSAQueryRepository {
-  constructor(@InjectDataSource() protected dataSource: DataSource) {}
+  constructor(
+    @InjectRepository(Blog)
+    private readonly blogsTypeOrmRepository: Repository<Blog>,
+  ) {}
   mapFoundBlogToBlogViewModel(blog): BlogSAViewModel {
     return {
       name: blog.name,
@@ -14,12 +18,12 @@ export class BlogsSAQueryRepository {
       createdAt: blog.createdAt,
       id: blog.id.toString(),
       blogOwnerInfo: {
-        userId: blog.userId.toString(),
-        userLogin: blog.userLogin,
+        userId: blog.blogOwnerInfo.userId.toString(),
+        userLogin: blog.blogOwnerInfo.userLogin,
       },
       banInfo: {
-        isBanned: blog.isBanned,
-        banDate: blog.banDate,
+        isBanned: blog.banInfo.isBanned,
+        banDate: blog.banInfo.banDate,
       },
     };
   }
@@ -34,43 +38,22 @@ export class BlogsSAQueryRepository {
 
     const skippedBlogsCount = (+pageNumber - 1) * +pageSize;
 
-    const subQuery = `(${
-      searchNameTerm ? `LOWER("name") LIKE '%' || LOWER('${searchNameTerm}') || '%'` : true
-    })`;
-    const selectQuery = `SELECT blog.*, ban."isBanned",ban."banDate", o."userId", o."userLogin",
-                                CASE
-                                 WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
-                                 ELSE 1
-                                END toOrder
-                    FROM "Blogs" blog
-                    LEFT JOIN "BlogOwnerInfo" o
-                    ON blog."id" = o."blogId"
-                    LEFT JOIN "BlogBansInfo" ban
-                    ON blog."id" = ban."blogId"
-                    WHERE ${subQuery}
-                    ORDER BY toOrder,
-                      CASE when $1 = 'desc' then "${sortBy}" END DESC,
-                      CASE when $1 = 'asc' then "${sortBy}" END ASC
-                    LIMIT $2
-                    OFFSET $3
-                    `;
-    const counterQuery = `SELECT COUNT(*)
-                    FROM "Blogs" blog
-                    LEFT JOIN "BlogOwnerInfo" o
-                    ON blog."id" = o."blogId"
-                    LEFT JOIN "BlogBansInfo" ban
-                    ON blog."id" = ban."blogId"
-                    WHERE ${subQuery}`;
+    const builder = this.blogsTypeOrmRepository
+      .createQueryBuilder('b')
+      .leftJoinAndSelect('b.blogOwnerInfo', 'oi')
+      .leftJoinAndSelect('b.banInfo', 'bi');
 
-    const counter = await this.dataSource.query(counterQuery);
-    const count = counter[0].count;
-    const blogs = await this.dataSource.query(selectQuery, [
-      sortDirection,
-      pageSize,
-      skippedBlogsCount,
-    ]);
-    console.log(blogs);
-
+    const searchNameTermQuery = `${
+      searchNameTerm ? 'LOWER(b.name) LIKE LOWER(:searchNameTerm)' : 'true'
+    }`;
+    const sortDirectionSql: 'ASC' | 'DESC' = sortDirection === 'desc' ? 'DESC' : 'ASC';
+    const blogs = await builder
+      .where(searchNameTermQuery, { searchNameTerm: `%${searchNameTerm}%` })
+      .orderBy(`b.${sortBy}`, sortDirectionSql)
+      .limit(+pageSize)
+      .offset(skippedBlogsCount)
+      .getMany();
+    const count = blogs.length;
     const blogsView = blogs.map(this.mapFoundBlogToBlogViewModel);
     return {
       pagesCount: Math.ceil(+count / +pageSize),

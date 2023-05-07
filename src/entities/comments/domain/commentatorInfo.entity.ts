@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryColumn } from 'typeorm';
 import { Comment } from './comment.entity';
 import { User } from '../../users/domain/user.entity';
 
@@ -8,10 +8,10 @@ export class CommentatorInfo {
   commentId: number;
   @Column()
   userLogin: string;
-  @OneToOne(() => User)
+  @ManyToOne(() => User)
   @JoinColumn()
   user: User;
-  @OneToOne(() => Comment)
+  @ManyToOne(() => Comment)
   @JoinColumn()
   comment: Comment;
   @Column()

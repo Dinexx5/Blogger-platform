@@ -2,13 +2,19 @@ import { paginatedViewModel, paginationQuerys } from '../../shared/models/pagina
 import { BannedForBlogUserViewModel } from '../users/userModels';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { BlogsRepository } from '../blogs/blogs.repository';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { BlogOwnerInfo } from '../blogs/domain/blogOwner.entity';
+import { UserBanForBlog } from './domain/userBanForBlog.entity';
 
 export class BloggerBansQueryRepository {
   constructor(
     protected blogsRepository: BlogsRepository,
     @InjectDataSource() protected dataSource: DataSource,
+    @InjectRepository(BlogOwnerInfo)
+    private readonly blogOwnerInfoRepository: Repository<BlogOwnerInfo>,
+    @InjectRepository(UserBanForBlog)
+    private readonly userBansTypeOrmRepository: Repository<UserBanForBlog>,
   ) {}
   mapFoundBansToViewModel(ban): BannedForBlogUserViewModel {
     return {
@@ -23,8 +29,8 @@ export class BloggerBansQueryRepository {
   }
   async getAllBannedUsersForBlog(
     query: paginationQuerys,
-    blogId: string,
-    userId: string,
+    blogId: number,
+    userId: number,
   ): Promise<paginatedViewModel<BannedForBlogUserViewModel[]>> {
     const {
       sortDirection = 'desc',
@@ -35,38 +41,24 @@ export class BloggerBansQueryRepository {
     } = query;
     const skippedBlogsCount = (+pageNumber - 1) * +pageSize;
 
-    const blog = await this.blogsRepository.findBlogInstance(blogId);
+    const blog = await this.blogsRepository.findBlogById(blogId);
     if (!blog) throw new NotFoundException();
-    const blogOwnerInfo = await this.blogsRepository.findBlogOwnerInfo(blogId);
-    if (blogOwnerInfo.userId.toString() !== userId) throw new ForbiddenException();
+    const blogOwnerInfo = await this.blogOwnerInfoRepository.findOneBy({ blogId: blogId });
+    if (blogOwnerInfo.userId !== userId) throw new ForbiddenException();
 
-    const subQuery = `"blogId" = ${blogId} AND (${
-      searchLoginTerm ? `LOWER("login") LIKE '%' || LOWER('${searchLoginTerm}') || '%'` : true
-    })`;
-    const selectQuery = `SELECT "userId", "login", "isBanned","banDate","banReason",
-                                CASE
-                                 WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
-                                 ELSE 1
-                                END toOrder
-                    FROM "UserBanForBlog"
-                    WHERE ${subQuery}
-                    ORDER BY toOrder,
-                      CASE when $1 = 'desc' then "${sortBy}" END DESC,
-                      CASE when $1 = 'asc' then "${sortBy}" END ASC
-                    LIMIT $2
-                    OFFSET $3
-                    `;
-    const counterQuery = `SELECT COUNT(*)
-                    FROM "UserBanForBlog" u
-                    WHERE ${subQuery}`;
+    const builder = this.userBansTypeOrmRepository.createQueryBuilder('ub');
 
-    const counter = await this.dataSource.query(counterQuery);
-    const count = counter[0].count;
-    const bans = await this.dataSource.query(selectQuery, [
-      sortDirection,
-      pageSize,
-      skippedBlogsCount,
-    ]);
+    const subQuery = `ub.blogId = :blogId AND ${
+      searchLoginTerm ? 'LOWER(ub.login) LIKE LOWER(:searchLoginTerm)' : 'true'
+    }`;
+    const sortDirectionSql: 'ASC' | 'DESC' = sortDirection === 'desc' ? 'DESC' : 'ASC';
+    const bans = await builder
+      .where(subQuery, { blogId: blogId, searchLoginTerm: searchLoginTerm })
+      .orderBy(`b.${sortBy}`, sortDirectionSql)
+      .limit(+pageSize)
+      .offset(skippedBlogsCount)
+      .getMany();
+    const count = bans.length;
     const bansView = bans.map(this.mapFoundBansToViewModel);
     return {
       pagesCount: Math.ceil(+count / +pageSize),

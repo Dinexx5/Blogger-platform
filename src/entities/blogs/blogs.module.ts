@@ -31,10 +31,27 @@ import { BlogOwnerInfo } from './domain/blogOwner.entity';
 import { BlogBansInfo } from './domain/blogBansInfo.entity';
 import { SaBlogBan } from '../bans/domain/saBlogBan.entity';
 import { UserBanForBlog } from '../blogger/domain/userBanForBlog.entity';
+import { UserBanInfo } from '../users/domain/banInfo.entity';
+import { Token } from '../tokens/domain/token.entity';
+import { Device } from '../devices/domain/device.entity';
+import { SaUserBan } from '../bans/domain/saUserBan.entity';
+import { Comment } from '../comments/domain/comment.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Blog, BlogOwnerInfo, BlogBansInfo, SaBlogBan, UserBanForBlog]),
+    TypeOrmModule.forFeature([
+      Blog,
+      BlogOwnerInfo,
+      BlogBansInfo,
+      SaBlogBan,
+      SaUserBan,
+      UserBanForBlog,
+      UserBanInfo,
+      Token,
+      Device,
+      SaBlogBan,
+      Comment,
+    ]),
     CqrsModule,
     AuthModule,
     PostsModule,

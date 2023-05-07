@@ -12,9 +12,26 @@ import { AuthController } from './auth.controller';
 import { AttemptsModule } from '../attempts/attempts.module';
 import { TokensModule } from '../tokens/token.module';
 import { BansRepository } from '../bans/bans.repository';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from '../users/domain/user.entity';
+import { EmailConfirmationInfo } from '../users/domain/emailConfirmation.entity';
+import { PasswordRecoveryInfo } from '../users/domain/passwordRecovery.entity';
+import { UserBanInfo } from '../users/domain/banInfo.entity';
+import { Token } from '../tokens/domain/token.entity';
+import { Device } from '../devices/domain/device.entity';
+import { SaUserBan } from '../bans/domain/saUserBan.entity';
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([
+      User,
+      EmailConfirmationInfo,
+      PasswordRecoveryInfo,
+      UserBanInfo,
+      Token,
+      Device,
+      SaUserBan,
+    ]),
     UsersModule,
     PassportModule,
     DevicesModule,

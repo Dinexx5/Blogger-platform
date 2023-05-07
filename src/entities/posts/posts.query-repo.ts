@@ -32,8 +32,8 @@ export class PostsQueryRepository {
   }
   async getAllPosts(
     query: paginationQuerys,
-    blogId?: string,
-    userId?: string | null,
+    blogId?: number,
+    userId?: number | null,
   ): Promise<paginatedViewModel<PostViewModel[]>> {
     const { sortDirection = 'desc', sortBy = 'createdAt', pageNumber = 1, pageSize = 10 } = query;
 
@@ -76,7 +76,7 @@ export class PostsQueryRepository {
       items: postsView,
     };
   }
-  async countLikesForPosts(posts, userId?: string) {
+  async countLikesForPosts(posts, userId?: number) {
     for (const post of posts) {
       const foundLikes = await this.postsLikesRepository.findLikesForPost(post.id.toString());
       if (!foundLikes) return;

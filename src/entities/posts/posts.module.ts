@@ -19,10 +19,29 @@ import { UsersBansForBlogRepository } from '../bans/bans.users-for-blog.reposito
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Post } from './domain/post.entity';
 import { PostLike } from '../likes/domain/postLike.entity';
+import { BlogOwnerInfo } from '../blogs/domain/blogOwner.entity';
+import { Blog } from '../blogs/domain/blog.entity';
+import { UserBanInfo } from '../users/domain/banInfo.entity';
+import { Token } from '../tokens/domain/token.entity';
+import { Device } from '../devices/domain/device.entity';
+import { SaUserBan } from '../bans/domain/saUserBan.entity';
+import { UserBanForBlog } from '../blogger/domain/userBanForBlog.entity';
+import { SaBlogBan } from '../bans/domain/saBlogBan.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Post, PostLike]),
+    TypeOrmModule.forFeature([
+      Post,
+      PostLike,
+      BlogOwnerInfo,
+      Blog,
+      UserBanInfo,
+      Token,
+      Device,
+      SaUserBan,
+      UserBanForBlog,
+      SaBlogBan,
+    ]),
     CqrsModule,
     AuthModule,
     UsersModule,

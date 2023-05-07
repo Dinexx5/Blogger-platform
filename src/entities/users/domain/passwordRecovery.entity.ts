@@ -3,10 +3,10 @@ import { User } from './user.entity';
 
 @Entity()
 export class PasswordRecoveryInfo {
-  @Column()
+  @Column({ nullable: true })
   recoveryCode: string;
-  @Column()
-  expirationDate: string;
+  @Column({ nullable: true })
+  expirationDate: Date;
   @OneToOne(() => User)
   @JoinColumn()
   user: User;

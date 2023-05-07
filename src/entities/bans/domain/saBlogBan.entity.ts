@@ -6,7 +6,7 @@ export class SaBlogBan {
   @Column()
   isBanned: boolean;
   @Column('text', { array: true })
-  bannedPostsIds: string[];
+  bannedPostsIds: number[];
   @PrimaryColumn()
   blogId: number;
   @OneToOne(() => Blog)

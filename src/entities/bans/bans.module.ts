@@ -12,10 +12,14 @@ import { CommentsModule } from '../comments/comments.module';
 import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SaUserBan } from './domain/saUserBan.entity';
+import { UserBanInfo } from '../users/domain/banInfo.entity';
+import { SaBlogBan } from './domain/saBlogBan.entity';
+import { Token } from '../tokens/domain/token.entity';
+import { Device } from '../devices/domain/device.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([SaUserBan]),
+    TypeOrmModule.forFeature([SaUserBan, UserBanInfo, SaBlogBan, Token, Device]),
     CqrsModule,
     UsersModule,
     AuthModule,

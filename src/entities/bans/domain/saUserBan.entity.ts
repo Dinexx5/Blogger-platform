@@ -1,11 +1,18 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryColumn,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { User } from '../../users/domain/user.entity';
 
 @Entity()
 export class SaUserBan {
   @Column()
   isBanned: boolean;
-  @Column()
+  @Column({ nullable: true })
   banReason: string;
   @Column()
   login: string;
@@ -15,7 +22,7 @@ export class SaUserBan {
   bannedPostsIds: string[];
   @Column('text', { array: true })
   bannedCommentsIds: string[];
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn()
   userId: number;
   @OneToOne(() => User)
   @JoinColumn()

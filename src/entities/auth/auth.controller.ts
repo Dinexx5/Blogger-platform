@@ -10,11 +10,10 @@ import {
   NewPasswordModel,
   PasswordRecoveryModel,
   ResendEmailModel,
-  UserFromSqlRepo,
 } from '../users/userModels';
-import { RateLimitGuard } from './guards/rate-limit.guard';
 import { JwtRefreshAuthGuard } from './guards/jwt-refresh.guard';
 import { CurrentUser } from '../../shared/decorators/current-user.decorator';
+import { User } from '../users/domain/user.entity';
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -24,11 +23,11 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Request() req, @CurrentUser() userId, @Res() res: Response) {
+  async login(@Request() req, @CurrentUser() userId: number, @Res() res: Response) {
     const ip = req.ip;
     const deviceName = req.headers['user-agent']!;
     const accessToken = await this.authService.createJwtAccessToken(userId);
-    const refreshToken = await this.authService.createJwtRefreshToken(userId, deviceName, ip);
+    const refreshToken = await this.authService.generateJwtRefreshToken(userId, deviceName, ip);
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: true,
@@ -38,8 +37,8 @@ export class AuthController {
 
   @UseGuards(JwtAccessAuthGuard)
   @Get('me')
-  async getProfile(@CurrentUser() userId: string, @Res() res: Response) {
-    const user: UserFromSqlRepo = await this.usersRepository.findUserById(userId);
+  async getProfile(@CurrentUser() userId: number, @Res() res: Response) {
+    const user: User = await this.usersRepository.findUserById(userId);
     res.send({
       email: user.email,
       login: user.login,

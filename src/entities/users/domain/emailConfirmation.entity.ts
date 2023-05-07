@@ -6,7 +6,7 @@ export class EmailConfirmationInfo {
   @Column()
   confirmationCode: string;
   @Column()
-  expirationDate: string;
+  expirationDate: Date;
   @Column()
   isConfirmed: boolean;
   @OneToOne(() => User)

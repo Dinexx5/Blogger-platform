@@ -1,58 +1,27 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { createBanModel } from './bans.models';
+import { SaUserBan } from './domain/saUserBan.entity';
 
 @Injectable()
 export class BansRepository {
-  constructor(@InjectDataSource() protected dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() protected dataSource: DataSource,
+    @InjectRepository(SaUserBan)
+    private readonly banTypeOrmRepository: Repository<SaUserBan>,
+  ) {}
 
-  async findBanByUserId(userId: string) {
-    const ban = await this.dataSource.query(
-      `
-          SELECT *
-          FROM "UserBans"
-          WHERE "userId" = $1
-      `,
-      [userId],
-    );
-    return ban[0];
-  }
-  async createBan(banDto: createBanModel) {
-    const banQuery = `INSERT INTO "UserBans"
-                   ("userId", login, "isBanned", "banReason",
-                    "bannedBlogsIds", "bannedPostsIds", "bannedCommentsIds")
-                   VALUES ($1, $2, $3, $4, $5, $6, $7)
-                   RETURNING *;`;
-    const ban = await this.dataSource.query(banQuery, [
-      banDto.userId,
-      banDto.login,
-      banDto.isBanned,
-      banDto.banReason,
-      banDto.bannedBlogsIds,
-      banDto.bannedPostsIds,
-      banDto.bannedCommentsIds,
-    ]);
-    return ban[0];
-  }
-  async deleteBan(userId: string) {
-    await this.dataSource.query(
-      `
-          DELETE
-          FROM "UserBans"
-          WHERE "userId" = $1
-      `,
-      [userId],
-    );
+  async isUserBanned(userId: number) {
+    const ban = await this.banTypeOrmRepository.findOneBy({ userId: userId });
+    if (ban) return true;
+    return false;
   }
   async countBannedUsers() {
-    const counterQuery = `SELECT COUNT(*)
-                    FROM "UserBans" `;
-    const counter = await this.dataSource.query(counterQuery);
-    return counter[0].count;
+    return await this.banTypeOrmRepository.count({});
   }
   async getBannedUsers() {
-    const allBans = await this.dataSource.query(`SELECT * FROM "UserBans"`);
+    const allBans = await this.banTypeOrmRepository.find({});
     const bannedUsers = [];
     allBans.forEach((ban) => {
       bannedUsers.push(ban.userId);
@@ -62,7 +31,7 @@ export class BansRepository {
   async getBannedBlogs() {
     const bannedUsersCount = await this.countBannedUsers();
     if (!bannedUsersCount) return [];
-    const allBans = await this.dataSource.query(`SELECT * FROM "UserBans"`);
+    const allBans = await this.banTypeOrmRepository.find({});
     const bannedBlogs = [];
     allBans.forEach((ban) => {
       bannedBlogs.push(...ban.bannedBlogsIds);
@@ -72,7 +41,7 @@ export class BansRepository {
   async getBannedPosts() {
     const bannedUsersCount = await this.countBannedUsers();
     if (!bannedUsersCount) return [];
-    const allBans = await this.dataSource.query(`SELECT * FROM "UserBans"`);
+    const allBans = await this.banTypeOrmRepository.find({});
     const bannedPosts = [];
     allBans.forEach((ban) => {
       bannedPosts.push(...ban.bannedPostsIds);
@@ -82,7 +51,7 @@ export class BansRepository {
   async getBannedComments() {
     const bannedUsersCount = await this.countBannedUsers();
     if (!bannedUsersCount) return [];
-    const allBans = await this.dataSource.query(`SELECT * FROM "UserBans"`);
+    const allBans = await this.banTypeOrmRepository.find({});
     const bannedComments = [];
     allBans.forEach((ban) => {
       bannedComments.push(...ban.bannedCommentsIds);

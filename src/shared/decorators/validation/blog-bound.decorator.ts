@@ -7,15 +7,23 @@ import {
 } from 'class-validator';
 import { Injectable } from '@nestjs/common';
 import { BlogsRepository } from '../../../entities/blogs/blogs.repository';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Comment } from '../../../entities/comments/domain/comment.entity';
+import { Repository } from 'typeorm';
+import { BlogOwnerInfo } from '../../../entities/blogs/domain/blogOwner.entity';
 
 @ValidatorConstraint({ name: 'IsBlogExists', async: true })
 @Injectable()
 export class IsBlogAttachedDecorator implements ValidatorConstraintInterface {
-  constructor(private blogsRepository: BlogsRepository) {}
-  async validate(blogId: string, args: ValidationArguments) {
-    const blog = await this.blogsRepository.findBlogInstance(blogId);
+  constructor(
+    private blogsRepository: BlogsRepository,
+    @InjectRepository(BlogOwnerInfo)
+    private readonly blogOwnerRepository: Repository<BlogOwnerInfo>,
+  ) {}
+  async validate(blogId: number, args: ValidationArguments) {
+    const blog = await this.blogsRepository.findBlogById(blogId);
     if (!blog) return false;
-    const ownerInfo = await this.blogsRepository.findBlogOwnerInfo(blog.id.toString());
+    const ownerInfo = await this.blogOwnerRepository.findOneBy({ blogId: blogId });
     if (ownerInfo.userId) return false;
     return true;
   }

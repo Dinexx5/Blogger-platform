@@ -5,8 +5,15 @@ import { UsersRepository } from '../users/users.repository';
 import { BlogsRepository } from '../blogs/blogs.repository';
 import { PostsLikesRepository } from '../likes/posts.likes.repository';
 import { UsersBansForBlogRepository } from '../bans/bans.users-for-blog.repository';
-import { CommentViewModel, CreateCommentModel } from '../comments/comments.models';
+import { CommentViewModel, UpdateCommentModel } from '../comments/comments.models';
 import { createPostModel, PostViewModel, updatePostModel } from './posts.models';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Blog } from '../blogs/domain/blog.entity';
+import { Repository } from 'typeorm';
+import { Post } from './domain/post.entity';
+import { BlogOwnerInfo } from '../blogs/domain/blogOwner.entity';
+import { CommentLike } from '../likes/domain/commentLike.entity';
+import { PostLike } from '../likes/domain/postLike.entity';
 
 @Injectable()
 export class PostsService {
@@ -15,36 +22,41 @@ export class PostsService {
     protected blogsRepository: BlogsRepository,
     protected commentsService: CommentsService,
     protected usersRepository: UsersRepository,
-    protected postsLikesRepository: PostsLikesRepository,
     protected usersBansForBlogsRepo: UsersBansForBlogRepository,
+    @InjectRepository(PostLike)
+    private readonly postsLikesRepository: Repository<PostLike>,
+    @InjectRepository(BlogOwnerInfo)
+    private readonly blogOwnerInfoRepository: Repository<BlogOwnerInfo>,
+    @InjectRepository(Post)
+    private readonly postsTypeOrmRepository: Repository<Post>,
   ) {}
 
   async createPost(
     postBody: createPostModel,
-    blogId: string,
-    userId: string,
+    blogId: number,
+    userId: number,
   ): Promise<PostViewModel | null> {
-    const blog = await this.blogsRepository.findBlogInstance(blogId);
+    const blog = await this.blogsRepository.findBlogById(blogId);
     if (!blog) throw new NotFoundException();
-    const blogOwnerInfo = await this.blogsRepository.findBlogOwnerInfo(blogId);
-    if (blogOwnerInfo.userId.toString() !== userId) throw new ForbiddenException();
+    const blogOwnerInfo = await this.blogOwnerInfoRepository.findOneBy({ blogId: blogId });
+    if (blogOwnerInfo.userId !== userId) throw new ForbiddenException();
     const createdAt = new Date().toISOString();
-    const createdPost = await this.postsRepository.createPost(
-      postBody.title,
-      postBody.shortDescription,
-      postBody.content,
-      blogId,
-      blog.name,
-      createdAt,
-    );
+    const post = await this.postsTypeOrmRepository.create();
+    post.title = postBody.title;
+    post.shortDescription = postBody.shortDescription;
+    post.content = postBody.content;
+    post.blogId = blogId;
+    post.blogName = blog.name;
+    post.createdAt = createdAt;
+    await this.postsTypeOrmRepository.save(post);
     return {
-      id: createdPost.id.toString(),
-      title: createdPost.title,
-      shortDescription: createdPost.shortDescription,
-      content: createdPost.content,
-      blogId: createdPost.blogId.toString(),
-      blogName: createdPost.blogName,
-      createdAt: createdPost.createdAt,
+      id: post.id.toString(),
+      title: post.title,
+      shortDescription: post.shortDescription,
+      content: post.content,
+      blogId: post.blogId.toString(),
+      blogName: post.blogName,
+      createdAt: post.createdAt,
       extendedLikesInfo: {
         likesCount: 0,
         dislikesCount: 0,
@@ -54,35 +66,33 @@ export class PostsService {
     };
   }
 
-  async deletePostById(postId: string, blogId: string, userId: string) {
-    const blog = await this.blogsRepository.findBlogInstance(blogId);
+  async deletePostById(postId: number, blogId: number, userId: number) {
+    const blog = await this.blogsRepository.findBlogById(blogId);
     if (!blog) throw new NotFoundException();
-    const blogOwnerInfo = await this.blogsRepository.findBlogOwnerInfo(blogId);
-    if (blogOwnerInfo.userId.toString() !== userId) throw new ForbiddenException();
+    const blogOwnerInfo = await this.blogOwnerInfoRepository.findOneBy({ blogId: blogId });
+    if (blogOwnerInfo.userId !== userId) throw new ForbiddenException();
     const post = await this.postsRepository.findPostInstance(postId);
     if (!post) throw new NotFoundException();
-    await this.postsRepository.deletePost(postId);
+    await this.postsTypeOrmRepository.remove(post);
   }
 
-  async updatePostById(postBody: updatePostModel, postId: string, blogId: string, userId: string) {
-    const blog = await this.blogsRepository.findBlogInstance(blogId);
+  async updatePostById(postBody: updatePostModel, postId: number, blogId: number, userId: number) {
+    const blog = await this.blogsRepository.findBlogById(blogId);
     if (!blog) throw new NotFoundException();
-    const blogOwnerInfo = await this.blogsRepository.findBlogOwnerInfo(blogId);
-    if (blogOwnerInfo.userId.toString() !== userId) throw new ForbiddenException();
+    const blogOwnerInfo = await this.blogOwnerInfoRepository.findOneBy({ blogId: blogId });
+    if (blogOwnerInfo.userId !== userId) throw new ForbiddenException();
     const post = await this.postsRepository.findPostInstance(postId);
     if (!post) throw new NotFoundException();
-    await this.postsRepository.updatePost(
-      postId,
-      postBody.title,
-      postBody.shortDescription,
-      postBody.content,
-      blogId,
-    );
+    post.title = postBody.title;
+    post.shortDescription = postBody.shortDescription;
+    post.content = postBody.content;
+    post.blogId = blogId;
+    await this.postsTypeOrmRepository.save(post);
   }
   async createComment(
-    postId: string,
-    inputModel: CreateCommentModel,
-    userId: string,
+    postId: number,
+    inputModel: UpdateCommentModel,
+    userId: number,
   ): Promise<CommentViewModel | null> {
     const post = await this.postsRepository.findPostInstance(postId);
     if (!post) return null;
@@ -91,17 +101,27 @@ export class PostsService {
     return await this.commentsService.createComment(postId, inputModel, userId);
   }
 
-  async likePost(postId: string, likeStatus: string, userId: string): Promise<boolean> {
+  async likePost(postId: number, likeStatus: string, userId: number): Promise<boolean> {
     const post = await this.postsRepository.findPostInstance(postId);
     if (!post) return false;
     const user = await this.usersRepository.findUserById(userId);
-    const like = await this.postsLikesRepository.findLikeByPostIdAndUserId(postId, userId);
+    const like = await this.postsLikesRepository.findOneBy({
+      postId: postId,
+      userId: userId,
+    });
     if (!like) {
       const createdAt = new Date().toISOString();
-      await this.postsLikesRepository.likePost(postId, likeStatus, userId, user.login, createdAt);
+      const newLike = await this.postsLikesRepository.create();
+      newLike.postId = postId;
+      newLike.login = user.login;
+      newLike.likeStatus = likeStatus;
+      newLike.userId = userId;
+      newLike.createdAt = createdAt;
+      await this.postsLikesRepository.save(newLike);
       return true;
     }
-    await this.postsLikesRepository.updateLikeStatus(postId, userId, likeStatus);
+    like.likeStatus = likeStatus;
+    await this.postsLikesRepository.save(like);
     return true;
   }
 }

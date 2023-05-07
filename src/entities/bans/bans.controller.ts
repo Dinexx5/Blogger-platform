@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Put, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Param, ParseIntPipe, Put, Res, UseGuards } from '@nestjs/common';
 import { BansUserCommand } from './application/use-cases/ban.user.use.case.';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { BanModel, UserParamModel } from '../users/userModels';
@@ -12,7 +12,7 @@ export class BansController {
   @UseGuards(AuthGuard, isUserIdIntegerGuard)
   @Put(':userId/ban')
   async banUser(
-    @Param() param: UserParamModel,
+    @Param('userId', ParseIntPipe) param: UserParamModel,
     @Body() inputModel: BanModel,
     @Res() res: Response,
   ) {

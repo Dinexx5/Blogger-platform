@@ -13,6 +13,6 @@ export class AccessJwtStrategy extends PassportStrategy(Strategy, 'jwt-access') 
   }
 
   async validate(payload: any) {
-    return payload.userId.toString();
+    return +payload.userId;
   }
 }

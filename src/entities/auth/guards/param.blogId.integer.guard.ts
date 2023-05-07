@@ -7,6 +7,7 @@ export class isBlogIdIntegerGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
     const request: Request = context.switchToHttp().getRequest();
     const blogId = request.params.blogId;
+    console.log(blogId);
     const checkId = Number(blogId);
     if (isNaN(checkId)) throw new NotFoundException();
     return true;

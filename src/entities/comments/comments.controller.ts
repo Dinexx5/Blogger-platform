@@ -1,11 +1,21 @@
-import { Body, Controller, Delete, Get, Param, Put, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Put,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { Response } from 'express';
 import { CommentsQueryRepository } from './comments.query-repo';
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CommentsService } from './comments.service';
 import { CurrentUser } from '../../shared/decorators/current-user.decorator';
 import { GetUserGuard } from '../auth/guards/getuser.guard';
-import { CommentViewModel, CreateCommentModel, LikeInputModel } from './comments.models';
+import { CommentViewModel, UpdateCommentModel, LikeInputModel } from './comments.models';
 import { isCommentIdIntegerGuard } from '../auth/guards/param.commentid.isinteger';
 
 @Controller('comments')
@@ -29,8 +39,8 @@ export class CommentsController {
   @Put(':commentId')
   async updateComment(
     @CurrentUser() userId,
-    @Param('commentId') commentId: string,
-    @Body() inputModel: CreateCommentModel,
+    @Param('commentId', ParseIntPipe) commentId: number,
+    @Body() inputModel: UpdateCommentModel,
     @Res() res: Response,
   ) {
     await this.commentsService.updateCommentById(commentId, inputModel, userId);
@@ -40,7 +50,7 @@ export class CommentsController {
   @Delete(':commentId')
   async deleteComment(
     @CurrentUser() userId,
-    @Param('commentId') commentId: string,
+    @Param('commentId', ParseIntPipe) commentId: number,
     @Res() res: Response,
   ) {
     await this.commentsService.deleteCommentById(commentId, userId);
@@ -50,7 +60,7 @@ export class CommentsController {
   @Put('/:commentId/like-status')
   async likeComment(
     @CurrentUser() userId,
-    @Param('commentId') commentId: string,
+    @Param('commentId', ParseIntPipe) commentId: number,
     @Body() inputModel: LikeInputModel,
     @Res() res: Response,
   ) {

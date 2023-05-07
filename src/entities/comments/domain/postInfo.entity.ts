@@ -20,7 +20,7 @@ export class PostInfoForComment {
   @JoinColumn()
   blog: Blog;
 
-  @OneToOne(() => Comment)
+  @ManyToOne(() => Comment)
   @JoinColumn()
   comment: Comment;
 

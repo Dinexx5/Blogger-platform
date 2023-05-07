@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { Blog } from './blog.entity';
 import { User } from '../../users/domain/user.entity';
 
@@ -6,10 +6,10 @@ import { User } from '../../users/domain/user.entity';
 export class BlogOwnerInfo {
   @Column()
   userLogin: string;
-  @OneToOne(() => Blog)
+  @ManyToOne(() => Blog)
   @JoinColumn()
   blog: Blog;
-  @OneToOne(() => User)
+  @ManyToOne(() => User)
   @JoinColumn()
   user: User;
   @PrimaryColumn()

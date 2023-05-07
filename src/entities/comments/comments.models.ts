@@ -9,6 +9,13 @@ export class CreateCommentModel {
   @Transform(({ value }) => value?.trim?.())
   content: string;
 }
+export class UpdateCommentModel {
+  @IsString()
+  @IsNotEmpty()
+  @Length(20, 300)
+  @Transform(({ value }) => value?.trim?.())
+  content: string;
+}
 
 export class LikeInputModel {
   @IsLikeStatusCorrect()

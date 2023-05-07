@@ -1,54 +1,65 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
-import { TokenRepository } from '../tokens/token.repository';
 import { DevicesService } from '../devices/devices.service';
 import { v4 as uuidv4 } from 'uuid';
-import { add, addDays } from 'date-fns';
+import { addDays } from 'date-fns';
 import { EmailAdapter } from '../../adapters/email.adapter';
-import { DevicesRepository } from '../devices/devices.repository';
 import { CreateUserModel, NewPasswordModel } from '../users/userModels';
 import * as bcrypt from 'bcrypt';
 import { BansRepository } from '../bans/bans.repository';
-import { tokenSqlModel } from '../tokens/tokens.models';
+import { Repository } from 'typeorm';
+import { User } from '../users/domain/user.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UserBanInfo } from '../users/domain/banInfo.entity';
+import { EmailConfirmationInfo } from '../users/domain/emailConfirmation.entity';
+import { PasswordRecoveryInfo } from '../users/domain/passwordRecovery.entity';
 import { UsersRepository } from '../users/users.repository';
+import { Token } from '../tokens/domain/token.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
+    @InjectRepository(User)
+    private readonly usersTypeOrmRepository: Repository<User>,
+    @InjectRepository(UserBanInfo)
+    private readonly banInfoRepository: Repository<UserBanInfo>,
+    @InjectRepository(EmailConfirmationInfo)
+    private readonly emailConfirmationRepository: Repository<EmailConfirmationInfo>,
+    @InjectRepository(PasswordRecoveryInfo)
+    private readonly passwordRecoveryRepository: Repository<PasswordRecoveryInfo>,
+    @InjectRepository(Token)
+    private readonly tokenRepository: Repository<Token>,
+    private readonly jwtService: JwtService,
     private readonly emailAdapter: EmailAdapter,
     private readonly usersService: UsersService,
+    private readonly devicesService: DevicesService,
+    private readonly bansRepository: BansRepository,
     private readonly usersRepository: UsersRepository,
-    private readonly jwtService: JwtService,
-    protected tokenRepository: TokenRepository,
-    protected devicesService: DevicesService,
-    protected devicesRepository: DevicesRepository,
-    protected bansRepository: BansRepository,
   ) {}
 
   async validateUser(username: string, password: string): Promise<any> {
-    const user = await this.usersService.findUserByLoginOrEmail(username);
+    const user: User = await this.usersRepository.findUserByLoginOrEmail(username);
     if (!user) return null;
-    const isConfirmed = await this.usersService.checkConfirmation(user.id.toString());
+    const isConfirmed = await this.usersService.checkConfirmation(user.id);
     if (!isConfirmed) return null;
-    const isBanned = await this.bansRepository.findBanByUserId(user.id.toString());
+    const isBanned = await this.bansRepository.isUserBanned(user.id);
     if (isBanned) return null;
     const isValidPassword = await bcrypt.compare(password, user.passwordHash);
     if (!isValidPassword) return null;
-    return user.id.toString();
+    return user.id;
   }
 
-  async createJwtAccessToken(userId: string) {
+  async createJwtAccessToken(userId: number) {
     const payload = { userId: userId };
-    const accessToken = this.jwtService.sign(payload, {
+    return this.jwtService.sign(payload, {
       secret: process.env.ACCESS_SECRET,
       expiresIn: '10000s',
     });
-    return accessToken;
   }
-  async createJwtRefreshToken(userId: string, deviceName: string, ip: string) {
+  async generateJwtRefreshToken(userId: number, deviceName: string, ip: string) {
     const deviceId = new Date().toISOString();
-    const payload = { userId: userId.toString(), deviceId: deviceId };
+    const payload = { userId: userId, deviceId: deviceId };
     const refreshToken = this.jwtService.sign(payload, {
       secret: process.env.REFRESH_SECRET,
       expiresIn: '20000s',
@@ -58,19 +69,19 @@ export class AuthService {
     });
     const issuedAt = new Date(result.iat * 1000).toISOString();
     const expiredAt = new Date(result.exp * 1000).toISOString();
-    const tokenMetaDTO = {
-      issuedAt: issuedAt,
-      userId: userId,
-      deviceId: deviceId,
-      deviceName: deviceName,
-      ip: ip,
-      expiredAt: expiredAt,
-    };
-    await this.tokenRepository.createToken(tokenMetaDTO);
+    const token = await this.tokenRepository.create();
+    token.issuedAt = issuedAt;
+    token.userId = userId;
+    token.deviceId = deviceId;
+    token.deviceName = deviceName;
+    token.ip = ip;
+    token.expiredAt = expiredAt;
+    await this.tokenRepository.save(token);
     await this.devicesService.createDevice(userId, ip, deviceName, deviceId, issuedAt);
     return refreshToken;
   }
-  async updateJwtRefreshToken(deviceId: string, exp: number, userId: string) {
+
+  async updateJwtRefreshToken(deviceId: string, exp: number, userId: number) {
     const previousExpirationDate = new Date(exp * 1000).toISOString();
     const newPayload = { userId: userId, deviceId: deviceId };
     const newRefreshToken = this.jwtService.sign(newPayload, {
@@ -80,22 +91,23 @@ export class AuthService {
     const newResult: any = await this.getRefreshTokenInfo(newRefreshToken);
     const newIssuedAt = new Date(newResult.iat * 1000).toISOString();
     const newExpiredAt = new Date(newResult.exp * 1000).toISOString();
-    await this.tokenRepository.updateToken(previousExpirationDate, newExpiredAt, newIssuedAt);
-    await this.devicesRepository.updateLastActiveDate(deviceId, newIssuedAt);
+    const token = await this.tokenRepository.findOneBy({ expiredAt: previousExpirationDate });
+    token.issuedAt = newIssuedAt;
+    token.expiredAt = newExpiredAt;
+    await this.tokenRepository.save(token);
+    await this.devicesService.updateLastActiveDate(deviceId, newIssuedAt);
     return newRefreshToken;
   }
   async getRefreshTokenInfo(token: string) {
     try {
-      const result: any = this.jwtService.verify(token, { secret: process.env.REFRESH_SECRET });
-      return result;
+      return this.jwtService.verify(token, { secret: process.env.REFRESH_SECRET });
     } catch (error) {
       return null;
     }
   }
   async getAccessTokenInfo(token: string) {
     try {
-      const result: any = this.jwtService.verify(token, { secret: process.env.ACCESS_SECRET });
-      return result;
+      return this.jwtService.verify(token, { secret: process.env.ACCESS_SECRET });
     } catch (error) {
       return null;
     }
@@ -104,14 +116,16 @@ export class AuthService {
     const result: any = await this.getRefreshTokenInfo(token);
     if (!result) throw new UnauthorizedException();
     const expirationDate = new Date(result.exp * 1000).toISOString();
-    const foundToken: tokenSqlModel = await this.tokenRepository.findToken(expirationDate);
+    const foundToken: Token = await this.tokenRepository.findOneBy({
+      expiredAt: expirationDate,
+    });
     if (!foundToken) throw new UnauthorizedException();
-    await this.tokenRepository.deleteToken(expirationDate);
+    await this.tokenRepository.remove(foundToken);
   }
   async deleteDeviceForLogout(token: string) {
     const result: any = await this.getRefreshTokenInfo(token);
     const deviceId = result.deviceId;
-    await this.devicesRepository.deleteDevice(deviceId);
+    await this.devicesService.deleteDevice(deviceId);
   }
   async createUser(inputModel: CreateUserModel) {
     const passwordHash = await this.usersService.generateHash(inputModel.password);
@@ -120,16 +134,31 @@ export class AuthService {
     const isConfirmed = false;
     const createdAt = new Date().toISOString();
 
-    const createdUser = await this.usersRepository.createUser(
-      inputModel.login,
-      inputModel.email,
-      passwordHash,
-      createdAt,
-      expirationDate,
-      confirmationCode,
-      isConfirmed,
-    );
-    if (!createdUser) {
+    const user = await this.usersTypeOrmRepository.create();
+    user.login = inputModel.login;
+    user.email = inputModel.email;
+    user.passwordHash = passwordHash;
+    user.createdAt = createdAt;
+    await this.usersTypeOrmRepository.save(user);
+    const banInfo = await this.banInfoRepository.create();
+    banInfo.userId = user.id;
+    banInfo.isBanned = false;
+    banInfo.banDate = null;
+    banInfo.banReason = null;
+    await this.banInfoRepository.save(banInfo);
+    const emailConfirmationInfo = await this.emailConfirmationRepository.create();
+    emailConfirmationInfo.userId = user.id;
+    emailConfirmationInfo.confirmationCode = confirmationCode;
+    emailConfirmationInfo.isConfirmed = isConfirmed;
+    emailConfirmationInfo.expirationDate = expirationDate;
+    await this.emailConfirmationRepository.save(emailConfirmationInfo);
+    const passwordRecoveryInfo = await this.passwordRecoveryRepository.create();
+    passwordRecoveryInfo.userId = user.id;
+    passwordRecoveryInfo.expirationDate = null;
+    passwordRecoveryInfo.recoveryCode = null;
+    await this.passwordRecoveryRepository.save(passwordRecoveryInfo);
+
+    if (!user) {
       return null;
     }
     try {
@@ -137,8 +166,9 @@ export class AuthService {
     } catch (error) {
       return null;
     }
-    return createdUser;
+    return user;
   }
+
   async resendEmail(email: string): Promise<boolean> {
     const confirmationCode = uuidv4();
     try {
@@ -147,7 +177,7 @@ export class AuthService {
       console.error(error);
       return false;
     }
-    const isUpdated = await this.usersService.updateCode(email, confirmationCode);
+    const isUpdated = await this.usersService.updateConfirmationCode(confirmationCode);
     if (!isUpdated) return false;
     return true;
   }
@@ -156,6 +186,7 @@ export class AuthService {
     if (!isConfirmed) return false;
     return true;
   }
+
   async sendEmailForPasswordRecovery(email: string): Promise<boolean> {
     const confirmationCode = uuidv4();
     const isUpdated = await this.usersService.updateRecoveryCode(email, confirmationCode);
@@ -163,7 +194,6 @@ export class AuthService {
     try {
       await this.emailAdapter.sendEmailForPasswordRecovery(email, confirmationCode);
     } catch (error) {
-      console.error(error);
       return false;
     }
     return true;

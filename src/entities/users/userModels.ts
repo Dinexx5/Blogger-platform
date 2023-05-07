@@ -1,4 +1,12 @@
-import { IsBoolean, IsEmail, IsNotEmpty, IsString, Length, Matches } from 'class-validator';
+import {
+  IsBoolean,
+  IsEmail,
+  IsNotEmpty,
+  IsNumberString,
+  IsString,
+  Length,
+  Matches,
+} from 'class-validator';
 import { IsLoginExists } from '../../shared/decorators/validation/login-exists.decorator';
 import { IsEmailExists } from '../../shared/decorators/validation/email-exists.decorator';
 import { IsEmailConfirmed } from '../../shared/decorators/validation/email-resending.decorator';
@@ -55,15 +63,6 @@ export class NewPasswordModel {
   recoveryCode: string;
 }
 
-export class authModel {
-  @IsString()
-  @IsNotEmpty()
-  loginOrEmail: string;
-  @IsString()
-  @IsNotEmpty()
-  password: string;
-}
-
 export class BanModel {
   @IsBoolean()
   @IsNotEmpty()
@@ -74,7 +73,7 @@ export class BanModel {
   banReason: string;
 }
 export class BanUserModelForBlog {
-  @IsString()
+  @IsNumberString()
   @IsNotEmpty()
   blogId: string;
   @IsBoolean()
@@ -87,16 +86,14 @@ export class BanUserModelForBlog {
 }
 
 export class UserParamModel {
-  @IsString()
   @IsNotEmpty()
   @IsUserExists()
-  userId: string;
+  userId: number;
 }
 
-export class UserBanParamModel {
-  @IsString()
+export class UserToBanParamModel {
   @IsNotEmpty()
-  userId: string;
+  userId: number;
 }
 
 export class SaUserFromSqlRepo {

@@ -24,10 +24,35 @@ import { Comment } from './domain/comment.entity';
 import { CommentLike } from '../likes/domain/commentLike.entity';
 import { CommentatorInfo } from './domain/commentatorInfo.entity';
 import { PostInfoForComment } from './domain/postInfo.entity';
+import { PostLike } from '../likes/domain/postLike.entity';
+import { BlogOwnerInfo } from '../blogs/domain/blogOwner.entity';
+import { Post } from '../posts/domain/post.entity';
+import { Blog } from '../blogs/domain/blog.entity';
+import { UserBanInfo } from '../users/domain/banInfo.entity';
+import { Token } from '../tokens/domain/token.entity';
+import { SaUserBan } from '../bans/domain/saUserBan.entity';
+import { Device } from '../devices/domain/device.entity';
+import { UserBanForBlog } from '../blogger/domain/userBanForBlog.entity';
+import { SaBlogBan } from '../bans/domain/saBlogBan.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Comment, CommentLike, CommentatorInfo, PostInfoForComment]),
+    TypeOrmModule.forFeature([
+      Blog,
+      Comment,
+      CommentatorInfo,
+      PostInfoForComment,
+      Post,
+      PostLike,
+      CommentLike,
+      BlogOwnerInfo,
+      UserBanInfo,
+      Token,
+      SaUserBan,
+      Device,
+      UserBanForBlog,
+      SaBlogBan,
+    ]),
     CqrsModule,
     AuthModule,
     UsersModule,

@@ -13,7 +13,7 @@ export class UserBanForBlog {
   @Column()
   banDate: string;
   @Column('text', { array: true })
-  bannedPostsIds: string[];
+  bannedPostsIds: number[];
   @Column()
   blogId: number;
   @PrimaryColumn()

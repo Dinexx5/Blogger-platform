@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 
 import { paginatedViewModel } from '../../shared/models/pagination';
 import { Response } from 'express';
@@ -29,7 +40,7 @@ export class UsersSAController {
   }
   @UseGuards(AuthGuard, isUserIdIntegerGuard)
   @Delete(':userId')
-  async deleteUser(@Param('userId') id: string, @Res() res: Response) {
+  async deleteUser(@Param('userId', ParseIntPipe) id: number, @Res() res: Response) {
     const isDeleted = await this.usersService.deleteUserById(id);
     if (!isDeleted) {
       return res.sendStatus(404);

@@ -4,10 +4,9 @@ import { IsUserExists } from '../../shared/decorators/validation/user-exists.dec
 import { Transform } from 'class-transformer';
 
 export class blogParamModel {
-  @IsString()
-  @IsNotEmpty()
   // @IsBlogExists()
-  blogId: string;
+  @Transform(({ value }) => +value)
+  blogId: number;
 }
 
 export class BanBlogModel {
@@ -17,20 +16,20 @@ export class BanBlogModel {
 }
 
 export class blogAndPostParamModel {
-  @IsString()
-  @IsNotEmpty()
   // @IsBlogExists()
-  blogId: string;
-  postId: string;
+  @Transform(({ value }) => +value)
+  blogId: number;
+  @Transform(({ value }) => +value)
+  postId: number;
 }
 
 export class blogAndUserParamModel {
-  @IsString()
-  @IsNotEmpty()
   @IsBlogAttached()
-  blogId: string;
+  @Transform(({ value }) => +value)
+  blogId: number;
   @IsUserExists()
-  userId: string;
+  @Transform(({ value }) => +value)
+  userId: number;
 }
 
 export class BlogViewModel {

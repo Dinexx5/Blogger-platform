@@ -1,23 +1,25 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, MoreThanOrEqual, Repository } from 'typeorm';
+import { Attempt } from './domain/attempt.entity';
 
 @Injectable()
 export class AttemptsRepository {
-  constructor(@InjectDataSource() protected dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() protected dataSource: DataSource,
+    @InjectRepository(Attempt)
+    private readonly attemptRepository: Repository<Attempt>,
+  ) {}
   async addNewAttempt(requestData: string, date: string) {
-    const attemptQuery = `INSERT INTO "Attempts"
-                   ("requestData", "date")
-                   VALUES ($1, $2)
-                   RETURNING *;`;
-    await this.dataSource.query(attemptQuery, [requestData, date]);
+    const attempt = await this.attemptRepository.create();
+    attempt.requestData = requestData;
+    attempt.date = date;
+    await this.attemptRepository.save(attempt);
   }
   async countAttempts(requestData: string, timeTenSecondsAgo: string) {
-    const counterQuery = `SELECT COUNT(*)
-                    FROM "Attempts" 
-                    WHERE "requestData" = '${requestData}' AND "date" >=  '${timeTenSecondsAgo}'`;
-
-    const counter = await this.dataSource.query(counterQuery);
-    return counter[0].count;
+    return await this.attemptRepository.countBy({
+      requestData: requestData,
+      date: MoreThanOrEqual(timeTenSecondsAgo),
+    });
   }
 }
