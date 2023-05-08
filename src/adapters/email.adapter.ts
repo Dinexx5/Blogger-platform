@@ -14,7 +14,6 @@ export class EmailAdapter {
   };
   async sendEmailForConfirmation(email: string, code: string) {
     const transporter = nodemailer.createTransport(this.transporterSettings);
-    console.log(this.transporterSettings);
     return await transporter.sendMail({
       from: 'd.diubajlo@mail.ru',
       to: email,

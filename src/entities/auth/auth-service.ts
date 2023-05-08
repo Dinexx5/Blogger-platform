@@ -177,7 +177,7 @@ export class AuthService {
       console.error(error);
       return false;
     }
-    const isUpdated = await this.usersService.updateConfirmationCode(confirmationCode);
+    const isUpdated = await this.usersService.updateConfirmationCode(email, confirmationCode);
     if (!isUpdated) return false;
     return true;
   }

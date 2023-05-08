@@ -48,7 +48,7 @@ let SaUsersQueryRepository = class SaUsersQueryRepository {
         const users = await builder
             .orderBy(`u.${sortBy}`, sortDirectionSql)
             .limit(+pageSize)
-            .skip(skippedUsersCount)
+            .offset(skippedUsersCount)
             .getMany();
         const count = await builder.getCount();
         const usersView = users.map(this.mapDbUserToUserViewModel);

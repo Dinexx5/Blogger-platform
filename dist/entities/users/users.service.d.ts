@@ -16,7 +16,7 @@ export declare class UsersService {
     deleteUserById(userId: number): Promise<boolean>;
     checkConfirmation(userId: number): Promise<boolean>;
     generateHash(password: string): Promise<string>;
-    updateConfirmationCode(confirmationCode: string): Promise<boolean>;
+    updateConfirmationCode(email: string, confirmationCode: string): Promise<boolean>;
     updateConfirmation(confirmationCode: string): Promise<boolean>;
     updateRecoveryCode(email: string, recoveryCode: string): Promise<boolean>;
     updatePassword(inputModel: NewPasswordModel): Promise<boolean>;

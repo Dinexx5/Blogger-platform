@@ -88,9 +88,10 @@ export class UsersService {
     const passwordSalt = await bcrypt.genSalt(10);
     return await bcrypt.hash(password, passwordSalt);
   }
-  async updateConfirmationCode(confirmationCode: string) {
+  async updateConfirmationCode(email: string, confirmationCode: string) {
+    const user = await this.usersTypeOrmRepository.findOneBy({ email: email });
     const confirmationInfo = await this.emailConfirmationRepository.findOneBy({
-      confirmationCode: confirmationCode,
+      userId: user.id,
     });
     if (!confirmationInfo) return false;
     confirmationInfo.confirmationCode = confirmationCode;
