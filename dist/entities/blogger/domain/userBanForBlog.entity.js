@@ -16,6 +16,10 @@ const user_entity_1 = require("../../users/domain/user.entity");
 let UserBanForBlog = class UserBanForBlog {
 };
 __decorate([
+    (0, typeorm_1.PrimaryGeneratedColumn)(),
+    __metadata("design:type", Number)
+], UserBanForBlog.prototype, "id", void 0);
+__decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], UserBanForBlog.prototype, "login", void 0);
@@ -40,7 +44,7 @@ __decorate([
     __metadata("design:type", Number)
 ], UserBanForBlog.prototype, "blogId", void 0);
 __decorate([
-    (0, typeorm_1.PrimaryColumn)(),
+    (0, typeorm_1.Column)(),
     __metadata("design:type", Number)
 ], UserBanForBlog.prototype, "userId", void 0);
 __decorate([

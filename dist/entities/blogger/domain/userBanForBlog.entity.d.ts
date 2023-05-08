@@ -1,6 +1,7 @@
 import { Blog } from '../../blogs/domain/blog.entity';
 import { User } from '../../users/domain/user.entity';
 export declare class UserBanForBlog {
+    id: number;
     login: string;
     isBanned: boolean;
     banReason: string;

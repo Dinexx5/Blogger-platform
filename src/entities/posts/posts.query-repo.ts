@@ -26,8 +26,8 @@ export class PostsQueryRepository {
       blogName: post.p_blogName,
       createdAt: post.p_createdAt,
       extendedLikesInfo: {
-        likesCount: post.likesCount || 0,
-        dislikesCount: post.dislikesCount || 0,
+        likesCount: +post.likesCount || 0,
+        dislikesCount: +post.dislikesCount || 0,
         myStatus: post.myStatus || 'None',
         newestLikes: post.newestLikes || [],
       },
@@ -49,8 +49,8 @@ export class PostsQueryRepository {
     const subQuery = `p.id ${allBannedPosts.length ? `NOT IN (:...allBannedPosts)` : `IS NOT NULL`} 
     AND (${blogId ? `p.blogId = :blogId` : true})`;
 
-    const orderQuery = `CASE WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
-         ELSE 1 END, "${sortBy}"`;
+    const orderQuery = `CASE WHEN p."${sortBy}" = LOWER(p."${sortBy}") THEN 2
+         ELSE 1 END, p."${sortBy}"`;
 
     const builder = await this.getBuilder(userId);
 

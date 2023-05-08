@@ -1,9 +1,11 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Blog } from '../../blogs/domain/blog.entity';
 import { User } from '../../users/domain/user.entity';
 
 @Entity()
 export class UserBanForBlog {
+  @PrimaryGeneratedColumn()
+  id: number;
   @Column()
   login: string;
   @Column()
@@ -16,7 +18,7 @@ export class UserBanForBlog {
   bannedPostsIds: number[];
   @Column()
   blogId: number;
-  @PrimaryColumn()
+  @Column()
   userId: number;
   @OneToOne(() => Blog)
   @JoinColumn()

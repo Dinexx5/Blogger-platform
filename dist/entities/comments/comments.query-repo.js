@@ -32,8 +32,8 @@ let CommentsQueryRepository = class CommentsQueryRepository {
             },
             createdAt: comment.c_createdAt,
             likesInfo: {
-                likesCount: comment.likesCount,
-                dislikesCount: comment.dislikesCount,
+                likesCount: +comment.likesCount,
+                dislikesCount: +comment.dislikesCount,
                 myStatus: comment.myStatus || 'None',
             },
         };
@@ -44,8 +44,8 @@ let CommentsQueryRepository = class CommentsQueryRepository {
         const sortDirectionSql = sortDirection === 'desc' ? 'DESC' : 'ASC';
         const bannedComments = await this.bansRepository.getBannedComments();
         const builder = await this.getBuilder(userId);
-        const orderQuery = `CASE WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
-         ELSE 1 END, "${sortBy}"`;
+        const orderQuery = `CASE WHEN c."${sortBy}" = LOWER(c."${sortBy}") THEN 2
+         ELSE 1 END, c."${sortBy}"`;
         const subQuery = `c.id ${bannedComments.length ? `NOT IN (:...bannedComments)` : `IS NOT NULL`} AND pi.postId = :postId`;
         const comments = await builder
             .where(subQuery, { bannedComments: bannedComments, postId: postId })
@@ -72,14 +72,17 @@ let CommentsQueryRepository = class CommentsQueryRepository {
             .leftJoinAndSelect('c.postInfo', 'pi')
             .leftJoin('c.likes', 'l')
             .addSelect([
-            `(select COUNT(*) FROM comment_like where l."commentId" = c."id" AND l."likeStatus" = 'Like') as "likesCount"`,
+            `(select COUNT(*) FROM comment_like where l."commentId" = c."id"
+         AND l."likeStatus" = 'Like') as "likesCount"`,
         ])
             .addSelect([
-            `(select COUNT(*) FROM comment_like where l."commentId" = c."id" AND l."likeStatus" = 'Dislike') as "dislikesCount"`,
+            `(select COUNT(*) FROM comment_like where l."commentId" = c."id"
+         AND l."likeStatus" = 'Dislike') as "dislikesCount"`,
         ])
             .addSelect([
             `(${userId
-                ? `select l."likeStatus" FROM comment_like where l."commentId" = c."id" AND l."userId" = ${userId}`
+                ? `select l."likeStatus" FROM comment_like where l."commentId" = c."id"
+                AND l."userId" = ${userId}`
                 : 'false'}) as "myStatus"`,
         ]);
     }

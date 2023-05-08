@@ -34,8 +34,8 @@ let BloggerCommentsQueryRepository = class BloggerCommentsQueryRepository {
             },
             createdAt: comment.c_createdAt,
             likesInfo: {
-                likesCount: comment.likesCount || 0,
-                dislikesCount: comment.dislikesCount || 0,
+                likesCount: +comment.likesCount || 0,
+                dislikesCount: +comment.dislikesCount || 0,
                 myStatus: comment.myStatus || 'None',
             },
             postInfo: {
@@ -53,8 +53,8 @@ let BloggerCommentsQueryRepository = class BloggerCommentsQueryRepository {
         const allPosts = await this.postsRepository.findPostsForUser(allBlogs);
         const sortDirectionSql = sortDirection === 'desc' ? 'DESC' : 'ASC';
         const subQuery = `${allPosts.length ? `pi.postId IN (:...allPosts)` : `false`}`;
-        const orderQuery = `CASE WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
-         ELSE 1 END, "${sortBy}"`;
+        const orderQuery = `CASE WHEN c."${sortBy}" = LOWER(c."${sortBy}") THEN 2
+         ELSE 1 END, c."${sortBy}"`;
         const builder = this.commentsTypeOrmRepository
             .createQueryBuilder('c')
             .leftJoinAndSelect('c.commentatorInfo', 'ci')
