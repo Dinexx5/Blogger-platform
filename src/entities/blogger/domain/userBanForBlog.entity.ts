@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Blog } from '../../blogs/domain/blog.entity';
 import { User } from '../../users/domain/user.entity';
 
@@ -20,10 +20,10 @@ export class UserBanForBlog {
   blogId: number;
   @Column()
   userId: number;
-  @OneToOne(() => Blog)
+  @ManyToOne(() => Blog)
   @JoinColumn()
   blog: Blog;
-  @OneToOne(() => User)
+  @ManyToOne(() => User)
   @JoinColumn()
   user: User;
 }

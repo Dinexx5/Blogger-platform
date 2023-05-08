@@ -18,8 +18,10 @@ const posts_repository_1 = require("../posts/posts.repository");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const comment_entity_1 = require("../comments/domain/comment.entity");
+const bans_repository_1 = require("../bans/bans.repository");
 let BloggerCommentsQueryRepository = class BloggerCommentsQueryRepository {
-    constructor(blogsRepository, postsRepository, commentsTypeOrmRepository) {
+    constructor(bansRepository, blogsRepository, postsRepository, commentsTypeOrmRepository) {
+        this.bansRepository = bansRepository;
         this.blogsRepository = blogsRepository;
         this.postsRepository = postsRepository;
         this.commentsTypeOrmRepository = commentsTypeOrmRepository;
@@ -51,6 +53,7 @@ let BloggerCommentsQueryRepository = class BloggerCommentsQueryRepository {
         const skippedCommentsCount = (+pageNumber - 1) * +pageSize;
         const allBlogs = await this.blogsRepository.findBlogsForUser(userId);
         const allPosts = await this.postsRepository.findPostsForUser(allBlogs);
+        const bannedUsers = await this.bansRepository.getBannedUsers();
         const sortDirectionSql = sortDirection === 'desc' ? 'DESC' : 'ASC';
         const subQuery = `${allPosts.length ? `pi.postId IN (:...allPosts)` : `false`}`;
         const orderQuery = `CASE WHEN c."${sortBy}" = LOWER(c."${sortBy}") THEN 2
@@ -62,11 +65,13 @@ let BloggerCommentsQueryRepository = class BloggerCommentsQueryRepository {
             .leftJoin('c.likes', 'l')
             .addSelect([
             `(select COUNT(*) FROM comment_like where l."commentId" = c."id"
-         AND l."likeStatus" = 'Like') as "likesCount"`,
+         AND l."likeStatus" = 'Like'
+         AND ${bannedUsers.length ? `l."userId" NOT IN (${bannedUsers})` : 'true'}) as "likesCount"`,
         ])
             .addSelect([
             `(select COUNT(*) FROM comment_like where l."commentId" = c."id"
-         AND l."likeStatus" = 'Dislike') as "dislikesCount"`,
+         AND l."likeStatus" = 'Dislike'
+         AND ${bannedUsers.length ? `l."userId" NOT IN (${bannedUsers})` : 'true'}) as "dislikesCount"`,
         ])
             .addSelect([
             `(select l."likeStatus" FROM comment_like where l."commentId" = c."id"
@@ -90,8 +95,9 @@ let BloggerCommentsQueryRepository = class BloggerCommentsQueryRepository {
     }
 };
 BloggerCommentsQueryRepository = __decorate([
-    __param(2, (0, typeorm_1.InjectRepository)(comment_entity_1.Comment)),
-    __metadata("design:paramtypes", [blogs_repository_1.BlogsRepository,
+    __param(3, (0, typeorm_1.InjectRepository)(comment_entity_1.Comment)),
+    __metadata("design:paramtypes", [bans_repository_1.BansRepository,
+        blogs_repository_1.BlogsRepository,
         posts_repository_1.PostsRepository,
         typeorm_2.Repository])
 ], BloggerCommentsQueryRepository);

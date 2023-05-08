@@ -5,9 +5,11 @@ import { commentsForBloggerViewModel } from '../comments/comments.models';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Comment } from '../comments/domain/comment.entity';
+import { BansRepository } from '../bans/bans.repository';
 
 export class BloggerCommentsQueryRepository {
   constructor(
+    protected bansRepository: BansRepository,
     protected blogsRepository: BlogsRepository,
     protected postsRepository: PostsRepository,
     @InjectRepository(Comment)
@@ -44,6 +46,7 @@ export class BloggerCommentsQueryRepository {
 
     const allBlogs: number[] = await this.blogsRepository.findBlogsForUser(userId);
     const allPosts: number[] = await this.postsRepository.findPostsForUser(allBlogs);
+    const bannedUsers = await this.bansRepository.getBannedUsers();
     const sortDirectionSql: 'ASC' | 'DESC' = sortDirection === 'desc' ? 'DESC' : 'ASC';
 
     const subQuery = `${allPosts.length ? `pi.postId IN (:...allPosts)` : `false`}`;
@@ -57,11 +60,17 @@ export class BloggerCommentsQueryRepository {
       .leftJoin('c.likes', 'l')
       .addSelect([
         `(select COUNT(*) FROM comment_like where l."commentId" = c."id"
-         AND l."likeStatus" = 'Like') as "likesCount"`,
+         AND l."likeStatus" = 'Like'
+         AND ${
+           bannedUsers.length ? `l."userId" NOT IN (${bannedUsers})` : 'true'
+         }) as "likesCount"`,
       ])
       .addSelect([
         `(select COUNT(*) FROM comment_like where l."commentId" = c."id"
-         AND l."likeStatus" = 'Dislike') as "dislikesCount"`,
+         AND l."likeStatus" = 'Dislike'
+         AND ${
+           bannedUsers.length ? `l."userId" NOT IN (${bannedUsers})` : 'true'
+         }) as "dislikesCount"`,
       ])
       .addSelect([
         `(select l."likeStatus" FROM comment_like where l."commentId" = c."id"

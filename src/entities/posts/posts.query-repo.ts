@@ -75,16 +75,23 @@ export class PostsQueryRepository {
     };
   }
   async getBuilder(userId?: number) {
+    const bannedUsers = await this.bansRepository.getBannedUsers();
     return this.postsTypeOrmRepository
       .createQueryBuilder('p')
       .leftJoin('p.likes', 'l')
       .addSelect([
         `(select COUNT(*) FROM post_like where l."postId" = p."id" AND
-         l."likeStatus" = 'Like') as "likesCount"`,
+         l."likeStatus" = 'Like'
+         AND ${
+           bannedUsers.length ? `l."userId" NOT IN (${bannedUsers})` : 'true'
+         }) as "likesCount"`,
       ])
       .addSelect([
         `(select COUNT(*) FROM post_like where l."postId" = p."id"
-         AND l."likeStatus" = 'Dislike') as "dislikesCount"`,
+         AND l."likeStatus" = 'Dislike'
+         AND ${
+           bannedUsers.length ? `l."userId" NOT IN (${bannedUsers})` : 'true'
+         }) as "dislikesCount"`,
       ])
       .addSelect([
         `(${

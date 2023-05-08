@@ -66,6 +66,7 @@ let CommentsQueryRepository = class CommentsQueryRepository {
         };
     }
     async getBuilder(userId) {
+        const bannedUsers = await this.bansRepository.getBannedUsers();
         return this.commentsTypeOrmRepository
             .createQueryBuilder('c')
             .leftJoinAndSelect('c.commentatorInfo', 'ci')
@@ -73,11 +74,13 @@ let CommentsQueryRepository = class CommentsQueryRepository {
             .leftJoin('c.likes', 'l')
             .addSelect([
             `(select COUNT(*) FROM comment_like where l."commentId" = c."id"
-         AND l."likeStatus" = 'Like') as "likesCount"`,
+         AND l."likeStatus" = 'Like'
+         AND ${bannedUsers.length ? `l."userId" NOT IN (${bannedUsers})` : 'true'}) as "likesCount"`,
         ])
             .addSelect([
             `(select COUNT(*) FROM comment_like where l."commentId" = c."id"
-         AND l."likeStatus" = 'Dislike') as "dislikesCount"`,
+         AND l."likeStatus" = 'Dislike'
+         AND ${bannedUsers.length ? `l."userId" NOT IN (${bannedUsers})` : 'true'}) as "dislikesCount"`,
         ])
             .addSelect([
             `(${userId

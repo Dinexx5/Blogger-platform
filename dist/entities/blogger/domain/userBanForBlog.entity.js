@@ -48,12 +48,12 @@ __decorate([
     __metadata("design:type", Number)
 ], UserBanForBlog.prototype, "userId", void 0);
 __decorate([
-    (0, typeorm_1.OneToOne)(() => blog_entity_1.Blog),
+    (0, typeorm_1.ManyToOne)(() => blog_entity_1.Blog),
     (0, typeorm_1.JoinColumn)(),
     __metadata("design:type", blog_entity_1.Blog)
 ], UserBanForBlog.prototype, "blog", void 0);
 __decorate([
-    (0, typeorm_1.OneToOne)(() => user_entity_1.User),
+    (0, typeorm_1.ManyToOne)(() => user_entity_1.User),
     (0, typeorm_1.JoinColumn)(),
     __metadata("design:type", user_entity_1.User)
 ], UserBanForBlog.prototype, "user", void 0);
