@@ -79,8 +79,8 @@ export class AuthController {
   @UseGuards(RateLimitGuard)
   @Post('registration-email-resending')
   async resendEmail(@Body() inputModel: ResendEmailModel, @Res() res: Response) {
-    const isEmailResent = await this.authService.resendEmail(inputModel.email);
-    if (!isEmailResent) return res.send('Can not send an email');
+    // const isEmailResent = await this.authService.resendEmail(inputModel.email);
+    // if (!isEmailResent) return res.send('Can not send an email');
     return res.sendStatus(204);
   }
 

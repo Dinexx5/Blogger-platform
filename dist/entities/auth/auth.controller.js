@@ -67,9 +67,6 @@ let AuthController = class AuthController {
         return res.sendStatus(204);
     }
     async resendEmail(inputModel, res) {
-        const isEmailResent = await this.authService.resendEmail(inputModel.email);
-        if (!isEmailResent)
-            return res.send('Can not send an email');
         return res.sendStatus(204);
     }
     async confirmEmail(inputModel, res) {

@@ -13,7 +13,6 @@ exports.BannedForBlogUserViewModel = exports.SaUserViewModel = exports.userViewM
 const class_validator_1 = require("class-validator");
 const login_exists_decorator_1 = require("../../shared/decorators/validation/login-exists.decorator");
 const email_exists_decorator_1 = require("../../shared/decorators/validation/email-exists.decorator");
-const email_resending_decorator_1 = require("../../shared/decorators/validation/email-resending.decorator");
 const confirm_email_decorator_1 = require("../../shared/decorators/validation/confirm-email.decorator");
 const class_transformer_1 = require("class-transformer");
 const password_recovery_decorator_1 = require("../../shared/decorators/validation/password-recovery.decorator");
@@ -45,7 +44,6 @@ class ResendEmailModel {
 }
 __decorate([
     (0, class_validator_1.IsEmail)(),
-    (0, email_resending_decorator_1.IsEmailConfirmed)(),
     __metadata("design:type", String)
 ], ResendEmailModel.prototype, "email", void 0);
 exports.ResendEmailModel = ResendEmailModel;
