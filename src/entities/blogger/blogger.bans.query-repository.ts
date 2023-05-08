@@ -49,11 +49,13 @@ export class BloggerBansQueryRepository {
     const subQuery = `ub.blogId = :blogId AND ${
       searchLoginTerm ? 'LOWER(ub.login) LIKE LOWER(:searchLoginTerm)' : 'true'
     }`;
+    const orderQuery = `CASE WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
+         ELSE 1 END`;
     const builder = this.userBansTypeOrmRepository
       .createQueryBuilder('ub')
       .where(subQuery, { blogId: blogId, searchLoginTerm: `%${searchLoginTerm}%` });
     const bans = await builder
-      .orderBy(`ub.${sortBy}`, sortDirectionSql)
+      .orderBy(orderQuery, sortDirectionSql)
       .limit(+pageSize)
       .offset(skippedBlogsCount)
       .getMany();

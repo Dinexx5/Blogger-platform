@@ -43,13 +43,15 @@ let BlogsSAQueryRepository = class BlogsSAQueryRepository {
         const skippedBlogsCount = (+pageNumber - 1) * +pageSize;
         const searchNameTermQuery = `${searchNameTerm ? 'LOWER(b.name) LIKE LOWER(:searchNameTerm)' : 'true'}`;
         const sortDirectionSql = sortDirection === 'desc' ? 'DESC' : 'ASC';
+        const orderQuery = `CASE WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
+         ELSE 1 END`;
         const builder = this.blogsTypeOrmRepository
             .createQueryBuilder('b')
             .leftJoinAndSelect('b.blogOwnerInfo', 'oi')
             .leftJoinAndSelect('b.banInfo', 'bi')
             .where(searchNameTermQuery, { searchNameTerm: `%${searchNameTerm}%` });
         const blogs = await builder
-            .orderBy(`b.${sortBy}`, sortDirectionSql)
+            .orderBy(orderQuery, sortDirectionSql)
             .limit(+pageSize)
             .offset(skippedBlogsCount)
             .getMany();

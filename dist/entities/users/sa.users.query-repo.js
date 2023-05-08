@@ -37,6 +37,8 @@ let SaUsersQueryRepository = class SaUsersQueryRepository {
                     ? `LOWER(u.login) LIKE LOWER(:searchLoginTerm) 
                           OR  LOWER(u.email) LIKE LOWER(:searchEmailTerm)`
                     : true})`;
+        const orderQuery = `CASE WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
+         ELSE 1 END`;
         const builder = this.usersTypeOrmRepository
             .createQueryBuilder('u')
             .leftJoinAndSelect('u.banInfo', 'bi')
@@ -46,7 +48,7 @@ let SaUsersQueryRepository = class SaUsersQueryRepository {
             searchLoginTerm: `%${searchLoginTerm}%`,
         });
         const users = await builder
-            .orderBy(`u.${sortBy}`, sortDirectionSql)
+            .orderBy(orderQuery, sortDirectionSql)
             .limit(+pageSize)
             .offset(skippedUsersCount)
             .getMany();

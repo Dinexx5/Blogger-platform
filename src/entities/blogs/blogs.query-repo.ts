@@ -50,6 +50,8 @@ export class BlogsQueryRepository {
     const searchNameTermQuery = `${
       searchNameTerm ? 'LOWER(b.name) LIKE LOWER(:searchNameTerm)' : 'true'
     }`;
+    const orderQuery = `CASE WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
+         ELSE 1 END`;
 
     const sortDirectionSql: 'ASC' | 'DESC' = sortDirection === 'desc' ? 'DESC' : 'ASC';
 
@@ -61,7 +63,7 @@ export class BlogsQueryRepository {
       .andWhere(searchNameTermQuery, { searchNameTerm: `%${searchNameTerm}%` });
 
     const blogs = await builder
-      .orderBy(`b.${sortBy}`, sortDirectionSql)
+      .orderBy(orderQuery, sortDirectionSql)
       .limit(+pageSize)
       .offset(skippedBlogsCount)
       .getMany();

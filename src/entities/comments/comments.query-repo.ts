@@ -39,13 +39,15 @@ export class CommentsQueryRepository {
     const bannedComments = await this.bansRepository.getBannedComments();
 
     const builder = await this.getBuilder(userId);
+    const orderQuery = `CASE WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
+         ELSE 1 END`;
     const subQuery = `c.id ${
       bannedComments.length ? `NOT IN (:...bannedComments)` : `IS NOT NULL`
     } AND pi.postId = :postId`;
 
     const comments = await builder
       .where(subQuery, { bannedComments: bannedComments, postId: postId })
-      .orderBy(`c.${sortBy}`, sortDirectionSql)
+      .orderBy(orderQuery, sortDirectionSql)
       .limit(+pageSize)
       .offset(skippedCommentsCount)
       .getRawMany();

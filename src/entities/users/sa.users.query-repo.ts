@@ -41,6 +41,8 @@ export class SaUsersQueryRepository {
                           OR  LOWER(u.email) LIKE LOWER(:searchEmailTerm)`
         : true
     })`;
+    const orderQuery = `CASE WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
+         ELSE 1 END`;
 
     const builder = this.usersTypeOrmRepository
       .createQueryBuilder('u')
@@ -52,7 +54,7 @@ export class SaUsersQueryRepository {
       });
 
     const users = await builder
-      .orderBy(`u.${sortBy}`, sortDirectionSql)
+      .orderBy(orderQuery, sortDirectionSql)
       .limit(+pageSize)
       .offset(skippedUsersCount)
       .getMany();

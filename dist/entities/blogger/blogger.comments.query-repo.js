@@ -53,6 +53,8 @@ let BloggerCommentsQueryRepository = class BloggerCommentsQueryRepository {
         const allPosts = await this.postsRepository.findPostsForUser(allBlogs);
         const sortDirectionSql = sortDirection === 'desc' ? 'DESC' : 'ASC';
         const subQuery = `${allPosts.length ? `pi.postId IN (:...allPosts)` : `false`}`;
+        const orderQuery = `CASE WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
+         ELSE 1 END`;
         const builder = this.commentsTypeOrmRepository
             .createQueryBuilder('c')
             .leftJoinAndSelect('c.commentatorInfo', 'ci')
@@ -72,7 +74,7 @@ let BloggerCommentsQueryRepository = class BloggerCommentsQueryRepository {
         ])
             .where(subQuery, { allPosts: allPosts });
         const comments = await builder
-            .orderBy(`c.${sortBy}`, sortDirectionSql)
+            .orderBy(orderQuery, sortDirectionSql)
             .limit(+pageSize)
             .offset(skippedCommentsCount)
             .getRawMany();

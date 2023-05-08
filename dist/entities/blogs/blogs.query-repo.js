@@ -43,6 +43,8 @@ let BlogsQueryRepository = class BlogsQueryRepository {
         const bannedSubQuery = `${allBannedBlogs.length ? 'b.id NOT IN (:...allBannedBlogs)' : 'b.id IS NOT NULL'}`;
         const userIdSubQuery = `${userId ? 'oi.userId = :userId' : 'true'}`;
         const searchNameTermQuery = `${searchNameTerm ? 'LOWER(b.name) LIKE LOWER(:searchNameTerm)' : 'true'}`;
+        const orderQuery = `CASE WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
+         ELSE 1 END`;
         const sortDirectionSql = sortDirection === 'desc' ? 'DESC' : 'ASC';
         const builder = this.blogsTypeOrmRepository
             .createQueryBuilder('b')
@@ -51,7 +53,7 @@ let BlogsQueryRepository = class BlogsQueryRepository {
             .andWhere(userIdSubQuery, { userId: userId })
             .andWhere(searchNameTermQuery, { searchNameTerm: `%${searchNameTerm}%` });
         const blogs = await builder
-            .orderBy(`b.${sortBy}`, sortDirectionSql)
+            .orderBy(orderQuery, sortDirectionSql)
             .limit(+pageSize)
             .offset(skippedBlogsCount)
             .getMany();

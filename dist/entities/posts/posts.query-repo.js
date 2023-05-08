@@ -52,10 +52,12 @@ let PostsQueryRepository = class PostsQueryRepository {
         const allBannedPosts = bannedPosts.concat(bannedPostsFromUsers);
         const subQuery = `p.id ${allBannedPosts.length ? `NOT IN (:...allBannedPosts)` : `IS NOT NULL`} 
     AND (${blogId ? `p.blogId = :blogId` : true})`;
+        const orderQuery = `CASE WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
+         ELSE 1 END`;
         const builder = await this.getBuilder(userId);
         const posts = await builder
             .where(subQuery, { allBannedPosts: allBannedPosts, blogId: blogId })
-            .orderBy(`p.${sortBy}`, sortDirectionSql)
+            .orderBy(orderQuery, sortDirectionSql)
             .limit(+pageSize)
             .offset(skippedPostsCount)
             .getRawMany();
