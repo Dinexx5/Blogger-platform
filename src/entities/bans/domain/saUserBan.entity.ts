@@ -16,13 +16,13 @@ export class SaUserBan {
   banReason: string;
   @Column()
   login: string;
-  @Column('text', { array: true })
-  bannedBlogsIds: string[];
-  @Column('text', { array: true })
-  bannedPostsIds: string[];
-  @Column('text', { array: true })
-  bannedCommentsIds: string[];
-  @PrimaryGeneratedColumn()
+  @Column('int', { array: true })
+  bannedBlogsIds: number[];
+  @Column('int', { array: true })
+  bannedPostsIds: number[];
+  @Column('int', { array: true })
+  bannedCommentsIds: number[];
+  @PrimaryColumn()
   userId: number;
   @OneToOne(() => User)
   @JoinColumn()

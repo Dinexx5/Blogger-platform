@@ -17,7 +17,6 @@ const users_repository_1 = require("../../../users/users.repository");
 const bans_repository_1 = require("../../bans.repository");
 const blogs_repository_1 = require("../../../blogs/blogs.repository");
 const posts_repository_1 = require("../../../posts/posts.repository");
-const comments_repository_1 = require("../../../comments/comments.repository");
 const cqrs_1 = require("@nestjs/cqrs");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
@@ -25,6 +24,7 @@ const banInfo_entity_1 = require("../../../users/domain/banInfo.entity");
 const token_entity_1 = require("../../../tokens/domain/token.entity");
 const device_entity_1 = require("../../../devices/domain/device.entity");
 const saUserBan_entity_1 = require("../../domain/saUserBan.entity");
+const comments_repository_1 = require("../../../comments/comments.repository");
 class BansUserCommand {
     constructor(userId, inputModel) {
         this.userId = userId;
@@ -61,14 +61,17 @@ let BansUserUseCase = class BansUserUseCase {
             await this.userBanInfoRepository.save(userBanInfo);
             await this.devicesRepository.delete({ userId: userId });
             await this.tokenRepository.delete({ userId: userId });
+            const bannedBlogsIds = await this.blogsRepository.findBlogsForUser(userId);
+            const bannedPostsIds = await this.postsRepository.findPostsForUser(bannedBlogsIds);
+            const bannedCommentsIds = await this.commentsRepository.findBannedComments(userId);
             const ban = await this.bansTypeOrmRepository.create();
             ban.userId = userId;
             ban.login = login;
             ban.isBanned = true;
             ban.banReason = inputModel.banReason;
-            ban.bannedBlogsIds = [];
-            ban.bannedPostsIds = [];
-            ban.bannedCommentsIds = [];
+            ban.bannedBlogsIds = bannedBlogsIds;
+            ban.bannedPostsIds = bannedPostsIds;
+            ban.bannedCommentsIds = bannedCommentsIds;
             await this.bansTypeOrmRepository.save(ban);
             return;
         }

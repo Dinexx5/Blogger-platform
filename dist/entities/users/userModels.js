@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BannedForBlogUserViewModel = exports.SaUserViewModel = exports.userViewModel = exports.UserFromSqlRepo = exports.SaUserFromSqlRepo = exports.UserToBanParamModel = exports.UserParamModel = exports.BanUserModelForBlog = exports.BanModel = exports.NewPasswordModel = exports.ConfirmEmailModel = exports.PasswordRecoveryModel = exports.ResendEmailModel = exports.CreateUserModel = void 0;
+exports.BannedForBlogUserViewModel = exports.SaUserViewModel = exports.userViewModel = exports.UserToBanParamModel = exports.UserParamModel = exports.BanUserModelForBlog = exports.BanModel = exports.NewPasswordModel = exports.ConfirmEmailModel = exports.PasswordRecoveryModel = exports.ResendEmailModel = exports.CreateUserModel = void 0;
 const class_validator_1 = require("class-validator");
 const login_exists_decorator_1 = require("../../shared/decorators/validation/login-exists.decorator");
 const email_exists_decorator_1 = require("../../shared/decorators/validation/email-exists.decorator");
@@ -118,7 +118,7 @@ exports.BanUserModelForBlog = BanUserModelForBlog;
 class UserParamModel {
 }
 __decorate([
-    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_transformer_1.Transform)(({ value }) => +value),
     (0, user_exists_decorator_1.IsUserExists)(),
     __metadata("design:type", Number)
 ], UserParamModel.prototype, "userId", void 0);
@@ -126,16 +126,11 @@ exports.UserParamModel = UserParamModel;
 class UserToBanParamModel {
 }
 __decorate([
-    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_transformer_1.Transform)(({ value }) => +value),
+    (0, user_exists_decorator_1.IsUserExists)(),
     __metadata("design:type", Number)
 ], UserToBanParamModel.prototype, "userId", void 0);
 exports.UserToBanParamModel = UserToBanParamModel;
-class SaUserFromSqlRepo {
-}
-exports.SaUserFromSqlRepo = SaUserFromSqlRepo;
-class UserFromSqlRepo {
-}
-exports.UserFromSqlRepo = UserFromSqlRepo;
 class userViewModel {
     constructor(id, login, email, createdAt) {
         this.id = id;

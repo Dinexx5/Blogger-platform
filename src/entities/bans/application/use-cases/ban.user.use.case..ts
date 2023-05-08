@@ -1,11 +1,8 @@
 import { UsersRepository } from '../../../users/users.repository';
 import { BanModel } from '../../../users/userModels';
 import { BansRepository } from '../../bans.repository';
-import { DevicesRepository } from '../../../devices/devices.repository';
-import { TokenRepository } from '../../../tokens/token.repository';
 import { BlogsRepository } from '../../../blogs/blogs.repository';
 import { PostsRepository } from '../../../posts/posts.repository';
-import { CommentsRepository } from '../../../comments/comments.repository';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../../../users/domain/user.entity';
@@ -14,6 +11,7 @@ import { UserBanInfo } from '../../../users/domain/banInfo.entity';
 import { Token } from '../../../tokens/domain/token.entity';
 import { Device } from '../../../devices/domain/device.entity';
 import { SaUserBan } from '../../domain/saUserBan.entity';
+import { CommentsRepository } from '../../../comments/comments.repository';
 
 export class BansUserCommand {
   constructor(public userId: number, public inputModel: BanModel) {}
@@ -52,17 +50,17 @@ export class BansUserUseCase implements ICommandHandler<BansUserCommand> {
       await this.userBanInfoRepository.save(userBanInfo);
       await this.devicesRepository.delete({ userId: userId });
       await this.tokenRepository.delete({ userId: userId });
-      // const bannedBlogsIds = await this.blogsRepository.findBlogsForUser(userId);
-      // const bannedPostsIds = await this.postsRepository.findPostsForUser(bannedBlogsIds);
-      // const bannedCommentsIds = await this.commentsRepository.findBannedComments(userId);
+      const bannedBlogsIds = await this.blogsRepository.findBlogsForUser(userId);
+      const bannedPostsIds = await this.postsRepository.findPostsForUser(bannedBlogsIds);
+      const bannedCommentsIds = await this.commentsRepository.findBannedComments(userId);
       const ban = await this.bansTypeOrmRepository.create();
       ban.userId = userId;
       ban.login = login;
       ban.isBanned = true;
       ban.banReason = inputModel.banReason;
-      ban.bannedBlogsIds = [];
-      ban.bannedPostsIds = [];
-      ban.bannedCommentsIds = [];
+      ban.bannedBlogsIds = bannedBlogsIds;
+      ban.bannedPostsIds = bannedPostsIds;
+      ban.bannedCommentsIds = bannedCommentsIds;
       await this.bansTypeOrmRepository.save(ban);
       return;
     }

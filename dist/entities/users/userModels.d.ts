@@ -31,22 +31,6 @@ export declare class UserParamModel {
 export declare class UserToBanParamModel {
     userId: number;
 }
-export declare class SaUserFromSqlRepo {
-    id: number;
-    login: string;
-    email: string;
-    createdAt: string;
-    isBanned: boolean;
-    banDate: string;
-    banReason: string;
-}
-export declare class UserFromSqlRepo {
-    id: number;
-    login: string;
-    email: string;
-    passwordHash: string;
-    createdAt: string;
-}
 export declare class userViewModel {
     id: string;
     login: string;

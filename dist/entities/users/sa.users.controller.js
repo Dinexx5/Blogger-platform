@@ -18,6 +18,7 @@ const users_service_1 = require("./users.service");
 const auth_guard_1 = require("../auth/guards/auth.guard");
 const userModels_1 = require("./userModels");
 const sa_users_query_repo_1 = require("./sa.users.query-repo");
+const param_integer_guard_1 = require("../auth/guards/param.integer.guard");
 let UsersSAController = class UsersSAController {
     constructor(usersService, saUsersQueryRepository) {
         this.usersService = usersService;
@@ -56,7 +57,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UsersSAController.prototype, "createUser", null);
 __decorate([
-    (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
+    (0, common_1.UseGuards)(auth_guard_1.AuthGuard, param_integer_guard_1.isUserIdIntegerGuard),
     (0, common_1.Delete)(':userId'),
     __param(0, (0, common_1.Param)('userId', common_1.ParseIntPipe)),
     __param(1, (0, common_1.Res)()),

@@ -8,7 +8,6 @@ import {
 import { Injectable } from '@nestjs/common';
 import { BlogsRepository } from '../../../entities/blogs/blogs.repository';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Comment } from '../../../entities/comments/domain/comment.entity';
 import { Repository } from 'typeorm';
 import { BlogOwnerInfo } from '../../../entities/blogs/domain/blogOwner.entity';
 

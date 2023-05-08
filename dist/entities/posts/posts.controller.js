@@ -32,8 +32,8 @@ let PostsController = class PostsController {
         const returnedPosts = await this.postsQueryRepository.getAllPosts(paginationQuery, undefined, userId);
         return returnedPosts;
     }
-    async getPost(userId, id, res) {
-        const post = await this.postsQueryRepository.findPostById(id, userId);
+    async getPost(userId, postId, res) {
+        const post = await this.postsQueryRepository.findPostById(postId, userId);
         if (!post) {
             return res.sendStatus(404);
         }
@@ -73,21 +73,21 @@ __decorate([
     (0, common_1.UseGuards)(getuser_guard_1.GetUserGuard, param_postId_isinteger_guard_1.isPostIdIntegerGuard),
     (0, common_1.Get)(':postId'),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
-    __param(1, (0, common_1.Param)('postId')),
+    __param(1, (0, common_1.Param)('postId', common_1.ParseIntPipe)),
     __param(2, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, Object]),
+    __metadata("design:paramtypes", [Object, Number, Object]),
     __metadata("design:returntype", Promise)
 ], PostsController.prototype, "getPost", null);
 __decorate([
     (0, common_1.UseGuards)(getuser_guard_1.GetUserGuard, param_postId_isinteger_guard_1.isPostIdIntegerGuard),
     (0, common_1.Get)(':postId/comments'),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
-    __param(1, (0, common_1.Param)('postId')),
+    __param(1, (0, common_1.Param)('postId', common_1.ParseIntPipe)),
     __param(2, (0, common_1.Query)()),
     __param(3, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, Object, Object]),
+    __metadata("design:paramtypes", [Object, Number, Object, Object]),
     __metadata("design:returntype", Promise)
 ], PostsController.prototype, "getComments", null);
 __decorate([

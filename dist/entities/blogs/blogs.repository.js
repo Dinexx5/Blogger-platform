@@ -29,8 +29,7 @@ let BlogsRepository = class BlogsRepository {
     }
     async findBlogsForUser(userId) {
         const blogs = await this.blogOwnerInfoTypeOrmRepository.findBy({ userId: userId });
-        const blogsIds = blogs.map((blog) => blog.blogId);
-        return blogsIds;
+        return blogs.map((blog) => blog.blogId);
     }
 };
 BlogsRepository = __decorate([

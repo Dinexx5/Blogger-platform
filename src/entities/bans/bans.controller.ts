@@ -12,7 +12,7 @@ export class BansController {
   @UseGuards(AuthGuard, isUserIdIntegerGuard)
   @Put(':userId/ban')
   async banUser(
-    @Param('userId', ParseIntPipe) param: UserParamModel,
+    @Param() param: UserParamModel,
     @Body() inputModel: BanModel,
     @Res() res: Response,
   ) {

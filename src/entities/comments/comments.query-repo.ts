@@ -1,25 +1,25 @@
 import { paginatedViewModel, paginationQuerys } from '../../shared/models/pagination';
 import { BansRepository } from '../bans/bans.repository';
-import { CommentsLikesRepository } from '../likes/comments.likes.repository';
 import { CommentViewModel } from './comments.models';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Comment } from './domain/comment.entity';
 
 export class CommentsQueryRepository {
   constructor(
     protected bansRepository: BansRepository,
-    protected commentsLikesRepository: CommentsLikesRepository,
-    @InjectDataSource() protected dataSource: DataSource,
+    @InjectRepository(Comment)
+    private readonly commentsTypeOrmRepository: Repository<Comment>,
   ) {}
   mapperToCommentViewModel(comment): CommentViewModel {
     return {
-      id: comment.id.toString(),
-      content: comment.content,
+      id: comment.c_id.toString(),
+      content: comment.c_content,
       commentatorInfo: {
-        userId: comment.userId.toString(),
-        userLogin: comment.userLogin,
+        userId: comment.ci_userId.toString(),
+        userLogin: comment.ci_userLogin,
       },
-      createdAt: comment.createdAt,
+      createdAt: comment.c_createdAt,
       likesInfo: {
         likesCount: comment.likesCount,
         dislikesCount: comment.dislikesCount,
@@ -29,52 +29,27 @@ export class CommentsQueryRepository {
   }
   async getAllCommentsForPost(
     query: paginationQuerys,
-    postId: string,
-    userId?: string | null,
+    postId: number,
+    userId?: number | null,
   ): Promise<paginatedViewModel<CommentViewModel[]>> {
     const { sortDirection = 'desc', sortBy = 'createdAt', pageNumber = 1, pageSize = 10 } = query;
 
-    const skippedCommentsNumber = (+pageNumber - 1) * +pageSize;
+    const skippedCommentsCount = (+pageNumber - 1) * +pageSize;
+    const sortDirectionSql: 'ASC' | 'DESC' = sortDirection === 'desc' ? 'DESC' : 'ASC';
     const bannedComments = await this.bansRepository.getBannedComments();
-    console.log(bannedComments);
 
-    const subQuery = `"id" ${bannedComments.length ? `NOT IN (${bannedComments})` : `IS NOT NULL`}
-    AND "postId" = ${postId}`;
+    const builder = await this.getBuilder(userId);
+    const subQuery = `c.id ${
+      bannedComments.length ? `NOT IN (:...bannedComments)` : `IS NOT NULL`
+    } AND pi.postId = :postId`;
 
-    const selectQuery = `SELECT c.*, pi."postId", ci."userId", ci."userLogin",
-                                CASE
-                                 WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
-                                 ELSE 1
-                                END toOrder
-                    FROM "Comments" c 
-                    LEFT JOIN "PostInfoForComment" pi
-                    ON c."id" = pi."commentId"
-                    LEFT JOIN "CommentatorInfo" ci
-                    ON c."id" = ci."commentId"
-                    WHERE ${subQuery}
-                    ORDER BY toOrder,
-                      CASE when $1 = 'desc' then "${sortBy}" END DESC,
-                      CASE when $1 = 'asc' then "${sortBy}" END ASC
-                    LIMIT $2
-                    OFFSET $3
-                    `;
-    const counterQuery = `SELECT COUNT(*)
-                    FROM "Comments" c 
-                    LEFT JOIN "PostInfoForComment" pi
-                    ON c."id" = pi."commentId"
-                    LEFT JOIN "CommentatorInfo" ci
-                    ON c."id" = ci."commentId" 
-                    WHERE ${subQuery}`;
-
-    const counter = await this.dataSource.query(counterQuery);
-    const count = counter[0].count;
-    const comments = await this.dataSource.query(selectQuery, [
-      sortDirection,
-      pageSize,
-      skippedCommentsNumber,
-    ]);
-
-    await this.countLikesForComments(comments, userId);
+    const comments = await builder
+      .where(subQuery, { bannedComments: bannedComments, postId: postId })
+      .orderBy(`c.${sortBy}`, sortDirectionSql)
+      .limit(+pageSize)
+      .offset(skippedCommentsCount)
+      .getRawMany();
+    const count = comments.length;
 
     const commentsView = comments.map(this.mapperToCommentViewModel);
     return {
@@ -85,64 +60,36 @@ export class CommentsQueryRepository {
       items: commentsView,
     };
   }
-  async countLikesForComments(comments, userId?: string) {
-    for (const comment of comments) {
-      const foundLikes = await this.commentsLikesRepository.findLikesForComment(
-        comment.id.toString(),
-      );
-      if (userId) {
-        const likeOfUser = foundLikes.find((like) => like.userId.toString() === userId);
-        if (likeOfUser) {
-          comment.myStatus = likeOfUser.likeStatus;
-        }
-      }
-      const likesCount = foundLikes.filter((like) => like.likeStatus === 'Like').length;
-      const dislikesCount = foundLikes.filter((like) => like.likeStatus === 'Dislike').length;
-      comment.likesCount = likesCount;
-      comment.dislikesCount = dislikesCount;
-    }
-  }
-  async countLikesForComment(comment, userId?: string) {
-    const foundLikes = await this.commentsLikesRepository.findLikesForComment(
-      comment.id.toString(),
-    );
-    if (userId) {
-      const likeOfUser = foundLikes.find((like) => like.userId.toString() === userId);
-      if (likeOfUser) {
-        comment.myStatus = likeOfUser.likeStatus;
-      }
-    }
-    const likesCount = foundLikes.filter((like) => like.likeStatus === 'Like').length;
-    const dislikesCount = foundLikes.filter((like) => like.likeStatus === 'Dislike').length;
-    comment.likesCount = likesCount;
-    comment.dislikesCount = dislikesCount;
+  async getBuilder(userId?: number) {
+    return this.commentsTypeOrmRepository
+      .createQueryBuilder('c')
+      .leftJoinAndSelect('c.commentatorInfo', 'ci')
+      .leftJoinAndSelect('c.postInfo', 'pi')
+      .leftJoin('c.likes', 'l')
+      .addSelect([
+        `(select COUNT(*) FROM comment_like where l."commentId" = c."id" AND l."likeStatus" = 'Like') as "likesCount"`,
+      ])
+      .addSelect([
+        `(select COUNT(*) FROM comment_like where l."commentId" = c."id" AND l."likeStatus" = 'Dislike') as "dislikesCount"`,
+      ])
+      .addSelect([
+        `(${
+          userId
+            ? `select l."likeStatus" FROM comment_like where l."commentId" = c."id" AND l."userId" = ${userId}`
+            : 'false'
+        }) as "myStatus"`,
+      ]);
   }
 
   async findCommentById(
-    commentId: string,
-    userId?: string | null,
+    commentId: number,
+    userId?: number | null,
   ): Promise<CommentViewModel | null> {
     const bannedComments = await this.bansRepository.getBannedComments();
-    const bannedCommentsStrings = bannedComments.map((commentId) => commentId.toString());
-    const foundComment = await this.dataSource.query(
-      `
-          SELECT c.*, pi."postId", ci."userId", ci."userLogin"
-                    FROM "Comments" c 
-                    LEFT JOIN "PostInfoForComment" pi
-                    ON c."id" = pi."commentId"
-                    LEFT JOIN "CommentatorInfo" ci
-                    ON c."id" = ci."commentId"
-          WHERE "id" = $1
-      `,
-      [commentId],
-    );
-    if (!foundComment.length) {
-      return null;
-    }
-    if (bannedCommentsStrings.includes(foundComment[0].id.toString())) {
-      return null;
-    }
-    await this.countLikesForComment(foundComment[0], userId);
-    return this.mapperToCommentViewModel(foundComment[0]);
+    const builder = await this.getBuilder(userId);
+    const comment = await builder.where('c.id = :commentId', { commentId: commentId }).getRawOne();
+    if (!comment) return null;
+    if (bannedComments.includes(comment.c_id)) return null;
+    return this.mapperToCommentViewModel(comment);
   }
 }

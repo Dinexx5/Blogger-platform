@@ -1,16 +1,14 @@
 import { paginatedViewModel, paginationQuerys } from '../../shared/models/pagination';
 import { BansRepository } from '../bans/bans.repository';
-import { CommentsLikesRepository } from '../likes/comments.likes.repository';
 import { CommentViewModel } from './comments.models';
-import { DataSource } from 'typeorm';
+import { Repository } from 'typeorm';
+import { Comment } from './domain/comment.entity';
 export declare class CommentsQueryRepository {
     protected bansRepository: BansRepository;
-    protected commentsLikesRepository: CommentsLikesRepository;
-    protected dataSource: DataSource;
-    constructor(bansRepository: BansRepository, commentsLikesRepository: CommentsLikesRepository, dataSource: DataSource);
+    private readonly commentsTypeOrmRepository;
+    constructor(bansRepository: BansRepository, commentsTypeOrmRepository: Repository<Comment>);
     mapperToCommentViewModel(comment: any): CommentViewModel;
-    getAllCommentsForPost(query: paginationQuerys, postId: string, userId?: string | null): Promise<paginatedViewModel<CommentViewModel[]>>;
-    countLikesForComments(comments: any, userId?: string): Promise<void>;
-    countLikesForComment(comment: any, userId?: string): Promise<void>;
-    findCommentById(commentId: string, userId?: string | null): Promise<CommentViewModel | null>;
+    getAllCommentsForPost(query: paginationQuerys, postId: number, userId?: number | null): Promise<paginatedViewModel<CommentViewModel[]>>;
+    getBuilder(userId?: number): Promise<import("typeorm").SelectQueryBuilder<Comment>>;
+    findCommentById(commentId: number, userId?: number | null): Promise<CommentViewModel | null>;
 }

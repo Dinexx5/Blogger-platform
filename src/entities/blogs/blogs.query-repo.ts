@@ -1,9 +1,9 @@
 import { paginatedViewModel, paginationQuerys } from '../../shared/models/pagination';
-import { BlogSAViewModel, BlogViewModel } from './blogs.models';
+import { BlogViewModel } from './blogs.models';
 import { BansRepository } from '../bans/bans.repository';
 import { BlogBansRepository } from '../bans/bans.blogs.repository';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { Blog } from './domain/blog.entity';
 
 export class BlogsQueryRepository {
@@ -43,7 +43,7 @@ export class BlogsQueryRepository {
 
     const builder = this.blogsTypeOrmRepository
       .createQueryBuilder('b')
-      .leftJoinAndSelect('b.ownerInfo', 'oi');
+      .leftJoinAndSelect('b.blogOwnerInfo', 'oi');
 
     const bannedSubQuery = `${
       allBannedBlogs.length ? 'b.id NOT IN (:...allBannedBlogs)' : 'b.id IS NOT NULL'

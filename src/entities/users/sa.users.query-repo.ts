@@ -1,10 +1,14 @@
 import { paginatedViewModel, paginationQuerysSA } from '../../shared/models/pagination';
-import { SaUserViewModel, SaUserFromSqlRepo } from './userModels';
-import { DataSource } from 'typeorm';
-import { InjectDataSource } from '@nestjs/typeorm';
+import { SaUserViewModel } from './userModels';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from './domain/user.entity';
 
 export class SaUsersQueryRepository {
-  constructor(@InjectDataSource() protected dataSource: DataSource) {}
+  constructor(
+    @InjectRepository(User)
+    private readonly usersTypeOrmRepository: Repository<User>,
+  ) {}
   async getAllUsers(query: paginationQuerysSA): Promise<paginatedViewModel<SaUserViewModel[]>> {
     const {
       sortDirection = 'desc',
@@ -17,51 +21,41 @@ export class SaUsersQueryRepository {
     } = query;
 
     const skippedUsersCount = (+pageNumber - 1) * +pageSize;
+    const sortDirectionSql: 'ASC' | 'DESC' = sortDirection === 'desc' ? 'DESC' : 'ASC';
 
-    const subQuery = `(${
+    const builder = this.usersTypeOrmRepository
+      .createQueryBuilder('u')
+      .leftJoinAndSelect('u.banInfo', 'bi');
+
+    const bannedSubQuery = `${
       banStatus && banStatus !== 'all'
         ? `
-          ${banStatus === 'banned' ? `"isBanned" IS TRUE` : `"isBanned" IS FALSE`}
-          `
-        : '"isBanned" IS TRUE OR "isBanned" IS FALSE'
-    }) AND (${
+          ${banStatus === 'banned' ? `bi."isBanned" = true` : `bi."isBanned" = false`}
+      `
+        : `"isBanned" = true OR "isBanned" = false`
+    }`;
+
+    const searchTermQuery = `(${
       searchLoginTerm && !searchEmailTerm
-        ? `LOWER("login") LIKE '%' || LOWER('${searchLoginTerm}') || '%'`
+        ? `LOWER(u.login) LIKE LOWER(:searchLoginTerm)`
         : !searchLoginTerm && searchEmailTerm
-        ? `LOWER("email") LIKE '%' || LOWER('${searchEmailTerm}') || '%'`
+        ? `LOWER(u.email) LIKE LOWER(:searchEmailTerm)`
         : searchLoginTerm && searchEmailTerm
-        ? `LOWER("login") LIKE '%' || LOWER('${searchLoginTerm}') || '%' 
-                          OR  LOWER("email") LIKE '%' || LOWER('${searchEmailTerm}') || '%'`
+        ? `LOWER(u.login) LIKE LOWER(:searchLoginTerm) 
+                          OR  LOWER(u.email) LIKE LOWER(:searchEmailTerm)`
         : true
     })`;
-
-    const selectQuery = `SELECT u.*, b."isBanned",b."banDate",b."banReason",
-                                CASE
-                                 WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
-                                 ELSE 1
-                                END toOrder
-                    FROM "Users" u
-                    LEFT JOIN "BanInfo" b
-                    ON u."id" = b."userId"
-                    WHERE ${subQuery}
-                    ORDER BY toOrder,
-                      CASE when $1 = 'desc' then "${sortBy}" END DESC,
-                      CASE when $1 = 'asc' then "${sortBy}" END ASC
-                    LIMIT $2
-                    OFFSET $3
-                    `;
-    const counterQuery = `SELECT COUNT(*)
-                    FROM "Users" u
-                    LEFT JOIN "BanInfo" b
-                    ON u."id" = b."userId"
-                    WHERE ${subQuery}`;
-    const counter = await this.dataSource.query(counterQuery);
-    const count = counter[0].count;
-    const users = await this.dataSource.query(selectQuery, [
-      sortDirection,
-      pageSize,
-      skippedUsersCount,
-    ]);
+    const users = await builder
+      .where(bannedSubQuery)
+      .andWhere(searchTermQuery, {
+        searchEmailTerm: `%${searchEmailTerm}%`,
+        searchLoginTerm: `%${searchLoginTerm}%`,
+      })
+      .orderBy(`u.${sortBy}`, sortDirectionSql)
+      .limit(+pageSize)
+      .offset(skippedUsersCount)
+      .getMany();
+    const count = users.length;
     const usersView = users.map(this.mapDbUserToUserViewModel);
     return {
       pagesCount: Math.ceil(+count / +pageSize),
@@ -71,16 +65,16 @@ export class SaUsersQueryRepository {
       items: usersView,
     };
   }
-  mapDbUserToUserViewModel(user: SaUserFromSqlRepo): SaUserViewModel {
+  mapDbUserToUserViewModel(user): SaUserViewModel {
     return {
       id: user.id.toString(),
       login: user.login,
       email: user.email,
       createdAt: user.createdAt,
       banInfo: {
-        isBanned: user.isBanned,
-        banDate: user.banDate,
-        banReason: user.banReason,
+        isBanned: user.banInfo.isBanned,
+        banDate: user.banInfo.banDate,
+        banReason: user.banInfo.banReason,
       },
     };
   }

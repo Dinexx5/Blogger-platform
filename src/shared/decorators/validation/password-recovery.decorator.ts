@@ -6,24 +6,29 @@ import {
   ValidationArguments,
 } from 'class-validator';
 import { Injectable } from '@nestjs/common';
-import { UsersRepository } from '../../../entities/users/users.repository';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { PasswordRecoveryInfo } from '../../../entities/users/domain/passwordRecovery.entity';
 
 @ValidatorConstraint({ name: 'recoveryCode', async: true })
 @Injectable()
 export class IsRecoveryCodeCorrect implements ValidatorConstraintInterface {
-  constructor(protected usersRepository: UsersRepository) {}
+  constructor(
+    @InjectRepository(PasswordRecoveryInfo)
+    private readonly passwordRecoveryRepository: Repository<PasswordRecoveryInfo>,
+  ) {}
   async validate(code: string, args: ValidationArguments) {
-    const user = await this.usersRepository.findUserByRecoveryCode(code);
-    if (!user) {
+    const recoveryInfo = await this.passwordRecoveryRepository.findOneBy({ recoveryCode: code });
+    if (!recoveryInfo) {
       return false;
     }
-    if (!user.expirationDate) {
+    if (!recoveryInfo.expirationDate) {
       return false;
     }
-    if (user.recoveryCode !== code) {
+    if (recoveryInfo.recoveryCode !== code) {
       return false;
     }
-    if (user.expirationDate < new Date()) {
+    if (recoveryInfo.expirationDate < new Date()) {
       return false;
     }
     return true;

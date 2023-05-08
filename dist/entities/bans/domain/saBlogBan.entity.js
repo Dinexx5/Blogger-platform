@@ -19,7 +19,7 @@ __decorate([
     __metadata("design:type", Boolean)
 ], SaBlogBan.prototype, "isBanned", void 0);
 __decorate([
-    (0, typeorm_1.Column)('text', { array: true }),
+    (0, typeorm_1.Column)('int', { array: true }),
     __metadata("design:type", Array)
 ], SaBlogBan.prototype, "bannedPostsIds", void 0);
 __decorate([

@@ -53,8 +53,8 @@ export class BloggerBansQueryRepository {
     }`;
     const sortDirectionSql: 'ASC' | 'DESC' = sortDirection === 'desc' ? 'DESC' : 'ASC';
     const bans = await builder
-      .where(subQuery, { blogId: blogId, searchLoginTerm: searchLoginTerm })
-      .orderBy(`b.${sortBy}`, sortDirectionSql)
+      .where(subQuery, { blogId: blogId, searchLoginTerm: `%${searchLoginTerm}%` })
+      .orderBy(`ub.${sortBy}`, sortDirectionSql)
       .limit(+pageSize)
       .offset(skippedBlogsCount)
       .getMany();

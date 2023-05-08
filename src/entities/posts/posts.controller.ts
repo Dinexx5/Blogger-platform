@@ -39,8 +39,12 @@ export class PostsController {
   }
   @UseGuards(GetUserGuard, isPostIdIntegerGuard)
   @Get(':postId')
-  async getPost(@CurrentUser() userId, @Param('postId') id: string, @Res() res: Response) {
-    const post = await this.postsQueryRepository.findPostById(id, userId);
+  async getPost(
+    @CurrentUser() userId,
+    @Param('postId', ParseIntPipe) postId: number,
+    @Res() res: Response,
+  ) {
+    const post = await this.postsQueryRepository.findPostById(postId, userId);
     if (!post) {
       return res.sendStatus(404);
     }
@@ -50,7 +54,7 @@ export class PostsController {
   @Get(':postId/comments')
   async getComments(
     @CurrentUser() userId,
-    @Param('postId') postId: string,
+    @Param('postId', ParseIntPipe) postId: number,
     @Query() paginationQuery: paginationQuerys,
     @Res() res: Response,
   ) {

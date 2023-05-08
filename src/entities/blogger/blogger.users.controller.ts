@@ -35,7 +35,7 @@ export class BloggerUsersController {
   @Put(':userId/ban')
   async banUser(
     @CurrentUser() ownerId,
-    @Param('userId', ParseIntPipe) param: UserToBanParamModel,
+    @Param() param: UserToBanParamModel,
     @Body() inputModel: BanUserModelForBlog,
     @Res() res: Response,
   ) {
@@ -52,7 +52,7 @@ export class BloggerUsersController {
     const returnedUsers: paginatedViewModel<BannedForBlogUserViewModel[]> =
       await this.bloggerQueryRepository.getAllBannedUsersForBlog(
         paginationQuery,
-        +param.blogId,
+        param.blogId,
         userId,
       );
     return returnedUsers;

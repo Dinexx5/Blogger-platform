@@ -56,6 +56,7 @@ export class BanUserForBlogUseCase implements ICommandHandler<BanUserForBlogComm
       ban.banReason = inputModel.banReason;
       ban.banDate = new Date().toISOString();
       ban.bannedPostsIds = bannedPostsIds;
+      await this.usersBansForBlogsRepository.save(ban);
       return;
     }
     const ban = await this.usersBansForBlogsRepository.findOneBy({

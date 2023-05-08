@@ -18,7 +18,6 @@ let IsUserExistsDecorator = class IsUserExistsDecorator {
         this.usersRepository = usersRepository;
     }
     async validate(userId, args) {
-        console.log(userId);
         const userInstance = await this.usersRepository.findUserById(userId);
         if (!userInstance)
             return false;

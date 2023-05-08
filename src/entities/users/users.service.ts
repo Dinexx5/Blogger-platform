@@ -3,7 +3,7 @@ import { UsersRepository } from './users.repository';
 import { v4 as uuidv4 } from 'uuid';
 import { add, addDays } from 'date-fns';
 import * as bcrypt from 'bcrypt';
-import { CreateUserModel, NewPasswordModel, SaUserViewModel, UserFromSqlRepo } from './userModels';
+import { CreateUserModel, NewPasswordModel, SaUserViewModel } from './userModels';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './domain/user.entity';
 import { Repository } from 'typeorm';
@@ -81,9 +81,7 @@ export class UsersService {
     return true;
   }
   async checkConfirmation(userId: number): Promise<boolean> {
-    console.log(userId);
     const confirmationInfo = await this.emailConfirmationRepository.findOneBy({ userId: userId });
-    console.log(confirmationInfo);
     return confirmationInfo.isConfirmed;
   }
   async generateHash(password: string) {

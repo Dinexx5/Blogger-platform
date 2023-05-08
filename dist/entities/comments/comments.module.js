@@ -23,8 +23,6 @@ const ban_user_use_case_1 = require("../bans/application/use-cases/ban.user.use.
 const bans_repository_1 = require("../bans/bans.repository");
 const devices_module_1 = require("../devices/devices.module");
 const token_module_1 = require("../tokens/token.module");
-const comments_likes_repository_1 = require("../likes/comments.likes.repository");
-const posts_likes_repository_1 = require("../likes/posts.likes.repository");
 const bans_blogs_repository_1 = require("../bans/bans.blogs.repository");
 const cqrs_1 = require("@nestjs/cqrs");
 const bans_users_for_blog_repository_1 = require("../bans/bans.users-for-blog.repository");
@@ -82,8 +80,6 @@ CommentsModule = __decorate([
             ban_user_use_case_1.BansUserUseCase,
             bans_repository_1.BansRepository,
             bans_blogs_repository_1.BlogBansRepository,
-            comments_likes_repository_1.CommentsLikesRepository,
-            posts_likes_repository_1.PostsLikesRepository,
             bans_users_for_blog_repository_1.UsersBansForBlogRepository,
         ],
         controllers: [comments_controller_1.CommentsController],
@@ -96,8 +92,6 @@ CommentsModule = __decorate([
             blogs_query_repo_1.BlogsQueryRepository,
             blogs_repository_1.BlogsRepository,
             like_status_decorator_1.IsLikeStatusCorrectDecorator,
-            comments_likes_repository_1.CommentsLikesRepository,
-            posts_likes_repository_1.PostsLikesRepository,
         ],
     })
 ], CommentsModule);

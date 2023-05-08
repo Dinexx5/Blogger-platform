@@ -84,11 +84,10 @@ let AuthService = class AuthService {
     }
     async createJwtAccessToken(userId) {
         const payload = { userId: userId };
-        const accessToken = this.jwtService.sign(payload, {
+        return this.jwtService.sign(payload, {
             secret: process.env.ACCESS_SECRET,
             expiresIn: '10000s',
         });
-        return accessToken;
     }
     async generateJwtRefreshToken(userId, deviceName, ip) {
         const deviceId = new Date().toISOString();
@@ -132,8 +131,7 @@ let AuthService = class AuthService {
     }
     async getRefreshTokenInfo(token) {
         try {
-            const result = this.jwtService.verify(token, { secret: process.env.REFRESH_SECRET });
-            return result;
+            return this.jwtService.verify(token, { secret: process.env.REFRESH_SECRET });
         }
         catch (error) {
             return null;
@@ -141,8 +139,7 @@ let AuthService = class AuthService {
     }
     async getAccessTokenInfo(token) {
         try {
-            const result = this.jwtService.verify(token, { secret: process.env.ACCESS_SECRET });
-            return result;
+            return this.jwtService.verify(token, { secret: process.env.ACCESS_SECRET });
         }
         catch (error) {
             return null;
@@ -234,7 +231,6 @@ let AuthService = class AuthService {
             await this.emailAdapter.sendEmailForPasswordRecovery(email, confirmationCode);
         }
         catch (error) {
-            console.error(error);
             return false;
         }
         return true;

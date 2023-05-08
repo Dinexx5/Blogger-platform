@@ -42,7 +42,7 @@ let BlogsQueryRepository = class BlogsQueryRepository {
         const allBannedBlogs = bannedBlogs.concat(bannedBlogsFromUsers);
         const builder = this.blogsTypeOrmRepository
             .createQueryBuilder('b')
-            .leftJoinAndSelect('b.ownerInfo', 'oi');
+            .leftJoinAndSelect('b.blogOwnerInfo', 'oi');
         const bannedSubQuery = `${allBannedBlogs.length ? 'b.id NOT IN (:...allBannedBlogs)' : 'b.id IS NOT NULL'}`;
         const userIdSubQuery = `${userId ? 'oi.userId = :userId' : 'true'}`;
         const searchNameTermQuery = `${searchNameTerm ? 'LOWER(b.name) LIKE LOWER(:searchNameTerm)' : 'true'}`;

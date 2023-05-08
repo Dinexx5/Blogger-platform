@@ -7,7 +7,6 @@ import { SaUserBan } from './domain/saUserBan.entity';
 @Injectable()
 export class BansRepository {
   constructor(
-    @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(SaUserBan)
     private readonly banTypeOrmRepository: Repository<SaUserBan>,
   ) {}

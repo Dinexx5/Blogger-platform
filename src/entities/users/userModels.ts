@@ -86,31 +86,15 @@ export class BanUserModelForBlog {
 }
 
 export class UserParamModel {
-  @IsNotEmpty()
+  @Transform(({ value }) => +value)
   @IsUserExists()
   userId: number;
 }
 
 export class UserToBanParamModel {
-  @IsNotEmpty()
+  @Transform(({ value }) => +value)
+  @IsUserExists()
   userId: number;
-}
-
-export class SaUserFromSqlRepo {
-  id: number;
-  login: string;
-  email: string;
-  createdAt: string;
-  isBanned: boolean;
-  banDate: string;
-  banReason: string;
-}
-export class UserFromSqlRepo {
-  id: number;
-  login: string;
-  email: string;
-  passwordHash: string;
-  createdAt: string;
 }
 
 export class userViewModel {

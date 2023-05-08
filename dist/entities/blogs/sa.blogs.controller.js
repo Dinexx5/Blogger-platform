@@ -35,7 +35,7 @@ let SuperAdminBlogsController = class SuperAdminBlogsController {
         return res.sendStatus(204);
     }
     async banBlog(params, inputModel, res) {
-        await this.commandBus.execute(new ban_blog_use_case_1.BanBlogCommand(+params.blogId, inputModel));
+        await this.commandBus.execute(new ban_blog_use_case_1.BanBlogCommand(params.blogId, inputModel));
         return res.sendStatus(204);
     }
 };
@@ -59,7 +59,7 @@ __decorate([
 __decorate([
     (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
     (0, common_1.Put)(':blogId/ban'),
-    __param(0, (0, common_1.Param)('blogId', common_1.ParseIntPipe)),
+    __param(0, (0, common_1.Param)()),
     __param(1, (0, common_1.Body)()),
     __param(2, (0, common_1.Res)()),
     __metadata("design:type", Function),

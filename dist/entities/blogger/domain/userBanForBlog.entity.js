@@ -32,7 +32,7 @@ __decorate([
     __metadata("design:type", String)
 ], UserBanForBlog.prototype, "banDate", void 0);
 __decorate([
-    (0, typeorm_1.Column)('text', { array: true }),
+    (0, typeorm_1.Column)('int', { array: true }),
     __metadata("design:type", Array)
 ], UserBanForBlog.prototype, "bannedPostsIds", void 0);
 __decorate([

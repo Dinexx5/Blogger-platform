@@ -1,9 +1,8 @@
-import { DataSource, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { SaUserBan } from './domain/saUserBan.entity';
 export declare class BansRepository {
-    protected dataSource: DataSource;
     private readonly banTypeOrmRepository;
-    constructor(dataSource: DataSource, banTypeOrmRepository: Repository<SaUserBan>);
+    constructor(banTypeOrmRepository: Repository<SaUserBan>);
     isUserBanned(userId: number): Promise<boolean>;
     countBannedUsers(): Promise<number>;
     getBannedUsers(): Promise<any[]>;

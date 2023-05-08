@@ -27,7 +27,11 @@ export class CommentsController {
 
   @UseGuards(GetUserGuard, isCommentIdIntegerGuard)
   @Get(':commentId')
-  async getComment(@CurrentUser() userId, @Param('commentId') id: string, @Res() res: Response) {
+  async getComment(
+    @CurrentUser() userId,
+    @Param('commentId', ParseIntPipe) id: number,
+    @Res() res: Response,
+  ) {
     const comment: CommentViewModel | null = await this.commentsQueryRepository.findCommentById(
       id,
       userId,

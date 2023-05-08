@@ -1,8 +1,9 @@
 import { ValidationOptions, ValidatorConstraintInterface, ValidationArguments } from 'class-validator';
-import { UsersRepository } from '../../../entities/users/users.repository';
+import { Repository } from 'typeorm';
+import { PasswordRecoveryInfo } from '../../../entities/users/domain/passwordRecovery.entity';
 export declare class IsRecoveryCodeCorrect implements ValidatorConstraintInterface {
-    protected usersRepository: UsersRepository;
-    constructor(usersRepository: UsersRepository);
+    private readonly passwordRecoveryRepository;
+    constructor(passwordRecoveryRepository: Repository<PasswordRecoveryInfo>);
     validate(code: string, args: ValidationArguments): Promise<boolean>;
     defaultMessage(args: ValidationArguments): string;
 }

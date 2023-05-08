@@ -50,11 +50,12 @@ let BloggerBansQueryRepository = class BloggerBansQueryRepository {
         const subQuery = `ub.blogId = :blogId AND ${searchLoginTerm ? 'LOWER(ub.login) LIKE LOWER(:searchLoginTerm)' : 'true'}`;
         const sortDirectionSql = sortDirection === 'desc' ? 'DESC' : 'ASC';
         const bans = await builder
-            .where(subQuery, { blogId: blogId, searchLoginTerm: searchLoginTerm })
-            .orderBy(`b.${sortBy}`, sortDirectionSql)
+            .where(subQuery, { blogId: blogId, searchLoginTerm: `%${searchLoginTerm}%` })
+            .orderBy(`ub.${sortBy}`, sortDirectionSql)
             .limit(+pageSize)
             .offset(skippedBlogsCount)
             .getMany();
+        console.log(bans);
         const count = bans.length;
         const bansView = bans.map(this.mapFoundBansToViewModel);
         return {

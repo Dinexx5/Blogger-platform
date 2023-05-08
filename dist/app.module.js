@@ -27,8 +27,8 @@ exports.cloudDbRootOptions = {
     username: process.env.SQL_USERNAME,
     password: process.env.SQL_PASS,
     database: process.env.SQL_USERNAME,
-    autoLoadEntities: false,
-    synchronize: false,
+    autoLoadEntities: true,
+    synchronize: true,
 };
 exports.localDbRootOptions = {
     type: 'postgres',

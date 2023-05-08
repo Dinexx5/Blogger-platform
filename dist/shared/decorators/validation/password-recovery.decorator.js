@@ -8,27 +8,32 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IsRecoveryCodeValid = exports.IsRecoveryCodeCorrect = void 0;
 const class_validator_1 = require("class-validator");
 const common_1 = require("@nestjs/common");
-const users_repository_1 = require("../../../entities/users/users.repository");
+const typeorm_1 = require("@nestjs/typeorm");
+const typeorm_2 = require("typeorm");
+const passwordRecovery_entity_1 = require("../../../entities/users/domain/passwordRecovery.entity");
 let IsRecoveryCodeCorrect = class IsRecoveryCodeCorrect {
-    constructor(usersRepository) {
-        this.usersRepository = usersRepository;
+    constructor(passwordRecoveryRepository) {
+        this.passwordRecoveryRepository = passwordRecoveryRepository;
     }
     async validate(code, args) {
-        const user = await this.usersRepository.findUserByRecoveryCode(code);
-        if (!user) {
+        const recoveryInfo = await this.passwordRecoveryRepository.findOneBy({ recoveryCode: code });
+        if (!recoveryInfo) {
             return false;
         }
-        if (!user.expirationDate) {
+        if (!recoveryInfo.expirationDate) {
             return false;
         }
-        if (user.recoveryCode !== code) {
+        if (recoveryInfo.recoveryCode !== code) {
             return false;
         }
-        if (user.expirationDate < new Date()) {
+        if (recoveryInfo.expirationDate < new Date()) {
             return false;
         }
         return true;
@@ -40,7 +45,8 @@ let IsRecoveryCodeCorrect = class IsRecoveryCodeCorrect {
 IsRecoveryCodeCorrect = __decorate([
     (0, class_validator_1.ValidatorConstraint)({ name: 'recoveryCode', async: true }),
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [users_repository_1.UsersRepository])
+    __param(0, (0, typeorm_1.InjectRepository)(passwordRecovery_entity_1.PasswordRecoveryInfo)),
+    __metadata("design:paramtypes", [typeorm_2.Repository])
 ], IsRecoveryCodeCorrect);
 exports.IsRecoveryCodeCorrect = IsRecoveryCodeCorrect;
 function IsRecoveryCodeValid(validationOptions) {

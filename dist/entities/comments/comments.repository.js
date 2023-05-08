@@ -17,29 +17,28 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const comment_entity_1 = require("./domain/comment.entity");
+const commentatorInfo_entity_1 = require("./domain/commentatorInfo.entity");
 let CommentsRepository = class CommentsRepository {
-    constructor(dataSource, commentsTypeOrmRepository) {
+    constructor(dataSource, commentsTypeOrmRepository, commentatorInfoTypeOrmRepository) {
         this.dataSource = dataSource;
         this.commentsTypeOrmRepository = commentsTypeOrmRepository;
+        this.commentatorInfoTypeOrmRepository = commentatorInfoTypeOrmRepository;
     }
     async findComment(commentId) {
         return await this.commentsTypeOrmRepository.findOneBy({ id: commentId });
     }
     async findBannedComments(userId) {
-        const commentsForUser = await this.dataSource.query(`
-          SELECT "commentId"
-          FROM "CommentatorInfo"
-          WHERE "userId" = $1
-      `, [userId]);
-        const commentsIds = commentsForUser.map((comment) => comment.commentId.toString());
-        return commentsIds;
+        const commentatorsInfo = await this.commentatorInfoTypeOrmRepository.findBy({ userId: userId });
+        return commentatorsInfo.map((comments) => comments.commentId);
     }
 };
 CommentsRepository = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectDataSource)()),
     __param(1, (0, typeorm_1.InjectRepository)(comment_entity_1.Comment)),
+    __param(2, (0, typeorm_1.InjectRepository)(commentatorInfo_entity_1.CommentatorInfo)),
     __metadata("design:paramtypes", [typeorm_2.DataSource,
+        typeorm_2.Repository,
         typeorm_2.Repository])
 ], CommentsRepository);
 exports.CommentsRepository = CommentsRepository;

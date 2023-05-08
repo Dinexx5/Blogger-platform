@@ -31,7 +31,7 @@ let BansController = class BansController {
 __decorate([
     (0, common_1.UseGuards)(auth_guard_1.AuthGuard, param_integer_guard_1.isUserIdIntegerGuard),
     (0, common_1.Put)(':userId/ban'),
-    __param(0, (0, common_1.Param)('userId', common_1.ParseIntPipe)),
+    __param(0, (0, common_1.Param)()),
     __param(1, (0, common_1.Body)()),
     __param(2, (0, common_1.Res)()),
     __metadata("design:type", Function),

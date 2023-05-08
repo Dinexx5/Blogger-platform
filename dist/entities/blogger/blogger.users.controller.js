@@ -33,7 +33,7 @@ let BloggerUsersController = class BloggerUsersController {
         return res.sendStatus(204);
     }
     async getBannedUsers(userId, paginationQuery, param) {
-        const returnedUsers = await this.bloggerQueryRepository.getAllBannedUsersForBlog(paginationQuery, +param.blogId, userId);
+        const returnedUsers = await this.bloggerQueryRepository.getAllBannedUsersForBlog(paginationQuery, param.blogId, userId);
         return returnedUsers;
     }
 };
@@ -41,7 +41,7 @@ __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAccessAuthGuard, param_integer_guard_1.isUserIdIntegerGuard),
     (0, common_1.Put)(':userId/ban'),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
-    __param(1, (0, common_1.Param)('userId', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Param)()),
     __param(2, (0, common_1.Body)()),
     __param(3, (0, common_1.Res)()),
     __metadata("design:type", Function),

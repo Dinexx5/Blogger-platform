@@ -1,9 +1,11 @@
 import { DataSource, Repository } from 'typeorm';
 import { Comment } from './domain/comment.entity';
+import { CommentatorInfo } from './domain/commentatorInfo.entity';
 export declare class CommentsRepository {
     protected dataSource: DataSource;
     private readonly commentsTypeOrmRepository;
-    constructor(dataSource: DataSource, commentsTypeOrmRepository: Repository<Comment>);
+    private readonly commentatorInfoTypeOrmRepository;
+    constructor(dataSource: DataSource, commentsTypeOrmRepository: Repository<Comment>, commentatorInfoTypeOrmRepository: Repository<CommentatorInfo>);
     findComment(commentId: number): Promise<Comment>;
-    findBannedComments(userId: string): Promise<any>;
+    findBannedComments(userId: number): Promise<number[]>;
 }

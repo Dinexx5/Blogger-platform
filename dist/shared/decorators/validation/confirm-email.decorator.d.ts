@@ -1,8 +1,9 @@
 import { ValidationOptions, ValidatorConstraintInterface, ValidationArguments } from 'class-validator';
-import { UsersRepository } from '../../../entities/users/users.repository';
+import { EmailConfirmationInfo } from '../../../entities/users/domain/emailConfirmation.entity';
+import { Repository } from 'typeorm';
 export declare class IsConfirmationCodeCorrect implements ValidatorConstraintInterface {
-    protected usersRepository: UsersRepository;
-    constructor(usersRepository: UsersRepository);
+    private readonly emailConfirmationRepository;
+    constructor(emailConfirmationRepository: Repository<EmailConfirmationInfo>);
     validate(code: string, args: ValidationArguments): Promise<boolean>;
     defaultMessage(args: ValidationArguments): string;
 }

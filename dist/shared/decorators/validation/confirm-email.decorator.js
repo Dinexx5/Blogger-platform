@@ -8,27 +8,34 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IsConfirmationCodeValid = exports.IsConfirmationCodeCorrect = void 0;
 const class_validator_1 = require("class-validator");
 const common_1 = require("@nestjs/common");
-const users_repository_1 = require("../../../entities/users/users.repository");
+const typeorm_1 = require("@nestjs/typeorm");
+const emailConfirmation_entity_1 = require("../../../entities/users/domain/emailConfirmation.entity");
+const typeorm_2 = require("typeorm");
 let IsConfirmationCodeCorrect = class IsConfirmationCodeCorrect {
-    constructor(usersRepository) {
-        this.usersRepository = usersRepository;
+    constructor(emailConfirmationRepository) {
+        this.emailConfirmationRepository = emailConfirmationRepository;
     }
     async validate(code, args) {
-        const user = await this.usersRepository.findUserByConfirmationCode(code);
-        if (!user) {
+        const confirmationInfo = await this.emailConfirmationRepository.findOneBy({
+            confirmationCode: code,
+        });
+        if (!confirmationInfo) {
             return false;
         }
-        if (user.isConfirmed) {
+        if (confirmationInfo.isConfirmed) {
             return false;
         }
-        if (user.confirmationCode !== code) {
+        if (confirmationInfo.confirmationCode !== code) {
             return false;
         }
-        if (user.expirationDate < new Date()) {
+        if (confirmationInfo.expirationDate < new Date()) {
             return false;
         }
         return true;
@@ -40,7 +47,8 @@ let IsConfirmationCodeCorrect = class IsConfirmationCodeCorrect {
 IsConfirmationCodeCorrect = __decorate([
     (0, class_validator_1.ValidatorConstraint)({ name: 'confirmationCode', async: true }),
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [users_repository_1.UsersRepository])
+    __param(0, (0, typeorm_1.InjectRepository)(emailConfirmation_entity_1.EmailConfirmationInfo)),
+    __metadata("design:paramtypes", [typeorm_2.Repository])
 ], IsConfirmationCodeCorrect);
 exports.IsConfirmationCodeCorrect = IsConfirmationCodeCorrect;
 function IsConfirmationCodeValid(validationOptions) {

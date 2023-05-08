@@ -22,38 +22,4 @@ export class UsersRepository {
   async save(user: User) {
     await this.usersTypeOrmRepository.save(user);
   }
-
-  async findConfirmation(userId: string) {
-    const isConfirmed = await this.dataSource.query(
-      `
-          SELECT *
-          FROM "EmailConfirmation"
-          WHERE "userId" = $1
-      `,
-      [userId],
-    );
-    return isConfirmed[0].isConfirmed;
-  }
-  async findUserByConfirmationCode(code: string) {
-    const user = await this.dataSource.query(
-      `
-          SELECT *
-          FROM "EmailConfirmation"
-          WHERE "confirmationCode" = $1
-      `,
-      [code],
-    );
-    return user[0];
-  }
-  async findUserByRecoveryCode(code: string) {
-    const user = await this.dataSource.query(
-      `
-          SELECT *
-          FROM "PasswordRecovery"
-          WHERE "recoveryCode" = $1
-      `,
-      [code],
-    );
-    return user[0];
-  }
 }

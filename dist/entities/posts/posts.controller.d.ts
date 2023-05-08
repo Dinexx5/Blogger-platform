@@ -11,8 +11,8 @@ export declare class PostsController {
     protected commentsQueryRepository: CommentsQueryRepository;
     constructor(postsService: PostsService, postsQueryRepository: PostsQueryRepository, commentsQueryRepository: CommentsQueryRepository);
     getPosts(userId: any, paginationQuery: any): Promise<paginatedViewModel<PostViewModel[]>>;
-    getPost(userId: any, id: string, res: Response): Promise<Response<any, Record<string, any>>>;
-    getComments(userId: any, postId: string, paginationQuery: paginationQuerys, res: Response): Promise<Response<any, Record<string, any>>>;
+    getPost(userId: any, postId: number, res: Response): Promise<Response<any, Record<string, any>>>;
+    getComments(userId: any, postId: number, paginationQuery: paginationQuerys, res: Response): Promise<Response<any, Record<string, any>>>;
     createComment(userId: any, postId: number, inputModel: UpdateCommentModel, res: Response): Promise<Response<any, Record<string, any>>>;
     likePost(userId: any, postId: number, inputModel: LikeInputModel, res: Response): Promise<Response<any, Record<string, any>>>;
 }

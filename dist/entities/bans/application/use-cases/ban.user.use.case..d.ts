@@ -3,13 +3,13 @@ import { BanModel } from '../../../users/userModels';
 import { BansRepository } from '../../bans.repository';
 import { BlogsRepository } from '../../../blogs/blogs.repository';
 import { PostsRepository } from '../../../posts/posts.repository';
-import { CommentsRepository } from '../../../comments/comments.repository';
 import { ICommandHandler } from '@nestjs/cqrs';
 import { Repository } from 'typeorm';
 import { UserBanInfo } from '../../../users/domain/banInfo.entity';
 import { Token } from '../../../tokens/domain/token.entity';
 import { Device } from '../../../devices/domain/device.entity';
 import { SaUserBan } from '../../domain/saUserBan.entity';
+import { CommentsRepository } from '../../../comments/comments.repository';
 export declare class BansUserCommand {
     userId: number;
     inputModel: BanModel;

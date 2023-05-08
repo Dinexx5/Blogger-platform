@@ -5,7 +5,7 @@ import { Blog } from '../../blogs/domain/blog.entity';
 export class SaBlogBan {
   @Column()
   isBanned: boolean;
-  @Column('text', { array: true })
+  @Column('int', { array: true })
   bannedPostsIds: number[];
   @PrimaryColumn()
   blogId: number;

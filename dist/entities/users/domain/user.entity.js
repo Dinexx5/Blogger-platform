@@ -11,6 +11,9 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = void 0;
 const typeorm_1 = require("typeorm");
+const emailConfirmation_entity_1 = require("./emailConfirmation.entity");
+const passwordRecovery_entity_1 = require("./passwordRecovery.entity");
+const banInfo_entity_1 = require("./banInfo.entity");
 let User = class User {
 };
 __decorate([
@@ -33,6 +36,18 @@ __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], User.prototype, "createdAt", void 0);
+__decorate([
+    (0, typeorm_1.OneToOne)(() => emailConfirmation_entity_1.EmailConfirmationInfo, (eci) => eci.user),
+    __metadata("design:type", emailConfirmation_entity_1.EmailConfirmationInfo)
+], User.prototype, "emailConfirmationInfo", void 0);
+__decorate([
+    (0, typeorm_1.OneToOne)(() => passwordRecovery_entity_1.PasswordRecoveryInfo, (pri) => pri.user),
+    __metadata("design:type", passwordRecovery_entity_1.PasswordRecoveryInfo)
+], User.prototype, "passwordRecoveryInfo", void 0);
+__decorate([
+    (0, typeorm_1.OneToOne)(() => banInfo_entity_1.UserBanInfo, (bi) => bi.user),
+    __metadata("design:type", banInfo_entity_1.UserBanInfo)
+], User.prototype, "banInfo", void 0);
 User = __decorate([
     (0, typeorm_1.Entity)()
 ], User);

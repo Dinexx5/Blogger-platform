@@ -18,7 +18,6 @@ const email_resending_decorator_1 = require("../../shared/decorators/validation/
 const password_recovery_decorator_1 = require("../../shared/decorators/validation/password-recovery.decorator");
 const user_exists_decorator_1 = require("../../shared/decorators/validation/user-exists.decorator");
 const devices_repository_1 = require("../devices/devices.repository");
-const token_repository_1 = require("../tokens/token.repository");
 const sa_users_query_repo_1 = require("./sa.users.query-repo");
 const typeorm_1 = require("@nestjs/typeorm");
 const user_entity_1 = require("./domain/user.entity");
@@ -43,7 +42,6 @@ UsersModule = __decorate([
             password_recovery_decorator_1.IsRecoveryCodeCorrect,
             user_exists_decorator_1.IsUserExistsDecorator,
             devices_repository_1.DevicesRepository,
-            token_repository_1.TokenRepository,
         ],
         controllers: [sa_users_controller_1.UsersSAController],
         exports: [users_service_1.UsersService, users_repository_1.UsersRepository, sa_users_query_repo_1.SaUsersQueryRepository],

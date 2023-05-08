@@ -110,9 +110,7 @@ let UsersService = class UsersService {
         return true;
     }
     async checkConfirmation(userId) {
-        console.log(userId);
         const confirmationInfo = await this.emailConfirmationRepository.findOneBy({ userId: userId });
-        console.log(confirmationInfo);
         return confirmationInfo.isConfirmed;
     }
     async generateHash(password) {

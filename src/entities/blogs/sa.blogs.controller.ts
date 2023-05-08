@@ -48,11 +48,11 @@ export class SuperAdminBlogsController {
   @UseGuards(AuthGuard)
   @Put(':blogId/ban')
   async banBlog(
-    @Param('blogId', ParseIntPipe) params: blogParamModel,
+    @Param() params: blogParamModel,
     @Body() inputModel: BanBlogModel,
     @Res() res: Response,
   ) {
-    await this.commandBus.execute(new BanBlogCommand(+params.blogId, inputModel));
+    await this.commandBus.execute(new BanBlogCommand(params.blogId, inputModel));
     return res.sendStatus(204);
   }
 }

@@ -15,52 +15,42 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SaUsersQueryRepository = void 0;
 const typeorm_1 = require("typeorm");
 const typeorm_2 = require("@nestjs/typeorm");
+const user_entity_1 = require("./domain/user.entity");
 let SaUsersQueryRepository = class SaUsersQueryRepository {
-    constructor(dataSource) {
-        this.dataSource = dataSource;
+    constructor(usersTypeOrmRepository) {
+        this.usersTypeOrmRepository = usersTypeOrmRepository;
     }
     async getAllUsers(query) {
         const { sortDirection = 'desc', sortBy = 'createdAt', pageNumber = 1, pageSize = 10, searchLoginTerm = null, searchEmailTerm = null, banStatus = 'all', } = query;
         const skippedUsersCount = (+pageNumber - 1) * +pageSize;
-        const subQuery = `(${banStatus && banStatus !== 'all'
+        const sortDirectionSql = sortDirection === 'desc' ? 'DESC' : 'ASC';
+        const builder = this.usersTypeOrmRepository
+            .createQueryBuilder('u')
+            .leftJoinAndSelect('u.banInfo', 'bi');
+        const bannedSubQuery = `${banStatus && banStatus !== 'all'
             ? `
-          ${banStatus === 'banned' ? `"isBanned" IS TRUE` : `"isBanned" IS FALSE`}
-          `
-            : '"isBanned" IS TRUE OR "isBanned" IS FALSE'}) AND (${searchLoginTerm && !searchEmailTerm
-            ? `LOWER("login") LIKE '%' || LOWER('${searchLoginTerm}') || '%'`
+          ${banStatus === 'banned' ? `bi."isBanned" = true` : `bi."isBanned" = false`}
+      `
+            : `"isBanned" = true OR "isBanned" = false`}`;
+        const searchTermQuery = `(${searchLoginTerm && !searchEmailTerm
+            ? `LOWER(u.login) LIKE LOWER(:searchLoginTerm)`
             : !searchLoginTerm && searchEmailTerm
-                ? `LOWER("email") LIKE '%' || LOWER('${searchEmailTerm}') || '%'`
+                ? `LOWER(u.email) LIKE LOWER(:searchEmailTerm)`
                 : searchLoginTerm && searchEmailTerm
-                    ? `LOWER("login") LIKE '%' || LOWER('${searchLoginTerm}') || '%' 
-                          OR  LOWER("email") LIKE '%' || LOWER('${searchEmailTerm}') || '%'`
+                    ? `LOWER(u.login) LIKE LOWER(:searchLoginTerm) 
+                          OR  LOWER(u.email) LIKE LOWER(:searchEmailTerm)`
                     : true})`;
-        const selectQuery = `SELECT u.*, b."isBanned",b."banDate",b."banReason",
-                                CASE
-                                 WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
-                                 ELSE 1
-                                END toOrder
-                    FROM "Users" u
-                    LEFT JOIN "BanInfo" b
-                    ON u."id" = b."userId"
-                    WHERE ${subQuery}
-                    ORDER BY toOrder,
-                      CASE when $1 = 'desc' then "${sortBy}" END DESC,
-                      CASE when $1 = 'asc' then "${sortBy}" END ASC
-                    LIMIT $2
-                    OFFSET $3
-                    `;
-        const counterQuery = `SELECT COUNT(*)
-                    FROM "Users" u
-                    LEFT JOIN "BanInfo" b
-                    ON u."id" = b."userId"
-                    WHERE ${subQuery}`;
-        const counter = await this.dataSource.query(counterQuery);
-        const count = counter[0].count;
-        const users = await this.dataSource.query(selectQuery, [
-            sortDirection,
-            pageSize,
-            skippedUsersCount,
-        ]);
+        const users = await builder
+            .where(bannedSubQuery)
+            .andWhere(searchTermQuery, {
+            searchEmailTerm: `%${searchEmailTerm}%`,
+            searchLoginTerm: `%${searchLoginTerm}%`,
+        })
+            .orderBy(`u.${sortBy}`, sortDirectionSql)
+            .limit(+pageSize)
+            .offset(skippedUsersCount)
+            .getMany();
+        const count = users.length;
         const usersView = users.map(this.mapDbUserToUserViewModel);
         return {
             pagesCount: Math.ceil(+count / +pageSize),
@@ -77,16 +67,16 @@ let SaUsersQueryRepository = class SaUsersQueryRepository {
             email: user.email,
             createdAt: user.createdAt,
             banInfo: {
-                isBanned: user.isBanned,
-                banDate: user.banDate,
-                banReason: user.banReason,
+                isBanned: user.banInfo.isBanned,
+                banDate: user.banInfo.banDate,
+                banReason: user.banInfo.banReason,
             },
         };
     }
 };
 SaUsersQueryRepository = __decorate([
-    __param(0, (0, typeorm_2.InjectDataSource)()),
-    __metadata("design:paramtypes", [typeorm_1.DataSource])
+    __param(0, (0, typeorm_2.InjectRepository)(user_entity_1.User)),
+    __metadata("design:paramtypes", [typeorm_1.Repository])
 ], SaUsersQueryRepository);
 exports.SaUsersQueryRepository = SaUsersQueryRepository;
 //# sourceMappingURL=sa.users.query-repo.js.map

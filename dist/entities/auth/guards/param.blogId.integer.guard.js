@@ -12,7 +12,6 @@ let isBlogIdIntegerGuard = class isBlogIdIntegerGuard {
     canActivate(context) {
         const request = context.switchToHttp().getRequest();
         const blogId = request.params.blogId;
-        console.log(blogId);
         const checkId = Number(blogId);
         if (isNaN(checkId))
             throw new common_1.NotFoundException();

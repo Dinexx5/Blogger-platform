@@ -9,7 +9,6 @@ import { EmailResendingDecorator } from '../../shared/decorators/validation/emai
 import { IsRecoveryCodeCorrect } from '../../shared/decorators/validation/password-recovery.decorator';
 import { IsUserExistsDecorator } from '../../shared/decorators/validation/user-exists.decorator';
 import { DevicesRepository } from '../devices/devices.repository';
-import { TokenRepository } from '../tokens/token.repository';
 import { SaUsersQueryRepository } from './sa.users.query-repo';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './domain/user.entity';
@@ -32,7 +31,6 @@ import { UserBanInfo } from './domain/banInfo.entity';
     IsRecoveryCodeCorrect,
     IsUserExistsDecorator,
     DevicesRepository,
-    TokenRepository,
   ],
   controllers: [UsersSAController],
   exports: [UsersService, UsersRepository, SaUsersQueryRepository],

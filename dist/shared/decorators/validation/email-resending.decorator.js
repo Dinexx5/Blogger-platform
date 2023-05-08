@@ -8,21 +8,28 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IsEmailConfirmed = exports.EmailResendingDecorator = void 0;
 const class_validator_1 = require("class-validator");
 const common_1 = require("@nestjs/common");
 const users_repository_1 = require("../../../entities/users/users.repository");
+const typeorm_1 = require("@nestjs/typeorm");
+const typeorm_2 = require("typeorm");
+const emailConfirmation_entity_1 = require("../../../entities/users/domain/emailConfirmation.entity");
 let EmailResendingDecorator = class EmailResendingDecorator {
-    constructor(usersRepository) {
+    constructor(usersRepository, emailConfirmationRepository) {
         this.usersRepository = usersRepository;
+        this.emailConfirmationRepository = emailConfirmationRepository;
     }
     async validate(email, args) {
         const user = await this.usersRepository.findUserByLoginOrEmail(email);
         if (!user)
             return false;
-        const confirmation = await this.usersRepository.findConfirmation(user.id.toString());
-        if (confirmation === true) {
+        const confirmation = await this.emailConfirmationRepository.findOneBy({ userId: user.id });
+        if (confirmation.isConfirmed === true) {
             return false;
         }
         return true;
@@ -34,7 +41,9 @@ let EmailResendingDecorator = class EmailResendingDecorator {
 EmailResendingDecorator = __decorate([
     (0, class_validator_1.ValidatorConstraint)({ name: 'isEmailConfirmed', async: true }),
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [users_repository_1.UsersRepository])
+    __param(1, (0, typeorm_1.InjectRepository)(emailConfirmation_entity_1.EmailConfirmationInfo)),
+    __metadata("design:paramtypes", [users_repository_1.UsersRepository,
+        typeorm_2.Repository])
 ], EmailResendingDecorator);
 exports.EmailResendingDecorator = EmailResendingDecorator;
 function IsEmailConfirmed(validationOptions) {

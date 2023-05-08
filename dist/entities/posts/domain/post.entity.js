@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Post = void 0;
 const typeorm_1 = require("typeorm");
 const blog_entity_1 = require("../../blogs/domain/blog.entity");
+const postLike_entity_1 = require("../../likes/domain/postLike.entity");
 let Post = class Post {
 };
 __decorate([
@@ -47,6 +48,10 @@ __decorate([
     (0, typeorm_1.JoinColumn)(),
     __metadata("design:type", blog_entity_1.Blog)
 ], Post.prototype, "blog", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => postLike_entity_1.PostLike, (l) => l.post),
+    __metadata("design:type", Array)
+], Post.prototype, "likes", void 0);
 Post = __decorate([
     (0, typeorm_1.Entity)()
 ], Post);

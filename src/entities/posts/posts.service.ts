@@ -3,16 +3,13 @@ import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/commo
 import { CommentsService } from '../comments/comments.service';
 import { UsersRepository } from '../users/users.repository';
 import { BlogsRepository } from '../blogs/blogs.repository';
-import { PostsLikesRepository } from '../likes/posts.likes.repository';
 import { UsersBansForBlogRepository } from '../bans/bans.users-for-blog.repository';
 import { CommentViewModel, UpdateCommentModel } from '../comments/comments.models';
 import { createPostModel, PostViewModel, updatePostModel } from './posts.models';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Blog } from '../blogs/domain/blog.entity';
 import { Repository } from 'typeorm';
 import { Post } from './domain/post.entity';
 import { BlogOwnerInfo } from '../blogs/domain/blogOwner.entity';
-import { CommentLike } from '../likes/domain/commentLike.entity';
 import { PostLike } from '../likes/domain/postLike.entity';
 
 @Injectable()

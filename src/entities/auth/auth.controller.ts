@@ -25,7 +25,7 @@ export class AuthController {
   @Post('login')
   async login(@Request() req, @CurrentUser() userId: number, @Res() res: Response) {
     const ip = req.ip;
-    const deviceName = req.headers['user-agent']!;
+    const deviceName = req.headers['user-agent'] || '1';
     const accessToken = await this.authService.createJwtAccessToken(userId);
     const refreshToken = await this.authService.generateJwtRefreshToken(userId, deviceName, ip);
     res.cookie('refreshToken', refreshToken, {

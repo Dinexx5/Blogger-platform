@@ -27,19 +27,19 @@ __decorate([
     __metadata("design:type", String)
 ], SaUserBan.prototype, "login", void 0);
 __decorate([
-    (0, typeorm_1.Column)('text', { array: true }),
+    (0, typeorm_1.Column)('int', { array: true }),
     __metadata("design:type", Array)
 ], SaUserBan.prototype, "bannedBlogsIds", void 0);
 __decorate([
-    (0, typeorm_1.Column)('text', { array: true }),
+    (0, typeorm_1.Column)('int', { array: true }),
     __metadata("design:type", Array)
 ], SaUserBan.prototype, "bannedPostsIds", void 0);
 __decorate([
-    (0, typeorm_1.Column)('text', { array: true }),
+    (0, typeorm_1.Column)('int', { array: true }),
     __metadata("design:type", Array)
 ], SaUserBan.prototype, "bannedCommentsIds", void 0);
 __decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)(),
+    (0, typeorm_1.PrimaryColumn)(),
     __metadata("design:type", Number)
 ], SaUserBan.prototype, "userId", void 0);
 __decorate([

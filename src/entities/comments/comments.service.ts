@@ -1,7 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CommentsRepository } from './comments.repository';
 import { UsersRepository } from '../users/users.repository';
-import { CommentsLikesRepository } from '../likes/comments.likes.repository';
 import { CommentViewModel, CreateCommentModel, UpdateCommentModel } from './comments.models';
 import { PostsRepository } from '../posts/posts.repository';
 import { User } from '../users/domain/user.entity';

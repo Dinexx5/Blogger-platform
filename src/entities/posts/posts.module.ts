@@ -12,7 +12,6 @@ import { BansUserUseCase } from '../bans/application/use-cases/ban.user.use.case
 import { BansRepository } from '../bans/bans.repository';
 import { DevicesModule } from '../devices/devices.module';
 import { TokensModule } from '../tokens/token.module';
-import { PostsLikesRepository } from '../likes/posts.likes.repository';
 import { BlogBansRepository } from '../bans/bans.blogs.repository';
 import { CqrsModule } from '@nestjs/cqrs';
 import { UsersBansForBlogRepository } from '../bans/bans.users-for-blog.repository';
@@ -57,7 +56,6 @@ import { SaBlogBan } from '../bans/domain/saBlogBan.entity';
     BlogsRepository,
     BansUserUseCase,
     BansRepository,
-    PostsLikesRepository,
     BlogBansRepository,
     UsersBansForBlogRepository,
   ],
@@ -68,7 +66,6 @@ import { SaBlogBan } from '../bans/domain/saBlogBan.entity';
     PostsQueryRepository,
     BlogsQueryRepository,
     BlogsRepository,
-    PostsLikesRepository,
   ],
 })
 export class PostsModule {}

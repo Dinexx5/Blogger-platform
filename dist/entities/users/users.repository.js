@@ -23,41 +23,15 @@ let UsersRepository = class UsersRepository {
         this.usersTypeOrmRepository = usersTypeOrmRepository;
     }
     async findUserById(userId) {
-        const user = await this.usersTypeOrmRepository.findOneBy({ id: userId });
-        return user;
+        return await this.usersTypeOrmRepository.findOneBy({ id: userId });
     }
     async findUserByLoginOrEmail(login) {
-        const user = await this.usersTypeOrmRepository.findOne({
+        return await this.usersTypeOrmRepository.findOne({
             where: [{ login: login }, { email: login }],
         });
-        return user;
     }
     async save(user) {
         await this.usersTypeOrmRepository.save(user);
-    }
-    async findConfirmation(userId) {
-        const isConfirmed = await this.dataSource.query(`
-          SELECT *
-          FROM "EmailConfirmation"
-          WHERE "userId" = $1
-      `, [userId]);
-        return isConfirmed[0].isConfirmed;
-    }
-    async findUserByConfirmationCode(code) {
-        const user = await this.dataSource.query(`
-          SELECT *
-          FROM "EmailConfirmation"
-          WHERE "confirmationCode" = $1
-      `, [code]);
-        return user[0];
-    }
-    async findUserByRecoveryCode(code) {
-        const user = await this.dataSource.query(`
-          SELECT *
-          FROM "PasswordRecovery"
-          WHERE "recoveryCode" = $1
-      `, [code]);
-        return user[0];
     }
 };
 UsersRepository = __decorate([

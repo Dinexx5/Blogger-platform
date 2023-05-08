@@ -14,26 +14,27 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PostsQueryRepository = void 0;
 const bans_repository_1 = require("../bans/bans.repository");
-const posts_likes_repository_1 = require("../likes/posts.likes.repository");
 const bans_blogs_repository_1 = require("../bans/bans.blogs.repository");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
+const post_entity_1 = require("./domain/post.entity");
+const postLike_entity_1 = require("../likes/domain/postLike.entity");
 let PostsQueryRepository = class PostsQueryRepository {
-    constructor(bansRepository, postsLikesRepository, blogBansRepository, dataSource) {
+    constructor(bansRepository, blogBansRepository, postsTypeOrmRepository, postsLikesTypeOrmRepository) {
         this.bansRepository = bansRepository;
-        this.postsLikesRepository = postsLikesRepository;
         this.blogBansRepository = blogBansRepository;
-        this.dataSource = dataSource;
+        this.postsTypeOrmRepository = postsTypeOrmRepository;
+        this.postsLikesTypeOrmRepository = postsLikesTypeOrmRepository;
     }
     mapperToPostViewModel(post) {
         return {
-            id: post.id.toString(),
-            title: post.title,
-            shortDescription: post.shortDescription,
-            content: post.content,
-            blogId: post.blogId.toString(),
-            blogName: post.blogName,
-            createdAt: post.createdAt,
+            id: post.p_id.toString(),
+            title: post.p_title,
+            shortDescription: post.p_shortDescription,
+            content: post.p_content,
+            blogId: post.p_blogId.toString(),
+            blogName: post.p_blogName,
+            createdAt: post.p_createdAt,
             extendedLikesInfo: {
                 likesCount: post.likesCount || 0,
                 dislikesCount: post.dislikesCount || 0,
@@ -44,32 +45,22 @@ let PostsQueryRepository = class PostsQueryRepository {
     }
     async getAllPosts(query, blogId, userId) {
         const { sortDirection = 'desc', sortBy = 'createdAt', pageNumber = 1, pageSize = 10 } = query;
-        const skippedPostsNumber = (+pageNumber - 1) * +pageSize;
+        const skippedPostsCount = (+pageNumber - 1) * +pageSize;
+        const sortDirectionSql = sortDirection === 'desc' ? 'DESC' : 'ASC';
         const bannedPostsFromUsers = await this.bansRepository.getBannedPosts();
         const bannedPosts = await this.blogBansRepository.getBannedPosts();
         const allBannedPosts = bannedPosts.concat(bannedPostsFromUsers);
-        const subQuery = `"id" ${allBannedPosts.length ? `NOT IN (${allBannedPosts})` : `IS NOT NULL`} 
-    AND (${blogId ? `"blogId" = ${blogId}` : true})`;
-        const selectQuery = `SELECT *,
-                                CASE
-                                 WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
-                                 ELSE 1
-                                END toOrder
-                    FROM "Posts"
-                    WHERE ${subQuery}
-                    ORDER BY toOrder,
-                      CASE when $1 = 'desc' then "${sortBy}" END DESC,
-                      CASE when $1 = 'asc' then "${sortBy}" END ASC
-                    LIMIT $2
-                    OFFSET $3
-                    `;
-        const posts = await this.dataSource.query(selectQuery, [
-            sortDirection,
-            pageSize,
-            skippedPostsNumber,
-        ]);
+        const subQuery = `p.id ${allBannedPosts.length ? `NOT IN (:...allBannedPosts)` : `IS NOT NULL`} 
+    AND (${blogId ? `p.blogId = :blogId` : true})`;
+        const builder = await this.getBuilder(userId);
+        const posts = await builder
+            .where(subQuery, { allBannedPosts: allBannedPosts, blogId: blogId })
+            .orderBy(`p.${sortBy}`, sortDirectionSql)
+            .limit(+pageSize)
+            .offset(skippedPostsCount)
+            .getRawMany();
+        await this.findThreeLatestLikesForPosts(posts);
         const count = posts.length;
-        await this.countLikesForPosts(posts, userId);
         const postsView = posts.map(this.mapperToPostViewModel);
         return {
             pagesCount: Math.ceil(+count / +pageSize),
@@ -79,70 +70,67 @@ let PostsQueryRepository = class PostsQueryRepository {
             items: postsView,
         };
     }
-    async countLikesForPosts(posts, userId) {
-        for (const post of posts) {
-            const foundLikes = await this.postsLikesRepository.findLikesForPost(post.id.toString());
-            if (!foundLikes)
-                return;
-            const threeLatestLikes = await this.postsLikesRepository.findThreeLatestLikes(post.id.toString());
-            if (userId) {
-                const likeOfUser = foundLikes.find((like) => like.userId.toString() === userId);
-                if (likeOfUser) {
-                    post.myStatus = likeOfUser.likeStatus;
-                }
-            }
-            const likesCount = foundLikes.filter((like) => like.likeStatus === 'Like').length;
-            const dislikesCount = foundLikes.filter((like) => like.likeStatus === 'Dislike').length;
-            post.likesCount = likesCount;
-            post.dislikesCount = dislikesCount;
-            const newestLikes = [];
-            newestLikes.push(...threeLatestLikes);
-            post.newestLikes = newestLikes;
-        }
+    async getBuilder(userId) {
+        return this.postsTypeOrmRepository
+            .createQueryBuilder('p')
+            .leftJoin('p.likes', 'l')
+            .addSelect([
+            `(select COUNT(*) FROM post_like where l."postId" = p."id" AND
+         l."likeStatus" = 'Like') as "likesCount"`,
+        ])
+            .addSelect([
+            `(select COUNT(*) FROM post_like where l."postId" = p."id"
+         AND l."likeStatus" = 'Dislike') as "dislikesCount"`,
+        ])
+            .addSelect([
+            `(${userId
+                ? `select l."likeStatus" FROM post_like where l."postId" = p."id"
+                AND l."userId" = ${userId}`
+                : 'false'}) as "myStatus"`,
+        ]);
     }
-    async countLikesForPost(post, userId) {
-        const foundLikes = await this.postsLikesRepository.findLikesForPost(post.id.toString());
-        const threeLatestLikes = await this.postsLikesRepository.findThreeLatestLikes(post.id.toString());
-        if (userId) {
-            const likeOfUser = foundLikes.find((like) => like.userId.toString() === userId);
-            if (likeOfUser) {
-                post.myStatus = likeOfUser.likeStatus;
-            }
+    async findThreeLatestLikesForPosts(posts) {
+        const bannedUsers = await this.bansRepository.getBannedUsers();
+        const builder = await this.postsLikesTypeOrmRepository.createQueryBuilder('pl');
+        for (const post of posts) {
+            if (post.likesCount === 0)
+                return;
+            const subQuery = `pl."postId" = :postId AND pl."userId" ${bannedUsers.length ? `NOT IN (:...bannedUsers)` : `IS NOT NULL`} AND pl."likeStatus" = 'Like'`;
+            const allLikes = await builder
+                .where(subQuery, { postId: post.p_id, bannedUsers: bannedUsers })
+                .orderBy('pl.createdAt', 'DESC')
+                .getMany();
+            const threeLatestLikes = allLikes.slice(0, 3);
+            post.newestLikes = threeLatestLikes.map((like) => {
+                return {
+                    addedAt: like.createdAt,
+                    userId: like.userId.toString(),
+                    login: like.login,
+                };
+            });
         }
-        const likesCount = foundLikes.filter((like) => like.likeStatus === 'Like').length;
-        const dislikesCount = foundLikes.filter((like) => like.likeStatus === 'Dislike').length;
-        post.likesCount = likesCount;
-        post.dislikesCount = dislikesCount;
-        const newestLikes = [];
-        newestLikes.push(...threeLatestLikes);
-        post.newestLikes = newestLikes;
     }
     async findPostById(postId, userId) {
         const bannedPostsFromUsers = await this.bansRepository.getBannedPosts();
         const bannedPosts = await this.blogBansRepository.getBannedPosts();
         const allBannedPosts = bannedPosts.concat(bannedPostsFromUsers);
-        const bannedPostsStrings = allBannedPosts.map((postId) => postId.toString());
-        const foundPost = await this.dataSource.query(`
-          SELECT *
-          FROM "Posts"
-          WHERE "id" = $1
-      `, [postId]);
-        if (!foundPost.length) {
+        const builder = await this.getBuilder(userId);
+        const post = await builder.where('p.id = :postId', { postId: postId }).getRawOne();
+        if (!post)
             return null;
-        }
-        if (bannedPostsStrings.includes(foundPost[0].id.toString())) {
+        if (allBannedPosts.includes(post.p_id))
             return null;
-        }
-        await this.countLikesForPost(foundPost[0], userId);
-        return this.mapperToPostViewModel(foundPost[0]);
+        await this.findThreeLatestLikesForPosts([post]);
+        return this.mapperToPostViewModel(post);
     }
 };
 PostsQueryRepository = __decorate([
-    __param(3, (0, typeorm_1.InjectDataSource)()),
+    __param(2, (0, typeorm_1.InjectRepository)(post_entity_1.Post)),
+    __param(3, (0, typeorm_1.InjectRepository)(postLike_entity_1.PostLike)),
     __metadata("design:paramtypes", [bans_repository_1.BansRepository,
-        posts_likes_repository_1.PostsLikesRepository,
         bans_blogs_repository_1.BlogBansRepository,
-        typeorm_2.DataSource])
+        typeorm_2.Repository,
+        typeorm_2.Repository])
 ], PostsQueryRepository);
 exports.PostsQueryRepository = PostsQueryRepository;
 //# sourceMappingURL=posts.query-repo.js.map

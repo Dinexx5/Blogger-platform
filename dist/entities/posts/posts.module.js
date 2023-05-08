@@ -21,7 +21,6 @@ const ban_user_use_case_1 = require("../bans/application/use-cases/ban.user.use.
 const bans_repository_1 = require("../bans/bans.repository");
 const devices_module_1 = require("../devices/devices.module");
 const token_module_1 = require("../tokens/token.module");
-const posts_likes_repository_1 = require("../likes/posts.likes.repository");
 const bans_blogs_repository_1 = require("../bans/bans.blogs.repository");
 const cqrs_1 = require("@nestjs/cqrs");
 const bans_users_for_blog_repository_1 = require("../bans/bans.users-for-blog.repository");
@@ -68,7 +67,6 @@ PostsModule = __decorate([
             blogs_repository_1.BlogsRepository,
             ban_user_use_case_1.BansUserUseCase,
             bans_repository_1.BansRepository,
-            posts_likes_repository_1.PostsLikesRepository,
             bans_blogs_repository_1.BlogBansRepository,
             bans_users_for_blog_repository_1.UsersBansForBlogRepository,
         ],
@@ -79,7 +77,6 @@ PostsModule = __decorate([
             posts_query_repo_1.PostsQueryRepository,
             blogs_query_repo_1.BlogsQueryRepository,
             blogs_repository_1.BlogsRepository,
-            posts_likes_repository_1.PostsLikesRepository,
         ],
     })
 ], PostsModule);

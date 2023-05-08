@@ -7,9 +7,6 @@ import {
 } from 'class-validator';
 import { Injectable } from '@nestjs/common';
 import { UsersRepository } from '../../../entities/users/users.repository';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '../../../entities/users/domain/user.entity';
-import { Repository } from 'typeorm';
 
 @ValidatorConstraint({ name: 'IsUserExists', async: true })
 @Injectable()
@@ -17,7 +14,6 @@ export class IsUserExistsDecorator implements ValidatorConstraintInterface {
   constructor(private readonly usersRepository: UsersRepository) {}
 
   async validate(userId: number, args: ValidationArguments) {
-    console.log(userId);
     const userInstance = await this.usersRepository.findUserById(userId);
     if (!userInstance) return false;
     return true;

@@ -51,10 +51,10 @@ __decorate([
     (0, common_1.UseGuards)(getuser_guard_1.GetUserGuard, param_commentid_isinteger_1.isCommentIdIntegerGuard),
     (0, common_1.Get)(':commentId'),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
-    __param(1, (0, common_1.Param)('commentId')),
+    __param(1, (0, common_1.Param)('commentId', common_1.ParseIntPipe)),
     __param(2, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, Object]),
+    __metadata("design:paramtypes", [Object, Number, Object]),
     __metadata("design:returntype", Promise)
 ], CommentsController.prototype, "getComment", null);
 __decorate([
