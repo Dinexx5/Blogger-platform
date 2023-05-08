@@ -2,15 +2,14 @@ import { paginatedViewModel, paginationQuerys } from '../../shared/models/pagina
 import { BlogsRepository } from '../blogs/blogs.repository';
 import { PostsRepository } from '../posts/posts.repository';
 import { commentsForBloggerViewModel } from '../comments/comments.models';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { Comment } from '../comments/domain/comment.entity';
 
 export class BloggerCommentsQueryRepository {
   constructor(
     protected blogsRepository: BlogsRepository,
     protected postsRepository: PostsRepository,
-    @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(Comment)
     private readonly commentsTypeOrmRepository: Repository<Comment>,
   ) {}
@@ -47,31 +46,34 @@ export class BloggerCommentsQueryRepository {
     const allPosts: number[] = await this.postsRepository.findPostsForUser(allBlogs);
     const sortDirectionSql: 'ASC' | 'DESC' = sortDirection === 'desc' ? 'DESC' : 'ASC';
 
+    const subQuery = `${allPosts.length ? `pi.postId IN (:...allPosts)` : `false`}`;
+
     const builder = this.commentsTypeOrmRepository
       .createQueryBuilder('c')
       .leftJoinAndSelect('c.commentatorInfo', 'ci')
       .leftJoinAndSelect('c.postInfo', 'pi')
       .leftJoin('c.likes', 'l')
       .addSelect([
-        `(select COUNT(*) FROM comment_like where l."commentId" = c."id" AND l."likeStatus" = 'Like') as "likesCount"`,
+        `(select COUNT(*) FROM comment_like where l."commentId" = c."id"
+         AND l."likeStatus" = 'Like') as "likesCount"`,
       ])
       .addSelect([
-        `(select COUNT(*) FROM comment_like where l."commentId" = c."id" AND l."likeStatus" = 'Dislike') as "dislikesCount"`,
+        `(select COUNT(*) FROM comment_like where l."commentId" = c."id"
+         AND l."likeStatus" = 'Dislike') as "dislikesCount"`,
       ])
       .addSelect([
-        `(select l."likeStatus" FROM comment_like where l."commentId" = c."id" AND l."userId" = ${userId}) as "myStatus"`,
-      ]);
-
-    const subQuery = `${allPosts.length ? `pi.postId IN (:...allPosts)` : `false`}`;
+        `(select l."likeStatus" FROM comment_like where l."commentId" = c."id"
+         AND l."userId" = ${userId}) as "myStatus"`,
+      ])
+      .where(subQuery, { allPosts: allPosts });
 
     const comments = await builder
-      .where(subQuery, { allPosts: allPosts })
       .orderBy(`c.${sortBy}`, sortDirectionSql)
       .limit(+pageSize)
       .offset(skippedCommentsCount)
       .getRawMany();
 
-    const count = comments.length;
+    const count = await builder.getCount();
 
     const commentsView = comments.map(this.mapCommentsToViewModel);
     return {

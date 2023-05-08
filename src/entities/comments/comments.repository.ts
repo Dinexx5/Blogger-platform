@@ -7,7 +7,6 @@ import { CommentatorInfo } from './domain/commentatorInfo.entity';
 @Injectable()
 export class CommentsRepository {
   constructor(
-    @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(Comment)
     private readonly commentsTypeOrmRepository: Repository<Comment>,
     @InjectRepository(CommentatorInfo)

@@ -38,22 +38,23 @@ export class BlogsSAQueryRepository {
 
     const skippedBlogsCount = (+pageNumber - 1) * +pageSize;
 
-    const builder = this.blogsTypeOrmRepository
-      .createQueryBuilder('b')
-      .leftJoinAndSelect('b.blogOwnerInfo', 'oi')
-      .leftJoinAndSelect('b.banInfo', 'bi');
-
     const searchNameTermQuery = `${
       searchNameTerm ? 'LOWER(b.name) LIKE LOWER(:searchNameTerm)' : 'true'
     }`;
     const sortDirectionSql: 'ASC' | 'DESC' = sortDirection === 'desc' ? 'DESC' : 'ASC';
+
+    const builder = this.blogsTypeOrmRepository
+      .createQueryBuilder('b')
+      .leftJoinAndSelect('b.blogOwnerInfo', 'oi')
+      .leftJoinAndSelect('b.banInfo', 'bi')
+      .where(searchNameTermQuery, { searchNameTerm: `%${searchNameTerm}%` });
+
     const blogs = await builder
-      .where(searchNameTermQuery, { searchNameTerm: `%${searchNameTerm}%` })
       .orderBy(`b.${sortBy}`, sortDirectionSql)
       .limit(+pageSize)
       .offset(skippedBlogsCount)
       .getMany();
-    const count = blogs.length;
+    const count = await builder.getCount();
     const blogsView = blogs.map(this.mapFoundBlogToBlogViewModel);
     return {
       pagesCount: Math.ceil(+count / +pageSize),

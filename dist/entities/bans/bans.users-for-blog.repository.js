@@ -18,8 +18,7 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const userBanForBlog_entity_1 = require("../blogger/domain/userBanForBlog.entity");
 let UsersBansForBlogRepository = class UsersBansForBlogRepository {
-    constructor(dataSource, usersBansForBlogsRepository) {
-        this.dataSource = dataSource;
+    constructor(usersBansForBlogsRepository) {
         this.usersBansForBlogsRepository = usersBansForBlogsRepository;
     }
     async countBannedUsers() {
@@ -39,10 +38,8 @@ let UsersBansForBlogRepository = class UsersBansForBlogRepository {
 };
 UsersBansForBlogRepository = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, typeorm_1.InjectDataSource)()),
-    __param(1, (0, typeorm_1.InjectRepository)(userBanForBlog_entity_1.UserBanForBlog)),
-    __metadata("design:paramtypes", [typeorm_2.DataSource,
-        typeorm_2.Repository])
+    __param(0, (0, typeorm_1.InjectRepository)(userBanForBlog_entity_1.UserBanForBlog)),
+    __metadata("design:paramtypes", [typeorm_2.Repository])
 ], UsersBansForBlogRepository);
 exports.UsersBansForBlogRepository = UsersBansForBlogRepository;
 //# sourceMappingURL=bans.users-for-blog.repository.js.map

@@ -23,10 +23,6 @@ export class SaUsersQueryRepository {
     const skippedUsersCount = (+pageNumber - 1) * +pageSize;
     const sortDirectionSql: 'ASC' | 'DESC' = sortDirection === 'desc' ? 'DESC' : 'ASC';
 
-    const builder = this.usersTypeOrmRepository
-      .createQueryBuilder('u')
-      .leftJoinAndSelect('u.banInfo', 'bi');
-
     const bannedSubQuery = `${
       banStatus && banStatus !== 'all'
         ? `
@@ -45,17 +41,22 @@ export class SaUsersQueryRepository {
                           OR  LOWER(u.email) LIKE LOWER(:searchEmailTerm)`
         : true
     })`;
-    const users = await builder
+
+    const builder = this.usersTypeOrmRepository
+      .createQueryBuilder('u')
+      .leftJoinAndSelect('u.banInfo', 'bi')
       .where(bannedSubQuery)
       .andWhere(searchTermQuery, {
         searchEmailTerm: `%${searchEmailTerm}%`,
         searchLoginTerm: `%${searchLoginTerm}%`,
-      })
+      });
+
+    const users = await builder
       .orderBy(`u.${sortBy}`, sortDirectionSql)
       .limit(+pageSize)
-      .offset(skippedUsersCount)
+      .skip(skippedUsersCount)
       .getMany();
-    const count = users.length;
+    const count = await builder.getCount();
     const usersView = users.map(this.mapDbUserToUserViewModel);
     return {
       pagesCount: Math.ceil(+count / +pageSize),

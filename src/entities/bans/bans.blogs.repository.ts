@@ -1,13 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
-import { SaUserBan } from './domain/saUserBan.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { SaBlogBan } from './domain/saBlogBan.entity';
 
 @Injectable()
 export class BlogBansRepository {
   constructor(
-    @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(SaBlogBan)
     private readonly banTypeOrmRepository: Repository<SaBlogBan>,
   ) {}

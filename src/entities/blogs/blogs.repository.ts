@@ -7,7 +7,6 @@ import { BlogOwnerInfo } from './domain/blogOwner.entity';
 @Injectable()
 export class BlogsRepository {
   constructor(
-    @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(Blog)
     private readonly blogsTypeOrmRepository: Repository<Blog>,
     @InjectRepository(BlogOwnerInfo)

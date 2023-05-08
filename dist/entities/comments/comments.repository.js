@@ -19,8 +19,7 @@ const typeorm_2 = require("typeorm");
 const comment_entity_1 = require("./domain/comment.entity");
 const commentatorInfo_entity_1 = require("./domain/commentatorInfo.entity");
 let CommentsRepository = class CommentsRepository {
-    constructor(dataSource, commentsTypeOrmRepository, commentatorInfoTypeOrmRepository) {
-        this.dataSource = dataSource;
+    constructor(commentsTypeOrmRepository, commentatorInfoTypeOrmRepository) {
         this.commentsTypeOrmRepository = commentsTypeOrmRepository;
         this.commentatorInfoTypeOrmRepository = commentatorInfoTypeOrmRepository;
     }
@@ -34,11 +33,9 @@ let CommentsRepository = class CommentsRepository {
 };
 CommentsRepository = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, typeorm_1.InjectDataSource)()),
-    __param(1, (0, typeorm_1.InjectRepository)(comment_entity_1.Comment)),
-    __param(2, (0, typeorm_1.InjectRepository)(commentatorInfo_entity_1.CommentatorInfo)),
-    __metadata("design:paramtypes", [typeorm_2.DataSource,
-        typeorm_2.Repository,
+    __param(0, (0, typeorm_1.InjectRepository)(comment_entity_1.Comment)),
+    __param(1, (0, typeorm_1.InjectRepository)(commentatorInfo_entity_1.CommentatorInfo)),
+    __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository])
 ], CommentsRepository);
 exports.CommentsRepository = CommentsRepository;

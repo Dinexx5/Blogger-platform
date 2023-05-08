@@ -58,7 +58,9 @@ export class PostsQueryRepository {
       .offset(skippedPostsCount)
       .getRawMany();
     await this.findThreeLatestLikesForPosts(posts);
-    const count = posts.length;
+    const count = await builder
+      .where(subQuery, { allBannedPosts: allBannedPosts, blogId: blogId })
+      .getCount();
 
     const postsView = posts.map(this.mapperToPostViewModel);
     return {

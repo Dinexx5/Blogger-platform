@@ -24,9 +24,6 @@ let SaUsersQueryRepository = class SaUsersQueryRepository {
         const { sortDirection = 'desc', sortBy = 'createdAt', pageNumber = 1, pageSize = 10, searchLoginTerm = null, searchEmailTerm = null, banStatus = 'all', } = query;
         const skippedUsersCount = (+pageNumber - 1) * +pageSize;
         const sortDirectionSql = sortDirection === 'desc' ? 'DESC' : 'ASC';
-        const builder = this.usersTypeOrmRepository
-            .createQueryBuilder('u')
-            .leftJoinAndSelect('u.banInfo', 'bi');
         const bannedSubQuery = `${banStatus && banStatus !== 'all'
             ? `
           ${banStatus === 'banned' ? `bi."isBanned" = true` : `bi."isBanned" = false`}
@@ -40,17 +37,20 @@ let SaUsersQueryRepository = class SaUsersQueryRepository {
                     ? `LOWER(u.login) LIKE LOWER(:searchLoginTerm) 
                           OR  LOWER(u.email) LIKE LOWER(:searchEmailTerm)`
                     : true})`;
-        const users = await builder
+        const builder = this.usersTypeOrmRepository
+            .createQueryBuilder('u')
+            .leftJoinAndSelect('u.banInfo', 'bi')
             .where(bannedSubQuery)
             .andWhere(searchTermQuery, {
             searchEmailTerm: `%${searchEmailTerm}%`,
             searchLoginTerm: `%${searchLoginTerm}%`,
-        })
+        });
+        const users = await builder
             .orderBy(`u.${sortBy}`, sortDirectionSql)
             .limit(+pageSize)
-            .offset(skippedUsersCount)
+            .skip(skippedUsersCount)
             .getMany();
-        const count = users.length;
+        const count = await builder.getCount();
         const usersView = users.map(this.mapDbUserToUserViewModel);
         return {
             pagesCount: Math.ceil(+count / +pageSize),

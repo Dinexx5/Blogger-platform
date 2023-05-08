@@ -41,10 +41,6 @@ export class BlogsQueryRepository {
     const bannedBlogs = await this.blogBansRepository.getBannedBlogs();
     const allBannedBlogs = bannedBlogs.concat(bannedBlogsFromUsers);
 
-    const builder = this.blogsTypeOrmRepository
-      .createQueryBuilder('b')
-      .leftJoinAndSelect('b.blogOwnerInfo', 'oi');
-
     const bannedSubQuery = `${
       allBannedBlogs.length ? 'b.id NOT IN (:...allBannedBlogs)' : 'b.id IS NOT NULL'
     }`;
@@ -56,15 +52,21 @@ export class BlogsQueryRepository {
     }`;
 
     const sortDirectionSql: 'ASC' | 'DESC' = sortDirection === 'desc' ? 'DESC' : 'ASC';
-    const blogs = await builder
+
+    const builder = this.blogsTypeOrmRepository
+      .createQueryBuilder('b')
+      .leftJoinAndSelect('b.blogOwnerInfo', 'oi')
       .where(bannedSubQuery, { allBannedBlogs: allBannedBlogs })
       .andWhere(userIdSubQuery, { userId: userId })
-      .andWhere(searchNameTermQuery, { searchNameTerm: `%${searchNameTerm}%` })
+      .andWhere(searchNameTermQuery, { searchNameTerm: `%${searchNameTerm}%` });
+
+    const blogs = await builder
       .orderBy(`b.${sortBy}`, sortDirectionSql)
       .limit(+pageSize)
       .offset(skippedBlogsCount)
       .getMany();
-    const count = blogs.length;
+    const count = await builder.getCount();
+
     const blogsView = blogs.map(this.mapFoundBlogToBlogViewModel);
     return {
       pagesCount: Math.ceil(+count / +pageSize),

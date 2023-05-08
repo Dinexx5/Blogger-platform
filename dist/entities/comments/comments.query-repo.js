@@ -51,7 +51,9 @@ let CommentsQueryRepository = class CommentsQueryRepository {
             .limit(+pageSize)
             .offset(skippedCommentsCount)
             .getRawMany();
-        const count = comments.length;
+        const count = await builder
+            .where(subQuery, { bannedComments: bannedComments, postId: postId })
+            .getCount();
         const commentsView = comments.map(this.mapperToCommentViewModel);
         return {
             pagesCount: Math.ceil(+count / +pageSize),

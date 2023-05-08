@@ -19,8 +19,7 @@ const typeorm_2 = require("typeorm");
 const blog_entity_1 = require("./domain/blog.entity");
 const blogOwner_entity_1 = require("./domain/blogOwner.entity");
 let BlogsRepository = class BlogsRepository {
-    constructor(dataSource, blogsTypeOrmRepository, blogOwnerInfoTypeOrmRepository) {
-        this.dataSource = dataSource;
+    constructor(blogsTypeOrmRepository, blogOwnerInfoTypeOrmRepository) {
         this.blogsTypeOrmRepository = blogsTypeOrmRepository;
         this.blogOwnerInfoTypeOrmRepository = blogOwnerInfoTypeOrmRepository;
     }
@@ -34,11 +33,9 @@ let BlogsRepository = class BlogsRepository {
 };
 BlogsRepository = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, typeorm_1.InjectDataSource)()),
-    __param(1, (0, typeorm_1.InjectRepository)(blog_entity_1.Blog)),
-    __param(2, (0, typeorm_1.InjectRepository)(blogOwner_entity_1.BlogOwnerInfo)),
-    __metadata("design:paramtypes", [typeorm_2.DataSource,
-        typeorm_2.Repository,
+    __param(0, (0, typeorm_1.InjectRepository)(blog_entity_1.Blog)),
+    __param(1, (0, typeorm_1.InjectRepository)(blogOwner_entity_1.BlogOwnerInfo)),
+    __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository])
 ], BlogsRepository);
 exports.BlogsRepository = BlogsRepository;

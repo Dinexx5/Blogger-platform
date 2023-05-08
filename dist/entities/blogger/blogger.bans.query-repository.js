@@ -20,9 +20,8 @@ const typeorm_2 = require("typeorm");
 const blogOwner_entity_1 = require("../blogs/domain/blogOwner.entity");
 const userBanForBlog_entity_1 = require("./domain/userBanForBlog.entity");
 let BloggerBansQueryRepository = class BloggerBansQueryRepository {
-    constructor(blogsRepository, dataSource, blogOwnerInfoRepository, userBansTypeOrmRepository) {
+    constructor(blogsRepository, blogOwnerInfoRepository, userBansTypeOrmRepository) {
         this.blogsRepository = blogsRepository;
-        this.dataSource = dataSource;
         this.blogOwnerInfoRepository = blogOwnerInfoRepository;
         this.userBansTypeOrmRepository = userBansTypeOrmRepository;
     }
@@ -40,22 +39,23 @@ let BloggerBansQueryRepository = class BloggerBansQueryRepository {
     async getAllBannedUsersForBlog(query, blogId, userId) {
         const { sortDirection = 'desc', sortBy = 'login', pageNumber = 1, pageSize = 10, searchLoginTerm = null, } = query;
         const skippedBlogsCount = (+pageNumber - 1) * +pageSize;
+        const sortDirectionSql = sortDirection === 'desc' ? 'DESC' : 'ASC';
         const blog = await this.blogsRepository.findBlogById(blogId);
         if (!blog)
             throw new common_1.NotFoundException();
         const blogOwnerInfo = await this.blogOwnerInfoRepository.findOneBy({ blogId: blogId });
         if (blogOwnerInfo.userId !== userId)
             throw new common_1.ForbiddenException();
-        const builder = this.userBansTypeOrmRepository.createQueryBuilder('ub');
         const subQuery = `ub.blogId = :blogId AND ${searchLoginTerm ? 'LOWER(ub.login) LIKE LOWER(:searchLoginTerm)' : 'true'}`;
-        const sortDirectionSql = sortDirection === 'desc' ? 'DESC' : 'ASC';
+        const builder = this.userBansTypeOrmRepository
+            .createQueryBuilder('ub')
+            .where(subQuery, { blogId: blogId, searchLoginTerm: `%${searchLoginTerm}%` });
         const bans = await builder
-            .where(subQuery, { blogId: blogId, searchLoginTerm: `%${searchLoginTerm}%` })
             .orderBy(`ub.${sortBy}`, sortDirectionSql)
             .limit(+pageSize)
             .offset(skippedBlogsCount)
             .getMany();
-        const count = bans.length;
+        const count = await builder.getCount();
         const bansView = bans.map(this.mapFoundBansToViewModel);
         return {
             pagesCount: Math.ceil(+count / +pageSize),
@@ -67,11 +67,9 @@ let BloggerBansQueryRepository = class BloggerBansQueryRepository {
     }
 };
 BloggerBansQueryRepository = __decorate([
-    __param(1, (0, typeorm_1.InjectDataSource)()),
-    __param(2, (0, typeorm_1.InjectRepository)(blogOwner_entity_1.BlogOwnerInfo)),
-    __param(3, (0, typeorm_1.InjectRepository)(userBanForBlog_entity_1.UserBanForBlog)),
+    __param(1, (0, typeorm_1.InjectRepository)(blogOwner_entity_1.BlogOwnerInfo)),
+    __param(2, (0, typeorm_1.InjectRepository)(userBanForBlog_entity_1.UserBanForBlog)),
     __metadata("design:paramtypes", [blogs_repository_1.BlogsRepository,
-        typeorm_2.DataSource,
         typeorm_2.Repository,
         typeorm_2.Repository])
 ], BloggerBansQueryRepository);

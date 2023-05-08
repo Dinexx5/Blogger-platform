@@ -18,8 +18,7 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const post_entity_1 = require("./domain/post.entity");
 let PostsRepository = class PostsRepository {
-    constructor(dataSource, postsTypeOrmRepository) {
-        this.dataSource = dataSource;
+    constructor(postsTypeOrmRepository) {
         this.postsTypeOrmRepository = postsTypeOrmRepository;
     }
     async findPostInstance(postId) {
@@ -34,10 +33,8 @@ let PostsRepository = class PostsRepository {
 };
 PostsRepository = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, typeorm_1.InjectDataSource)()),
-    __param(1, (0, typeorm_1.InjectRepository)(post_entity_1.Post)),
-    __metadata("design:paramtypes", [typeorm_2.DataSource,
-        typeorm_2.Repository])
+    __param(0, (0, typeorm_1.InjectRepository)(post_entity_1.Post)),
+    __metadata("design:paramtypes", [typeorm_2.Repository])
 ], PostsRepository);
 exports.PostsRepository = PostsRepository;
 //# sourceMappingURL=posts.repository.js.map

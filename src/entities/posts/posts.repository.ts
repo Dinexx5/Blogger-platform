@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, Repository } from 'typeorm';
 import { Post } from './domain/post.entity';
 
 @Injectable()
 export class PostsRepository {
   constructor(
-    @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(Post)
     private readonly postsTypeOrmRepository: Repository<Post>,
   ) {}

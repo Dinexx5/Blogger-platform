@@ -10,7 +10,6 @@ exports.DevicesModule = void 0;
 const common_1 = require("@nestjs/common");
 const devices_controller_1 = require("./devices.controller");
 const devices_service_1 = require("./devices.service");
-const devices_repository_1 = require("./devices.repository");
 const typeorm_1 = require("@nestjs/typeorm");
 const device_entity_1 = require("./domain/device.entity");
 let DevicesModule = class DevicesModule {
@@ -18,9 +17,9 @@ let DevicesModule = class DevicesModule {
 DevicesModule = __decorate([
     (0, common_1.Module)({
         imports: [typeorm_1.TypeOrmModule.forFeature([device_entity_1.Device])],
-        providers: [devices_service_1.DevicesService, devices_repository_1.DevicesRepository],
+        providers: [devices_service_1.DevicesService],
         controllers: [devices_controller_1.DevicesController],
-        exports: [devices_service_1.DevicesService, devices_repository_1.DevicesRepository],
+        exports: [devices_service_1.DevicesService],
     })
 ], DevicesModule);
 exports.DevicesModule = DevicesModule;

@@ -19,10 +19,9 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const comment_entity_1 = require("../comments/domain/comment.entity");
 let BloggerCommentsQueryRepository = class BloggerCommentsQueryRepository {
-    constructor(blogsRepository, postsRepository, dataSource, commentsTypeOrmRepository) {
+    constructor(blogsRepository, postsRepository, commentsTypeOrmRepository) {
         this.blogsRepository = blogsRepository;
         this.postsRepository = postsRepository;
-        this.dataSource = dataSource;
         this.commentsTypeOrmRepository = commentsTypeOrmRepository;
     }
     mapCommentsToViewModel(comment) {
@@ -53,28 +52,31 @@ let BloggerCommentsQueryRepository = class BloggerCommentsQueryRepository {
         const allBlogs = await this.blogsRepository.findBlogsForUser(userId);
         const allPosts = await this.postsRepository.findPostsForUser(allBlogs);
         const sortDirectionSql = sortDirection === 'desc' ? 'DESC' : 'ASC';
+        const subQuery = `${allPosts.length ? `pi.postId IN (:...allPosts)` : `false`}`;
         const builder = this.commentsTypeOrmRepository
             .createQueryBuilder('c')
             .leftJoinAndSelect('c.commentatorInfo', 'ci')
             .leftJoinAndSelect('c.postInfo', 'pi')
             .leftJoin('c.likes', 'l')
             .addSelect([
-            `(select COUNT(*) FROM comment_like where l."commentId" = c."id" AND l."likeStatus" = 'Like') as "likesCount"`,
+            `(select COUNT(*) FROM comment_like where l."commentId" = c."id"
+         AND l."likeStatus" = 'Like') as "likesCount"`,
         ])
             .addSelect([
-            `(select COUNT(*) FROM comment_like where l."commentId" = c."id" AND l."likeStatus" = 'Dislike') as "dislikesCount"`,
+            `(select COUNT(*) FROM comment_like where l."commentId" = c."id"
+         AND l."likeStatus" = 'Dislike') as "dislikesCount"`,
         ])
             .addSelect([
-            `(select l."likeStatus" FROM comment_like where l."commentId" = c."id" AND l."userId" = ${userId}) as "myStatus"`,
-        ]);
-        const subQuery = `${allPosts.length ? `pi.postId IN (:...allPosts)` : `false`}`;
+            `(select l."likeStatus" FROM comment_like where l."commentId" = c."id"
+         AND l."userId" = ${userId}) as "myStatus"`,
+        ])
+            .where(subQuery, { allPosts: allPosts });
         const comments = await builder
-            .where(subQuery, { allPosts: allPosts })
             .orderBy(`c.${sortBy}`, sortDirectionSql)
             .limit(+pageSize)
             .offset(skippedCommentsCount)
             .getRawMany();
-        const count = comments.length;
+        const count = await builder.getCount();
         const commentsView = comments.map(this.mapCommentsToViewModel);
         return {
             pagesCount: Math.ceil(+count / +pageSize),
@@ -86,11 +88,9 @@ let BloggerCommentsQueryRepository = class BloggerCommentsQueryRepository {
     }
 };
 BloggerCommentsQueryRepository = __decorate([
-    __param(2, (0, typeorm_1.InjectDataSource)()),
-    __param(3, (0, typeorm_1.InjectRepository)(comment_entity_1.Comment)),
+    __param(2, (0, typeorm_1.InjectRepository)(comment_entity_1.Comment)),
     __metadata("design:paramtypes", [blogs_repository_1.BlogsRepository,
         posts_repository_1.PostsRepository,
-        typeorm_2.DataSource,
         typeorm_2.Repository])
 ], BloggerCommentsQueryRepository);
 exports.BloggerCommentsQueryRepository = BloggerCommentsQueryRepository;

@@ -8,7 +8,6 @@ import { IsConfirmationCodeCorrect } from '../../shared/decorators/validation/co
 import { EmailResendingDecorator } from '../../shared/decorators/validation/email-resending.decorator';
 import { IsRecoveryCodeCorrect } from '../../shared/decorators/validation/password-recovery.decorator';
 import { IsUserExistsDecorator } from '../../shared/decorators/validation/user-exists.decorator';
-import { DevicesRepository } from '../devices/devices.repository';
 import { SaUsersQueryRepository } from './sa.users.query-repo';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './domain/user.entity';
@@ -30,7 +29,6 @@ import { UserBanInfo } from './domain/banInfo.entity';
     EmailResendingDecorator,
     IsRecoveryCodeCorrect,
     IsUserExistsDecorator,
-    DevicesRepository,
   ],
   controllers: [UsersSAController],
   exports: [UsersService, UsersRepository, SaUsersQueryRepository],
