@@ -50,7 +50,7 @@ export class BloggerBansQueryRepository {
       searchLoginTerm ? 'LOWER(ub.login) LIKE LOWER(:searchLoginTerm)' : 'true'
     }`;
     const orderQuery = `CASE WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
-         ELSE 1 END`;
+         ELSE 1 END, "${sortBy}"`;
     const builder = this.userBansTypeOrmRepository
       .createQueryBuilder('ub')
       .where(subQuery, { blogId: blogId, searchLoginTerm: `%${searchLoginTerm}%` });

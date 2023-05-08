@@ -53,7 +53,7 @@ let PostsQueryRepository = class PostsQueryRepository {
         const subQuery = `p.id ${allBannedPosts.length ? `NOT IN (:...allBannedPosts)` : `IS NOT NULL`} 
     AND (${blogId ? `p.blogId = :blogId` : true})`;
         const orderQuery = `CASE WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
-         ELSE 1 END`;
+         ELSE 1 END, "${sortBy}"`;
         const builder = await this.getBuilder(userId);
         const posts = await builder
             .where(subQuery, { allBannedPosts: allBannedPosts, blogId: blogId })

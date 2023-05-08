@@ -54,7 +54,7 @@ let BloggerCommentsQueryRepository = class BloggerCommentsQueryRepository {
         const sortDirectionSql = sortDirection === 'desc' ? 'DESC' : 'ASC';
         const subQuery = `${allPosts.length ? `pi.postId IN (:...allPosts)` : `false`}`;
         const orderQuery = `CASE WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
-         ELSE 1 END`;
+         ELSE 1 END, "${sortBy}"`;
         const builder = this.commentsTypeOrmRepository
             .createQueryBuilder('c')
             .leftJoinAndSelect('c.commentatorInfo', 'ci')

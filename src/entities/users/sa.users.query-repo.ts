@@ -42,7 +42,7 @@ export class SaUsersQueryRepository {
         : true
     })`;
     const orderQuery = `CASE WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
-         ELSE 1 END`;
+         ELSE 1 END, "${sortBy}"`;
 
     const builder = this.usersTypeOrmRepository
       .createQueryBuilder('u')

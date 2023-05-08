@@ -43,7 +43,7 @@ export class BlogsSAQueryRepository {
     }`;
     const sortDirectionSql: 'ASC' | 'DESC' = sortDirection === 'desc' ? 'DESC' : 'ASC';
     const orderQuery = `CASE WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
-         ELSE 1 END`;
+         ELSE 1 END, "${sortBy}"`;
 
     const builder = this.blogsTypeOrmRepository
       .createQueryBuilder('b')

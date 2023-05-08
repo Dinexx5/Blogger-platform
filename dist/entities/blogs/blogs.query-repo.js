@@ -44,7 +44,7 @@ let BlogsQueryRepository = class BlogsQueryRepository {
         const userIdSubQuery = `${userId ? 'oi.userId = :userId' : 'true'}`;
         const searchNameTermQuery = `${searchNameTerm ? 'LOWER(b.name) LIKE LOWER(:searchNameTerm)' : 'true'}`;
         const orderQuery = `CASE WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
-         ELSE 1 END`;
+         ELSE 1 END, "${sortBy}"`;
         const sortDirectionSql = sortDirection === 'desc' ? 'DESC' : 'ASC';
         const builder = this.blogsTypeOrmRepository
             .createQueryBuilder('b')

@@ -50,7 +50,7 @@ export class PostsQueryRepository {
     AND (${blogId ? `p.blogId = :blogId` : true})`;
 
     const orderQuery = `CASE WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
-         ELSE 1 END`;
+         ELSE 1 END, "${sortBy}"`;
 
     const builder = await this.getBuilder(userId);
 
