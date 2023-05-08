@@ -60,7 +60,7 @@ let DevicesService = class DevicesService {
         await this.devicesRepository.save(foundDevice);
     }
     async deleteDevice(deviceId) {
-        await this.devicesRepository.delete(deviceId);
+        await this.devicesRepository.delete({ deviceId: deviceId });
     }
 };
 DevicesService = __decorate([

@@ -56,6 +56,6 @@ export class DevicesService {
   }
 
   async deleteDevice(deviceId: string) {
-    await this.devicesRepository.delete(deviceId);
+    await this.devicesRepository.delete({ deviceId: deviceId });
   }
 }

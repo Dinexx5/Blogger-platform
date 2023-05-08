@@ -71,8 +71,8 @@ export class AuthController {
   @UseGuards(RateLimitGuard)
   @Post('registration')
   async registerUser(@Body() inputModel: CreateUserModel, @Res() res: Response) {
-    const createdAccount = await this.authService.createUser(inputModel);
-    if (!createdAccount) return res.send('can not send email. try later');
+    // const createdAccount = await this.authService.createUser(inputModel);
+    // if (!createdAccount) return res.send('can not send email. try later');
     return res.sendStatus(204);
   }
 
