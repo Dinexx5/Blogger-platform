@@ -55,7 +55,6 @@ let BloggerBansQueryRepository = class BloggerBansQueryRepository {
             .limit(+pageSize)
             .offset(skippedBlogsCount)
             .getMany();
-        console.log(bans);
         const count = bans.length;
         const bansView = bans.map(this.mapFoundBansToViewModel);
         return {

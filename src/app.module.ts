@@ -22,21 +22,11 @@ export const cloudDbRootOptions: TypeOrmModuleOptions = {
   autoLoadEntities: true,
   synchronize: true,
 };
-export const localDbRootOptions: TypeOrmModuleOptions = {
-  type: 'postgres',
-  host: 'localhost',
-  port: 5000,
-  username: process.env.SQL_USERNAME,
-  password: 'privetOLEG',
-  database: 'typeORMdb',
-  autoLoadEntities: true,
-  synchronize: true,
-};
 
 @Module({
   imports: [
     configModule,
-    TypeOrmModule.forRoot(localDbRootOptions),
+    TypeOrmModule.forRoot(cloudDbRootOptions),
     BansModule,
     UsersModule,
     AuthModule,

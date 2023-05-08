@@ -6,7 +6,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AppModule = exports.localDbRootOptions = exports.cloudDbRootOptions = void 0;
+exports.AppModule = exports.cloudDbRootOptions = void 0;
 const config_1 = require("@nestjs/config");
 const configModule = config_1.ConfigModule.forRoot({ isGlobal: true });
 const common_1 = require("@nestjs/common");
@@ -30,23 +30,13 @@ exports.cloudDbRootOptions = {
     autoLoadEntities: true,
     synchronize: true,
 };
-exports.localDbRootOptions = {
-    type: 'postgres',
-    host: 'localhost',
-    port: 5000,
-    username: process.env.SQL_USERNAME,
-    password: 'privetOLEG',
-    database: 'typeORMdb',
-    autoLoadEntities: true,
-    synchronize: true,
-};
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
             configModule,
-            typeorm_1.TypeOrmModule.forRoot(exports.localDbRootOptions),
+            typeorm_1.TypeOrmModule.forRoot(exports.cloudDbRootOptions),
             bans_module_1.BansModule,
             users_module_1.UsersModule,
             auth_module_1.AuthModule,
