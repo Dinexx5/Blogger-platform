@@ -6,7 +6,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AppModule = exports.cloudDbRootOptions = void 0;
+exports.AppModule = exports.localDbRootOptions = exports.cloudDbRootOptions = void 0;
 const config_1 = require("@nestjs/config");
 const configModule = config_1.ConfigModule.forRoot({ isGlobal: true });
 const common_1 = require("@nestjs/common");
@@ -20,6 +20,7 @@ const comments_module_1 = require("./entities/comments/comments.module");
 const testing_module_1 = require("./entities/testing/testing.module");
 const bans_module_1 = require("./entities/bans/bans.module");
 const typeorm_1 = require("@nestjs/typeorm");
+const questions_module_1 = require("./entities/quiz/questions.module");
 exports.cloudDbRootOptions = {
     type: 'postgres',
     host: process.env.SQL_HOST_NAME,
@@ -30,13 +31,23 @@ exports.cloudDbRootOptions = {
     autoLoadEntities: true,
     synchronize: true,
 };
+exports.localDbRootOptions = {
+    type: 'postgres',
+    host: 'localhost',
+    port: 5000,
+    username: process.env.SQL_USERNAME,
+    password: 'privetOLEG',
+    database: 'typeORMdb',
+    autoLoadEntities: true,
+    synchronize: true,
+};
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
             configModule,
-            typeorm_1.TypeOrmModule.forRoot(exports.cloudDbRootOptions),
+            typeorm_1.TypeOrmModule.forRoot(exports.localDbRootOptions),
             bans_module_1.BansModule,
             users_module_1.UsersModule,
             auth_module_1.AuthModule,
@@ -44,6 +55,7 @@ AppModule = __decorate([
             posts_module_1.PostsModule,
             comments_module_1.CommentsModule,
             testing_module_1.TestingModule,
+            questions_module_1.QuestionsModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

@@ -10,7 +10,7 @@ import { PostViewModel } from '../src/entities/posts/posts.models';
 
 jest.setTimeout(120000);
 
-describe('Blogger (e2e)', () => {
+describe('ALL BANS FLOWS (e2e)', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
@@ -556,6 +556,31 @@ describe('Blogger (e2e)', () => {
           content: '33333333333333333333333',
         })
         .expect(201);
+    });
+  });
+  describe('Questions crud', () => {
+    beforeAll(async () => {
+      await request(app.getHttpServer()).delete(`/testing/all-data`).expect(204);
+    });
+
+    it('should create a question', async () => {
+      const createQuestionDto = {
+        body: 'What is the capital of France?',
+        correctAnswers: ['Paris'],
+      };
+
+      const response = await request(app.getHttpServer())
+        .post('/sa/quiz/questions')
+        .send(createQuestionDto)
+        .expect(201);
+
+      expect(response.body).toEqual({
+        body: 'What is the capital of France?',
+        correctAnswers: ['Paris'],
+        published: false,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      });
     });
   });
 });

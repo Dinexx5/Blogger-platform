@@ -11,6 +11,7 @@ import { CommentsModule } from './entities/comments/comments.module';
 import { TestingModule } from './entities/testing/testing.module';
 import { BansModule } from './entities/bans/bans.module';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { QuestionsModule } from './entities/quiz/questions.module';
 
 export const cloudDbRootOptions: TypeOrmModuleOptions = {
   type: 'postgres',
@@ -22,11 +23,20 @@ export const cloudDbRootOptions: TypeOrmModuleOptions = {
   autoLoadEntities: true,
   synchronize: true,
 };
-
+export const localDbRootOptions: TypeOrmModuleOptions = {
+  type: 'postgres',
+  host: 'localhost',
+  port: 5000,
+  username: process.env.SQL_USERNAME,
+  password: 'privetOLEG',
+  database: 'typeORMdb',
+  autoLoadEntities: true,
+  synchronize: true,
+};
 @Module({
   imports: [
     configModule,
-    TypeOrmModule.forRoot(cloudDbRootOptions),
+    TypeOrmModule.forRoot(localDbRootOptions),
     BansModule,
     UsersModule,
     AuthModule,
@@ -34,6 +44,7 @@ export const cloudDbRootOptions: TypeOrmModuleOptions = {
     PostsModule,
     CommentsModule,
     TestingModule,
+    QuestionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
