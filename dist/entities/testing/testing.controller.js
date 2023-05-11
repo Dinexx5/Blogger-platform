@@ -35,8 +35,9 @@ const userBanForBlog_entity_1 = require("../blogger/domain/userBanForBlog.entity
 const comment_entity_1 = require("../comments/domain/comment.entity");
 const post_entity_1 = require("../posts/domain/post.entity");
 const blog_entity_1 = require("../blogs/domain/blog.entity");
+const question_entity_1 = require("../quiz/domain/question.entity");
 let TestingController = class TestingController {
-    constructor(attempts, blogBansInfo, blogOwners, commentatorInfo, postInfo, devices, postsLikes, commentsLikes, tokens, blogBans, userBans, userBansInfo, emailConfirmationInfo, passwordRecoveryInfo, userBansForBlog, comments, posts, blogs, users) {
+    constructor(attempts, blogBansInfo, blogOwners, commentatorInfo, postInfo, devices, postsLikes, commentsLikes, tokens, blogBans, userBans, userBansInfo, emailConfirmationInfo, passwordRecoveryInfo, userBansForBlog, comments, posts, blogs, users, questions) {
         this.attempts = attempts;
         this.blogBansInfo = blogBansInfo;
         this.blogOwners = blogOwners;
@@ -56,8 +57,10 @@ let TestingController = class TestingController {
         this.posts = posts;
         this.blogs = blogs;
         this.users = users;
+        this.questions = questions;
     }
     async deleteAll(res) {
+        await this.questions.delete({});
         await this.attempts.delete({});
         await this.blogBansInfo.delete({});
         await this.blogOwners.delete({});
@@ -108,7 +111,9 @@ TestingController = __decorate([
     __param(16, (0, typeorm_1.InjectRepository)(post_entity_1.Post)),
     __param(17, (0, typeorm_1.InjectRepository)(blog_entity_1.Blog)),
     __param(18, (0, typeorm_1.InjectRepository)(user_entity_1.User)),
+    __param(19, (0, typeorm_1.InjectRepository)(question_entity_1.Question)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.Repository,

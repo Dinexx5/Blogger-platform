@@ -59,6 +59,7 @@ export class QuestionsController {
   }
   @UseGuards(JwtAccessAuthGuard)
   @Put(':questionId/publish')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async updatePublishedStatus(
     @Param('questionId', ParseIntPipe) id: number,
     @Body() updateModel: publishedUpdateModel,

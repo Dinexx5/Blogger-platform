@@ -43,7 +43,7 @@ export class QuestionsQueryRepository {
       .getManyAndCount();
 
     return {
-      pagesCount: Math.ceil(totalCount / +pageSize),
+      pagesCount: Math.ceil(totalCount / pageSize),
       page: pageNumber,
       pageSize: pageSize,
       totalCount: totalCount,

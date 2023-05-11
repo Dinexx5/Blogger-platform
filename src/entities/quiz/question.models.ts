@@ -26,6 +26,7 @@ export class updateQuestionDto {
 }
 
 export class QuestionViewModel {
+  id: number;
   body: string;
   correctAnswers: string[];
   published: boolean;

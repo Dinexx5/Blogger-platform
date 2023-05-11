@@ -19,6 +19,7 @@ import { UserBanForBlog } from '../blogger/domain/userBanForBlog.entity';
 import { Comment } from '../comments/domain/comment.entity';
 import { Post } from '../posts/domain/post.entity';
 import { Blog } from '../blogs/domain/blog.entity';
+import { Question } from '../quiz/domain/question.entity';
 export declare class TestingController {
     private readonly attempts;
     private readonly blogBansInfo;
@@ -39,6 +40,7 @@ export declare class TestingController {
     private readonly posts;
     private readonly blogs;
     private readonly users;
-    constructor(attempts: Repository<Attempt>, blogBansInfo: Repository<BlogBansInfo>, blogOwners: Repository<BlogOwnerInfo>, commentatorInfo: Repository<CommentatorInfo>, postInfo: Repository<PostInfoForComment>, devices: Repository<Device>, postsLikes: Repository<PostLike>, commentsLikes: Repository<CommentLike>, tokens: Repository<Token>, blogBans: Repository<SaBlogBan>, userBans: Repository<SaUserBan>, userBansInfo: Repository<UserBanInfo>, emailConfirmationInfo: Repository<EmailConfirmationInfo>, passwordRecoveryInfo: Repository<PasswordRecoveryInfo>, userBansForBlog: Repository<UserBanForBlog>, comments: Repository<Comment>, posts: Repository<Post>, blogs: Repository<Blog>, users: Repository<User>);
+    private readonly questions;
+    constructor(attempts: Repository<Attempt>, blogBansInfo: Repository<BlogBansInfo>, blogOwners: Repository<BlogOwnerInfo>, commentatorInfo: Repository<CommentatorInfo>, postInfo: Repository<PostInfoForComment>, devices: Repository<Device>, postsLikes: Repository<PostLike>, commentsLikes: Repository<CommentLike>, tokens: Repository<Token>, blogBans: Repository<SaBlogBan>, userBans: Repository<SaUserBan>, userBansInfo: Repository<UserBanInfo>, emailConfirmationInfo: Repository<EmailConfirmationInfo>, passwordRecoveryInfo: Repository<PasswordRecoveryInfo>, userBansForBlog: Repository<UserBanForBlog>, comments: Repository<Comment>, posts: Repository<Post>, blogs: Repository<Blog>, users: Repository<User>, questions: Repository<Question>);
     deleteAll(res: Response): Promise<Response<any, Record<string, any>>>;
 }

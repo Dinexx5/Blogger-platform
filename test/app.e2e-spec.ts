@@ -7,6 +7,7 @@ import { SaUserViewModel } from '../src/entities/users/userModels';
 import { BlogViewModel } from '../src/entities/blogs/blogs.models';
 import { CommentViewModel } from '../src/entities/comments/comments.models';
 import { PostViewModel } from '../src/entities/posts/posts.models';
+import { QuestionViewModel } from '../src/entities/quiz/question.models';
 
 jest.setTimeout(120000);
 
@@ -559,28 +560,194 @@ describe('ALL BANS FLOWS (e2e)', () => {
     });
   });
   describe('Questions crud', () => {
+    let user: SaUserViewModel;
+    let validAccessToken: { accessToken: string };
+    let question1: QuestionViewModel;
+    let question2: QuestionViewModel;
+
     beforeAll(async () => {
       await request(app.getHttpServer()).delete(`/testing/all-data`).expect(204);
+
+      const response01 = await request(app.getHttpServer())
+        .post(`/sa/users`)
+        .auth('admin', 'qwerty', { type: 'basic' })
+        .send({
+          login: 'OLEG',
+          password: 'qwertyuiop',
+          email: 'olegZheltok@jive.com',
+        })
+        .expect(201);
+      user = response01.body;
+      expect(user).toEqual({
+        id: expect.any(String),
+        login: 'OLEG',
+        email: 'olegZheltok@jive.com',
+        createdAt: expect.any(String),
+        banInfo: {
+          isBanned: false,
+          banDate: null,
+          banReason: null,
+        },
+      });
+      const responseToken = await request(app.getHttpServer())
+        .post(`/auth/login`)
+        .set(`User-Agent`, `for test`)
+        .send({ loginOrEmail: 'OLEG', password: 'qwertyuiop' })
+        .expect(200);
+      validAccessToken = responseToken.body;
+      expect(validAccessToken).toEqual({ accessToken: expect.any(String) });
+    });
+
+    it('should return an empty array when no questions exist', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/sa/quiz/questions')
+        .auth(validAccessToken.accessToken, { type: 'bearer' })
+        .expect(200);
+
+      expect(response.body).toEqual({
+        pagesCount: 0,
+        page: 1,
+        pageSize: 10,
+        totalCount: 0,
+        items: [],
+      });
     });
 
     it('should create a question', async () => {
       const createQuestionDto = {
         body: 'What is the capital of France?',
-        correctAnswers: ['Paris'],
+        correctAnswers: ['Paris', 'Minsk'],
       };
 
       const response = await request(app.getHttpServer())
         .post('/sa/quiz/questions')
+        .auth(validAccessToken.accessToken, { type: 'bearer' })
         .send(createQuestionDto)
         .expect(201);
+      question1 = response.body;
 
-      expect(response.body).toEqual({
+      expect(question1).toEqual({
+        id: expect.any(Number),
         body: 'What is the capital of France?',
-        correctAnswers: ['Paris'],
+        correctAnswers: ['Paris', 'Minsk'],
         published: false,
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
       });
+    });
+    it('should not create a question without auth', async () => {
+      const createQuestionDto = {
+        body: 'What is the capital of Belarus?',
+        correctAnswers: ['Minsk'],
+      };
+
+      await request(app.getHttpServer())
+        .post('/sa/quiz/questions')
+        .send(createQuestionDto)
+        .expect(401);
+    });
+    it('should create second question', async () => {
+      const createQuestionDto = {
+        body: 'What is the capital of Austria?',
+        correctAnswers: ['Vienna'],
+      };
+      const response = await request(app.getHttpServer())
+        .post('/sa/quiz/questions')
+        .auth(validAccessToken.accessToken, { type: 'bearer' })
+        .send(createQuestionDto)
+        .expect(201);
+      question2 = response.body;
+    });
+    it('should return an array containing 2 questions', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/sa/quiz/questions')
+        .auth(validAccessToken.accessToken, { type: 'bearer' })
+        .expect(200);
+
+      expect(response.body).toEqual({
+        pagesCount: 1,
+        page: 1,
+        pageSize: 10,
+        totalCount: 2,
+        items: [question2, question1],
+      });
+    });
+    it('should return 404 status code if question was not found', async () => {
+      await request(app.getHttpServer())
+        .delete('/sa/quiz/questions/999')
+        .auth(validAccessToken.accessToken, { type: 'bearer' })
+        .expect(404);
+    });
+    it('should delete questions by id', async () => {
+      await request(app.getHttpServer())
+        .delete(`/sa/quiz/questions/${question1.id}`)
+        .auth(validAccessToken.accessToken, { type: 'bearer' })
+        .expect(204);
+    });
+    it('should return only one question after delete', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/sa/quiz/questions')
+        .auth(validAccessToken.accessToken, { type: 'bearer' })
+        .expect(200);
+      expect(response.body.items).toHaveLength(1);
+    });
+    it('should update question', async () => {
+      const updateDto = {
+        body: 'newQuestion',
+        correctAnswers: ['newAnswer1', 'newAnswer2'],
+      };
+      await request(app.getHttpServer())
+        .put(`/sa/quiz/questions/${question2.id}`)
+        .auth(validAccessToken.accessToken, { type: 'bearer' })
+        .send(updateDto)
+        .expect(204);
+      const getResponse = await request(app.getHttpServer())
+        .get('/sa/quiz/questions')
+        .auth(validAccessToken.accessToken, { type: 'bearer' })
+        .expect(200);
+
+      expect(getResponse.body.items[0]).toEqual({
+        id: expect.any(Number),
+        body: 'newQuestion',
+        correctAnswers: ['newAnswer1', 'newAnswer2'],
+        published: false,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      });
+    });
+    it('should update published status', async () => {
+      const updateDto = {
+        published: true,
+      };
+      await request(app.getHttpServer())
+        .put(`/sa/quiz/questions/${question2.id}/publish`)
+        .auth(validAccessToken.accessToken, { type: 'bearer' })
+        .send(updateDto)
+        .expect(204);
+      const getResponse = await request(app.getHttpServer())
+        .get('/sa/quiz/questions')
+        .auth(validAccessToken.accessToken, { type: 'bearer' })
+        .expect(200);
+
+      expect(getResponse.body.items[0]).toEqual({
+        id: expect.any(Number),
+        body: 'newQuestion',
+        correctAnswers: ['newAnswer1', 'newAnswer2'],
+        published: true,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      });
+    });
+    it('should noy update question that does not exist', async () => {
+      const updateDto = {
+        body: 'newQuestion',
+        correctAnswers: ['newAnswer1', 'newAnswer2'],
+      };
+      await request(app.getHttpServer())
+        .put(`/sa/quiz/questions/99999`)
+        .auth(validAccessToken.accessToken, { type: 'bearer' })
+        .send(updateDto)
+        .expect(404);
     });
   });
 });

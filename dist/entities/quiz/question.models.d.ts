@@ -7,6 +7,7 @@ export declare class updateQuestionDto {
     correctAnswers: string[];
 }
 export declare class QuestionViewModel {
+    id: number;
     body: string;
     correctAnswers: string[];
     published: boolean;

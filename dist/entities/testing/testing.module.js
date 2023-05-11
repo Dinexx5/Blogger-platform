@@ -29,6 +29,7 @@ const post_entity_1 = require("../posts/domain/post.entity");
 const user_entity_1 = require("../users/domain/user.entity");
 const emailConfirmation_entity_1 = require("../users/domain/emailConfirmation.entity");
 const passwordRecovery_entity_1 = require("../users/domain/passwordRecovery.entity");
+const question_entity_1 = require("../quiz/domain/question.entity");
 let TestingModule = class TestingModule {
 };
 TestingModule = __decorate([
@@ -54,6 +55,7 @@ TestingModule = __decorate([
                 banInfo_entity_1.UserBanInfo,
                 token_entity_1.Token,
                 device_entity_1.Device,
+                question_entity_1.Question,
             ]),
         ],
         providers: [],

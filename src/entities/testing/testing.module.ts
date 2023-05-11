@@ -20,6 +20,7 @@ import { Post } from '../posts/domain/post.entity';
 import { User } from '../users/domain/user.entity';
 import { EmailConfirmationInfo } from '../users/domain/emailConfirmation.entity';
 import { PasswordRecoveryInfo } from '../users/domain/passwordRecovery.entity';
+import { Question } from '../quiz/domain/question.entity';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { PasswordRecoveryInfo } from '../users/domain/passwordRecovery.entity';
       UserBanInfo,
       Token,
       Device,
+      Question,
     ]),
   ],
   providers: [],

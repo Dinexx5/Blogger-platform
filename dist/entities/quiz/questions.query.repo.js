@@ -40,7 +40,7 @@ let QuestionsQueryRepository = class QuestionsQueryRepository {
             .offset((pageNumber - 1) * pageSize)
             .getManyAndCount();
         return {
-            pagesCount: Math.ceil(totalCount / +pageSize),
+            pagesCount: Math.ceil(totalCount / pageSize),
             page: pageNumber,
             pageSize: pageSize,
             totalCount: totalCount,

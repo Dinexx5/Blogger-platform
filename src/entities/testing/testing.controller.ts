@@ -21,6 +21,7 @@ import { UserBanForBlog } from '../blogger/domain/userBanForBlog.entity';
 import { Comment } from '../comments/domain/comment.entity';
 import { Post } from '../posts/domain/post.entity';
 import { Blog } from '../blogs/domain/blog.entity';
+import { Question } from '../quiz/domain/question.entity';
 
 @Controller('testing')
 export class TestingController {
@@ -63,9 +64,12 @@ export class TestingController {
     private readonly blogs: Repository<Blog>,
     @InjectRepository(User)
     private readonly users: Repository<User>,
+    @InjectRepository(Question)
+    private readonly questions: Repository<Question>,
   ) {}
   @Delete('all-data')
   async deleteAll(@Res() res: Response) {
+    await this.questions.delete({});
     await this.attempts.delete({});
     await this.blogBansInfo.delete({});
     await this.blogOwners.delete({});

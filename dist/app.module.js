@@ -47,7 +47,7 @@ AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
             configModule,
-            typeorm_1.TypeOrmModule.forRoot(exports.localDbRootOptions),
+            typeorm_1.TypeOrmModule.forRoot(exports.cloudDbRootOptions),
             bans_module_1.BansModule,
             users_module_1.UsersModule,
             auth_module_1.AuthModule,
