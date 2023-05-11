@@ -1,4 +1,12 @@
-import { ArrayMinSize, IsArray, IsBoolean, IsNotEmpty, IsString, Length } from 'class-validator';
+import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  IsArray,
+  IsBoolean,
+  IsNotEmpty,
+  IsString,
+  Length,
+} from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class createQuestionDto {
@@ -10,6 +18,7 @@ export class createQuestionDto {
   @IsNotEmpty()
   @IsArray()
   @ArrayMinSize(1)
+  @ArrayMaxSize(1)
   correctAnswers: string[];
 }
 
@@ -22,6 +31,7 @@ export class updateQuestionDto {
   @IsNotEmpty()
   @IsArray()
   @ArrayMinSize(1)
+  @ArrayMaxSize(1)
   correctAnswers: string[];
 }
 

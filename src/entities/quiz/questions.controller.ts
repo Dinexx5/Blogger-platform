@@ -23,6 +23,7 @@ import {
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { paginatedViewModel } from '../../shared/models/pagination';
 import { QuestionsQueryRepository } from './questions.query.repo';
+import { AuthGuard } from '../auth/guards/auth.guard';
 
 @Controller('sa/quiz/questions')
 export class QuestionsController {
@@ -30,19 +31,19 @@ export class QuestionsController {
     private readonly questionService: QuestionsService,
     private readonly questionsQueryRepo: QuestionsQueryRepository,
   ) {}
-  @UseGuards(JwtAccessAuthGuard)
+  @UseGuards(AuthGuard)
   @Get()
   async getQuestions(
     @Query() query: GetQuestionsPaginationDto,
   ): Promise<paginatedViewModel<QuestionViewModel[]>> {
     return this.questionsQueryRepo.getQuestions(query);
   }
-  @UseGuards(JwtAccessAuthGuard)
+  @UseGuards(AuthGuard)
   @Post()
   async createQuestion(@Body() questionData: createQuestionDto): Promise<QuestionViewModel> {
     return this.questionService.createQuestion(questionData);
   }
-  @UseGuards(JwtAccessAuthGuard)
+  @UseGuards(AuthGuard)
   @Put(':questionId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async updateQuestion(
@@ -51,13 +52,13 @@ export class QuestionsController {
   ) {
     await this.questionService.updateQuestion(id, questionData);
   }
-  @UseGuards(JwtAccessAuthGuard)
+  @UseGuards(AuthGuard)
   @Delete(':questionId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(@Param('questionId', ParseIntPipe) id: number) {
     await this.questionService.deleteQuestion(id);
   }
-  @UseGuards(JwtAccessAuthGuard)
+  @UseGuards(AuthGuard)
   @Put(':questionId/publish')
   @HttpCode(HttpStatus.NO_CONTENT)
   async updatePublishedStatus(
