@@ -55,8 +55,8 @@ export class QuestionsQueryRepository {
 
     return {
       pagesCount: Math.ceil(totalCount / pageSize),
-      page: pageNumber,
-      pageSize: pageSize,
+      page: +pageNumber,
+      pageSize: +pageSize,
       totalCount: totalCount,
       items: questionsView,
     };

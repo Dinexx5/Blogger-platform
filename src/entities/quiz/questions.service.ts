@@ -31,14 +31,13 @@ export class QuestionsService {
   }
 
   async updateQuestion(id: number, questionData: updateQuestionDto) {
-    const question = await this.questionRepository.preload({
-      id,
-      ...questionData,
-      updatedAt: new Date().toISOString(),
-    });
+    const question = await this.questionRepository.findOneBy({ id: id });
     if (!question) {
       throw new NotFoundException();
     }
+    question.body = questionData.body;
+    question.correctAnswers = questionData.correctAnswers;
+    question.updatedAt = new Date().toISOString();
     await this.questionRepository.save(question);
   }
 
