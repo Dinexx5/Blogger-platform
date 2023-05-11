@@ -8,7 +8,16 @@ import { Repository } from 'typeorm';
 @Injectable()
 export class QuestionsQueryRepository {
   constructor(@InjectRepository(Question) private questionsRepository: Repository<Question>) {}
-
+  mapFoundQuestionsToViewModel(question): QuestionViewModel {
+    return {
+      id: question.id.toString(),
+      body: question.body,
+      correctAnswers: question.correctAnswers,
+      published: question.published,
+      createdAt: question.createdAt,
+      updatedAt: question.updatedAt,
+    };
+  }
   async getQuestions(
     getQuestionsDto: GetQuestionsPaginationDto,
   ): Promise<paginatedViewModel<QuestionViewModel[]>> {
@@ -42,12 +51,14 @@ export class QuestionsQueryRepository {
       .offset((pageNumber - 1) * pageSize)
       .getManyAndCount();
 
+    const questionsView = questions.map(this.mapFoundQuestionsToViewModel);
+
     return {
       pagesCount: Math.ceil(totalCount / pageSize),
       page: pageNumber,
       pageSize: pageSize,
       totalCount: totalCount,
-      items: questions,
+      items: questionsView,
     };
   }
 }

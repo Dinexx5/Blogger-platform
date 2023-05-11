@@ -20,7 +20,6 @@ import {
   QuestionViewModel,
   updateQuestionDto,
 } from './question.models';
-import { JwtAccessAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { paginatedViewModel } from '../../shared/models/pagination';
 import { QuestionsQueryRepository } from './questions.query.repo';
 import { AuthGuard } from '../auth/guards/auth.guard';

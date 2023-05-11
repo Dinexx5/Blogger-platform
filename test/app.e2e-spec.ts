@@ -608,12 +608,12 @@ describe('ALL BANS FLOWS (e2e)', () => {
       question1 = response.body;
 
       expect(question1).toEqual({
-        id: expect.any(Number),
+        id: expect.any(String),
         body: 'What is the capital of France?',
         correctAnswers: ['Paris, Minsk'],
         published: false,
         createdAt: expect.any(String),
-        updatedAt: expect.any(String),
+        updatedAt: null,
       });
     });
     it('should not create a question without auth', async () => {
@@ -688,7 +688,7 @@ describe('ALL BANS FLOWS (e2e)', () => {
         .expect(200);
 
       expect(getResponse.body.items[0]).toEqual({
-        id: expect.any(Number),
+        id: expect.any(String),
         body: 'newQuestion',
         correctAnswers: ['newAnswer1, newAnswer2'],
         published: false,
@@ -711,7 +711,7 @@ describe('ALL BANS FLOWS (e2e)', () => {
         .expect(200);
 
       expect(getResponse.body.items[0]).toEqual({
-        id: expect.any(Number),
+        id: expect.any(String),
         body: 'newQuestion',
         correctAnswers: ['newAnswer1, newAnswer2'],
         published: true,
