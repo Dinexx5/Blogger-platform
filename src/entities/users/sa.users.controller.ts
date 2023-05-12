@@ -15,7 +15,7 @@ import { paginatedViewModel } from '../../shared/models/pagination';
 import { Response } from 'express';
 import { UsersService } from './users.service';
 import { AuthGuard } from '../auth/guards/auth.guard';
-import { CreateUserModel, SaUserViewModel, userViewModel } from './userModels';
+import { CreateUserModel, SaUserViewModel, UserViewModel } from './user.models';
 import { SaUsersQueryRepository } from './sa.users.query-repo';
 import { isUserIdIntegerGuard } from '../auth/guards/param.integer.guard';
 
@@ -35,7 +35,7 @@ export class UsersSAController {
   @UseGuards(AuthGuard)
   @Post()
   async createUser(@Body() inputModel: CreateUserModel) {
-    const createdUser: userViewModel = await this.usersService.createUser(inputModel);
+    const createdUser: UserViewModel = await this.usersService.createUser(inputModel);
     return createdUser;
   }
   @UseGuards(AuthGuard, isUserIdIntegerGuard)

@@ -30,23 +30,23 @@ export class QuestionsQueryRepository {
       pageSize = 10,
     } = getQuestionsDto;
 
-    const query = this.questionsRepository.createQueryBuilder('q');
+    const builder = this.questionsRepository.createQueryBuilder('q');
 
     if (searchBodyTerm) {
-      query.andWhere('q.body LIKE :searchBodyTerm', {
+      builder.andWhere('LOWER(q.body) LIKE LOWER(:searchBodyTerm)', {
         searchBodyTerm: `%${searchBodyTerm}%`,
       });
     }
 
     if (publishedStatus !== 'all') {
-      query.andWhere('q.published = :publishedStatus', {
+      builder.andWhere('q.published = :publishedStatus', {
         publishedStatus: publishedStatus === 'published',
       });
     }
 
-    query.orderBy(`q.${sortBy}`, sortDirection === 'desc' ? 'DESC' : 'ASC');
+    builder.orderBy(`q.${sortBy}`, sortDirection === 'desc' ? 'DESC' : 'ASC');
 
-    const [questions, totalCount] = await query
+    const [questions, totalCount] = await builder
       .limit(pageSize)
       .offset((pageNumber - 1) * pageSize)
       .getManyAndCount();

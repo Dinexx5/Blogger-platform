@@ -1,5 +1,5 @@
 import { paginatedViewModel, paginationQuerys } from '../../shared/models/pagination';
-import { BannedForBlogUserViewModel } from '../users/userModels';
+import { BannedForBlogUserViewModel } from '../users/user.models';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { BlogsRepository } from '../blogs/blogs.repository';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -38,34 +38,37 @@ export class BloggerBansQueryRepository {
       pageSize = 10,
       searchLoginTerm = null,
     } = query;
-    const skippedBlogsCount = (+pageNumber - 1) * +pageSize;
-    const sortDirectionSql: 'ASC' | 'DESC' = sortDirection === 'desc' ? 'DESC' : 'ASC';
 
     const blog = await this.blogsRepository.findBlogById(blogId);
     if (!blog) throw new NotFoundException();
     const blogOwnerInfo = await this.blogOwnerInfoRepository.findOneBy({ blogId: blogId });
     if (blogOwnerInfo.userId !== userId) throw new ForbiddenException();
 
-    const subQuery = `ub.blogId = :blogId AND ${
-      searchLoginTerm ? 'LOWER(ub.login) LIKE LOWER(:searchLoginTerm)' : 'true'
-    }`;
-    const orderQuery = `CASE WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
-         ELSE 1 END, "${sortBy}"`;
     const builder = this.userBansTypeOrmRepository
       .createQueryBuilder('ub')
-      .where(subQuery, { blogId: blogId, searchLoginTerm: `%${searchLoginTerm}%` });
-    const bans = await builder
-      .orderBy(orderQuery, sortDirectionSql)
-      .limit(+pageSize)
-      .offset(skippedBlogsCount)
-      .getMany();
-    const count = await builder.getCount();
+      .where('ub.blogId = :blogId', { blogId: blogId });
+
+    if (searchLoginTerm) {
+      builder.andWhere('LOWER(ub.login) LIKE LOWER(:searchLoginTerm)', {
+        searchLoginTerm: `%${searchLoginTerm}%`,
+      });
+    }
+
+    const orderQuery = `CASE WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
+         ELSE 1 END, "${sortBy}"`;
+
+    const [bans, totalCount] = await builder
+      .orderBy(orderQuery, sortDirection === 'desc' ? 'DESC' : 'ASC')
+      .limit(pageSize)
+      .offset((pageNumber - 1) * pageSize)
+      .getManyAndCount();
+
     const bansView = bans.map(this.mapFoundBansToViewModel);
     return {
-      pagesCount: Math.ceil(+count / +pageSize),
-      page: +pageNumber,
-      pageSize: +pageSize,
-      totalCount: +count,
+      pagesCount: Math.ceil(totalCount / pageSize),
+      page: pageNumber,
+      pageSize: pageSize,
+      totalCount: totalCount,
       items: bansView,
     };
   }

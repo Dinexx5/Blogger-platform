@@ -3,7 +3,7 @@ import { UsersRepository } from './users.repository';
 import { v4 as uuidv4 } from 'uuid';
 import { add, addDays } from 'date-fns';
 import * as bcrypt from 'bcrypt';
-import { CreateUserModel, NewPasswordModel, SaUserViewModel } from './userModels';
+import { CreateUserModel, NewPasswordModel, SaUserViewModel } from './user.models';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './domain/user.entity';
 import { Repository } from 'typeorm';
@@ -93,10 +93,8 @@ export class UsersService {
     const confirmationInfo = await this.emailConfirmationRepository.findOneBy({
       userId: user.id,
     });
-    if (!confirmationInfo) return false;
     confirmationInfo.confirmationCode = confirmationCode;
     await this.emailConfirmationRepository.save(confirmationInfo);
-    return true;
   }
   async updateConfirmation(confirmationCode: string) {
     const confirmationInfo = await this.emailConfirmationRepository.findOneBy({
@@ -107,9 +105,7 @@ export class UsersService {
     await this.emailConfirmationRepository.save(confirmationInfo);
     return true;
   }
-  async updateRecoveryCode(email: string, recoveryCode: string) {
-    const user = await this.usersRepository.findUserByLoginOrEmail(email);
-    if (!user) return false;
+  async updateRecoveryCode(recoveryCode: string) {
     const expirationDate = add(new Date(), { hours: 1 });
     const recoveryInfo = await this.passwordRecoveryRepository.findOneBy({
       recoveryCode: recoveryCode,
@@ -117,17 +113,14 @@ export class UsersService {
     recoveryInfo.recoveryCode = recoveryCode;
     recoveryInfo.expirationDate = expirationDate;
     await this.passwordRecoveryRepository.save(recoveryInfo);
-    return true;
   }
-  async updatePassword(inputModel: NewPasswordModel): Promise<boolean> {
+  async updatePassword(inputModel: NewPasswordModel) {
     const recoveryInfo = await this.passwordRecoveryRepository.findOneBy({
       recoveryCode: inputModel.recoveryCode,
     });
-    if (!recoveryInfo) return false;
     const newPasswordHash = await this.generateHash(inputModel.newPassword);
     const user = await this.usersRepository.findUserById(recoveryInfo.userId);
     user.passwordHash = newPasswordHash;
     await this.usersRepository.save(user);
-    return true;
   }
 }

@@ -1,5 +1,5 @@
 import { paginatedViewModel, paginationQuerysSA } from '../../shared/models/pagination';
-import { SaUserViewModel } from './userModels';
+import { SaUserViewModel } from './user.models';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './domain/user.entity';

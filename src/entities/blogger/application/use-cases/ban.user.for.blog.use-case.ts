@@ -1,5 +1,5 @@
 import { UsersRepository } from '../../../users/users.repository';
-import { BanUserModelForBlog } from '../../../users/userModels';
+import { BanUserModelForBlog } from '../../../users/user.models';
 import { BlogsRepository } from '../../../blogs/blogs.repository';
 import { PostsRepository } from '../../../posts/posts.repository';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';

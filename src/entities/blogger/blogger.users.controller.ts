@@ -15,7 +15,7 @@ import {
   BannedForBlogUserViewModel,
   BanUserModelForBlog,
   UserToBanParamModel,
-} from '../users/userModels';
+} from '../users/user.models';
 import { CommandBus } from '@nestjs/cqrs';
 import { BanUserForBlogCommand } from './application/use-cases/ban.user.for.blog.use-case';
 import { paginatedViewModel } from '../../shared/models/pagination';

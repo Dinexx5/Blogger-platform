@@ -1,11 +1,11 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { DevicesService } from '../devices/devices.service';
 import { v4 as uuidv4 } from 'uuid';
 import { addDays } from 'date-fns';
 import { EmailAdapter } from '../../adapters/email.adapter';
-import { CreateUserModel, NewPasswordModel } from '../users/userModels';
+import { CreateUserModel, NewPasswordModel, UserTokenMetaModel } from '../users/user.models';
 import * as bcrypt from 'bcrypt';
 import { BansRepository } from '../bans/bans.repository';
 import { Repository } from 'typeorm';
@@ -81,9 +81,9 @@ export class AuthService {
     return refreshToken;
   }
 
-  async updateJwtRefreshToken(deviceId: string, exp: number, userId: number) {
-    const previousExpirationDate = new Date(exp * 1000).toISOString();
-    const newPayload = { userId: userId, deviceId: deviceId };
+  async updateJwtRefreshToken(inputModel: UserTokenMetaModel) {
+    const previousExpirationDate = new Date(inputModel.exp * 1000).toISOString();
+    const newPayload = { userId: inputModel.userId, deviceId: inputModel.deviceId };
     const newRefreshToken = this.jwtService.sign(newPayload, {
       secret: process.env.REFRESH_SECRET,
       expiresIn: '20000s',
@@ -95,7 +95,7 @@ export class AuthService {
     token.issuedAt = newIssuedAt;
     token.expiredAt = newExpiredAt;
     await this.tokenRepository.save(token);
-    await this.devicesService.updateLastActiveDate(deviceId, newIssuedAt);
+    await this.devicesService.updateLastActiveDate(inputModel.deviceId, newIssuedAt);
     return newRefreshToken;
   }
   async getRefreshTokenInfo(token: string) {
@@ -140,67 +140,65 @@ export class AuthService {
     user.passwordHash = passwordHash;
     user.createdAt = createdAt;
     await this.usersTypeOrmRepository.save(user);
+
     const banInfo = await this.banInfoRepository.create();
     banInfo.userId = user.id;
     banInfo.isBanned = false;
     banInfo.banDate = null;
     banInfo.banReason = null;
     await this.banInfoRepository.save(banInfo);
+
     const emailConfirmationInfo = await this.emailConfirmationRepository.create();
     emailConfirmationInfo.userId = user.id;
     emailConfirmationInfo.confirmationCode = confirmationCode;
     emailConfirmationInfo.isConfirmed = isConfirmed;
     emailConfirmationInfo.expirationDate = expirationDate;
     await this.emailConfirmationRepository.save(emailConfirmationInfo);
+
     const passwordRecoveryInfo = await this.passwordRecoveryRepository.create();
     passwordRecoveryInfo.userId = user.id;
     passwordRecoveryInfo.expirationDate = null;
     passwordRecoveryInfo.recoveryCode = null;
     await this.passwordRecoveryRepository.save(passwordRecoveryInfo);
 
-    if (!user) {
-      return null;
-    }
     try {
       await this.emailAdapter.sendEmailForConfirmation(inputModel.email, confirmationCode);
     } catch (error) {
-      return null;
+      console.log('Something wrong with sending an email');
+      console.error(error);
+      return;
     }
     return user;
   }
 
-  async resendEmail(email: string): Promise<boolean> {
+  async resendEmail(email: string) {
     const confirmationCode = uuidv4();
     try {
       await this.emailAdapter.sendEmailForConfirmation(email, confirmationCode);
     } catch (error) {
+      console.log('Something wrong with sending an email');
       console.error(error);
-      return false;
+      return;
     }
-    const isUpdated = await this.usersService.updateConfirmationCode(email, confirmationCode);
-    if (!isUpdated) return false;
-    return true;
+    await this.usersService.updateConfirmationCode(email, confirmationCode);
   }
-  async confirmEmail(code: string): Promise<boolean> {
+  async confirmEmail(code: string) {
     const isConfirmed = await this.usersService.updateConfirmation(code);
-    if (!isConfirmed) return false;
-    return true;
+    if (!isConfirmed) throw new BadRequestException();
   }
 
-  async sendEmailForPasswordRecovery(email: string): Promise<boolean> {
+  async sendEmailForPasswordRecovery(email: string) {
     const confirmationCode = uuidv4();
-    const isUpdated = await this.usersService.updateRecoveryCode(email, confirmationCode);
-    if (!isUpdated) return false;
+    await this.usersService.updateRecoveryCode(confirmationCode);
     try {
       await this.emailAdapter.sendEmailForPasswordRecovery(email, confirmationCode);
     } catch (error) {
-      return false;
+      console.log('Something went wrong with sending an email');
+      console.error(error);
+      return;
     }
-    return true;
   }
-  async updatePassword(inputModel: NewPasswordModel): Promise<boolean> {
-    const isUpdated = await this.usersService.updatePassword(inputModel);
-    if (!isUpdated) return false;
-    return true;
+  async updatePassword(inputModel: NewPasswordModel) {
+    await this.usersService.updatePassword(inputModel);
   }
 }

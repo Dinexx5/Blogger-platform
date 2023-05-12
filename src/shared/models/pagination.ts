@@ -9,8 +9,8 @@ export type paginatedViewModel<T> = {
 export type paginationQuerys = {
   sortDirection: string;
   sortBy: string;
-  pageNumber: string;
-  pageSize: string;
+  pageNumber: number;
+  pageSize: number;
   searchNameTerm?: string;
   searchLoginTerm?: string;
   searchEmailTerm?: string;
@@ -19,8 +19,8 @@ export type paginationQuerys = {
 export type paginationQuerysSA = {
   sortDirection: string;
   sortBy: string;
-  pageNumber: string;
-  pageSize: string;
+  pageNumber: number;
+  pageSize: number;
   searchNameTerm?: string;
   searchLoginTerm?: string;
   searchEmailTerm?: string;

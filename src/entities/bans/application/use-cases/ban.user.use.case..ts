@@ -1,5 +1,5 @@
 import { UsersRepository } from '../../../users/users.repository';
-import { BanModel } from '../../../users/userModels';
+import { BanModel } from '../../../users/user.models';
 import { BansRepository } from '../../bans.repository';
 import { BlogsRepository } from '../../../blogs/blogs.repository';
 import { PostsRepository } from '../../../posts/posts.repository';

@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Post, Request, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Request,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth-service';
 import { JwtAccessAuthGuard } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
@@ -10,7 +20,8 @@ import {
   NewPasswordModel,
   PasswordRecoveryModel,
   ResendEmailModel,
-} from '../users/userModels';
+  UserTokenMetaModel,
+} from '../users/user.models';
 import { JwtRefreshAuthGuard } from './guards/jwt-refresh.guard';
 import { CurrentUser } from '../../shared/decorators/current-user.decorator';
 import { User } from '../users/domain/user.entity';
@@ -25,10 +36,9 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(@Request() req, @CurrentUser() userId: number, @Res() res: Response) {
-    const ip = req.ip;
     const deviceName = req.headers['user-agent'] || '1';
     const accessToken = await this.authService.createJwtAccessToken(userId);
-    const refreshToken = await this.authService.generateJwtRefreshToken(userId, deviceName, ip);
+    const refreshToken = await this.authService.generateJwtRefreshToken(userId, deviceName, req.ip);
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: true,
@@ -48,11 +58,9 @@ export class AuthController {
   }
   @UseGuards(JwtRefreshAuthGuard)
   @Post('refresh-token')
-  async getRefreshToken(@CurrentUser() userTokenMeta, @Res() res: Response) {
-    const { deviceId, exp } = userTokenMeta;
-    const userId = userTokenMeta.userId;
-    const newAccessToken = await this.authService.createJwtAccessToken(userId);
-    const newRefreshToken = await this.authService.updateJwtRefreshToken(deviceId, exp, userId);
+  async getRefreshToken(@CurrentUser() userTokenMetaDto: UserTokenMetaModel, @Res() res: Response) {
+    const newAccessToken = await this.authService.createJwtAccessToken(userTokenMetaDto.userId);
+    const newRefreshToken = await this.authService.updateJwtRefreshToken(userTokenMetaDto);
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
       secure: true,
@@ -61,50 +69,45 @@ export class AuthController {
   }
   @UseGuards(JwtRefreshAuthGuard)
   @Post('logout')
-  async deleteCurrentSession(@CurrentUser() user, @Res() res: Response) {
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteCurrentSession(@CurrentUser() user) {
     const refreshToken = user.refreshToken;
     await this.authService.deleteCurrentToken(refreshToken);
     await this.authService.deleteDeviceForLogout(refreshToken);
-    return res.sendStatus(204);
   }
 
   // @UseGuards(RateLimitGuard)
   @Post('registration')
-  async registerUser(@Body() inputModel: CreateUserModel, @Res() res: Response) {
-    const createdAccount = await this.authService.createUser(inputModel);
-    if (!createdAccount) return res.send('can not send email. try later');
-    return res.sendStatus(204);
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async registerUser(@Body() inputModel: CreateUserModel) {
+    await this.authService.createUser(inputModel);
   }
 
   // @UseGuards(RateLimitGuard)
   @Post('registration-email-resending')
-  async resendEmail(@Body() inputModel: ResendEmailModel, @Res() res: Response) {
-    const isEmailResent = await this.authService.resendEmail(inputModel.email);
-    if (!isEmailResent) return res.send('Can not send an email');
-    return res.sendStatus(204);
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async resendEmail(@Body() inputModel: ResendEmailModel) {
+    await this.authService.resendEmail(inputModel.email);
   }
 
   // @UseGuards(RateLimitGuard)
   @Post('registration-confirmation')
-  async confirmEmail(@Body() inputModel: ConfirmEmailModel, @Res() res: Response) {
-    const isConfirmed = await this.authService.confirmEmail(inputModel.code);
-    if (!isConfirmed) return res.sendStatus(400);
-    return res.sendStatus(204);
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async confirmEmail(@Body() inputModel: ConfirmEmailModel) {
+    await this.authService.confirmEmail(inputModel.code);
   }
 
   // @UseGuards(RateLimitGuard)
   @Post('password-recovery')
-  async recoverPassword(@Body() inputModel: PasswordRecoveryModel, @Res() res: Response) {
-    const isEmailSent = await this.authService.sendEmailForPasswordRecovery(inputModel.email);
-    if (!isEmailSent) return res.status(204).send('something went wrong');
-    return res.sendStatus(204);
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async recoverPassword(@Body() inputModel: PasswordRecoveryModel) {
+    await this.authService.sendEmailForPasswordRecovery(inputModel.email);
   }
 
   // @UseGuards(RateLimitGuard)
   @Post('new-password')
-  async newPassword(@Body() inputModel: NewPasswordModel, @Res() res: Response) {
-    const isPasswordUpdated = await this.authService.updatePassword(inputModel);
-    if (!isPasswordUpdated) return res.send('something went wrong');
-    return res.sendStatus(204);
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async newPassword(@Body() inputModel: NewPasswordModel) {
+    await this.authService.updatePassword(inputModel);
   }
 }

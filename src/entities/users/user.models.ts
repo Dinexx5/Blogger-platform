@@ -97,13 +97,18 @@ export class UserToBanParamModel {
   userId: number;
 }
 
-export class userViewModel {
-  constructor(
-    public id: string,
-    public login: string,
-    public email: string,
-    public createdAt: string,
-  ) {}
+export class UserViewModel {
+  id: string;
+  login: string;
+  email: string;
+  createdAt: string;
+}
+
+export class UserTokenMetaModel {
+  userId: number;
+  deviceId: string;
+  exp: number;
+  refreshToken: string;
 }
 
 export class SaUserViewModel {
