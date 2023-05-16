@@ -21,6 +21,7 @@ import { User } from '../users/domain/user.entity';
 import { EmailConfirmationInfo } from '../users/domain/emailConfirmation.entity';
 import { PasswordRecoveryInfo } from '../users/domain/passwordRecovery.entity';
 import { Question } from '../quiz/domain/question.entity';
+import { PairGame } from '../quiz/domain/pair-game.entity';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { Question } from '../quiz/domain/question.entity';
       Token,
       Device,
       Question,
+      PairGame,
     ]),
   ],
   providers: [],

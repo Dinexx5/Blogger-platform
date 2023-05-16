@@ -6,7 +6,6 @@ import { User } from './domain/user.entity';
 @Injectable()
 export class UsersRepository {
   constructor(
-    @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(User)
     private readonly usersTypeOrmRepository: Repository<User>,
   ) {}

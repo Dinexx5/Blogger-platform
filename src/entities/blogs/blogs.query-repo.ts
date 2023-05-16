@@ -41,40 +41,41 @@ export class BlogsQueryRepository {
     const bannedBlogs = await this.blogBansRepository.getBannedBlogs();
     const allBannedBlogs = bannedBlogs.concat(bannedBlogsFromUsers);
 
-    const bannedSubQuery = `${
-      allBannedBlogs.length ? 'b.id NOT IN (:...allBannedBlogs)' : 'b.id IS NOT NULL'
-    }`;
+    const builder = this.blogsTypeOrmRepository
+      .createQueryBuilder('b')
+      .leftJoinAndSelect('b.blogOwnerInfo', 'oi');
 
-    const userIdSubQuery = `${userId ? 'oi.userId = :userId' : 'true'}`;
+    if (allBannedBlogs.length) {
+      builder.andWhere('b.id NOT IN (:...allBannedBlogs)', {
+        allBannedBlogs: allBannedBlogs,
+      });
+    }
+    if (searchNameTerm) {
+      builder.andWhere('LOWER(b.name) LIKE LOWER(:searchNameTerm)', {
+        searchNameTerm: `%${searchNameTerm}%`,
+      });
+    }
+    if (userId) {
+      builder.andWhere('oi.userId = :userId', {
+        userId: userId,
+      });
+    }
 
-    const searchNameTermQuery = `${
-      searchNameTerm ? 'LOWER(b.name) LIKE LOWER(:searchNameTerm)' : 'true'
-    }`;
     const orderQuery = `CASE WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
          ELSE 1 END, "${sortBy}"`;
 
-    const sortDirectionSql: 'ASC' | 'DESC' = sortDirection === 'desc' ? 'DESC' : 'ASC';
-
-    const builder = this.blogsTypeOrmRepository
-      .createQueryBuilder('b')
-      .leftJoinAndSelect('b.blogOwnerInfo', 'oi')
-      .where(bannedSubQuery, { allBannedBlogs: allBannedBlogs })
-      .andWhere(userIdSubQuery, { userId: userId })
-      .andWhere(searchNameTermQuery, { searchNameTerm: `%${searchNameTerm}%` });
-
-    const blogs = await builder
-      .orderBy(orderQuery, sortDirectionSql)
+    const [blogs, count] = await builder
+      .orderBy(orderQuery, sortDirection === 'desc' ? 'DESC' : 'ASC')
       .limit(+pageSize)
       .offset(skippedBlogsCount)
-      .getMany();
-    const count = await builder.getCount();
+      .getManyAndCount();
 
     const blogsView = blogs.map(this.mapFoundBlogToBlogViewModel);
     return {
-      pagesCount: Math.ceil(+count / +pageSize),
-      page: +pageNumber,
-      pageSize: +pageSize,
-      totalCount: +count,
+      pagesCount: Math.ceil(count / pageSize),
+      page: pageNumber,
+      pageSize: pageSize,
+      totalCount: count,
       items: blogsView,
     };
   }

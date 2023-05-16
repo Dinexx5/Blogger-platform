@@ -48,6 +48,18 @@ export class publishedUpdateModel {
   @IsBoolean()
   published: boolean;
 }
+export class SubmitAnswerDto {
+  @IsNotEmpty()
+  @IsString()
+  answer: string;
+}
+
+export class AnswerViewModel {
+  questionId: number;
+  answerStatus: 'Correct' | 'Incorrect';
+  addedAt: string;
+}
+
 export class GetQuestionsPaginationDto {
   searchBodyTerm?: string;
   publishedStatus?: string;

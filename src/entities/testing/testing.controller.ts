@@ -1,7 +1,7 @@
 import { Controller, Delete, Res } from '@nestjs/common';
 import { Response } from 'express';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { User } from '../users/domain/user.entity';
 import { Attempt } from '../attempts/domain/attempt.entity';
 import { BlogBansInfo } from '../blogs/domain/blogBansInfo.entity';
@@ -22,12 +22,15 @@ import { Comment } from '../comments/domain/comment.entity';
 import { Post } from '../posts/domain/post.entity';
 import { Blog } from '../blogs/domain/blog.entity';
 import { Question } from '../quiz/domain/question.entity';
+import { PairGame } from '../quiz/domain/pair-game.entity';
 
 @Controller('testing')
 export class TestingController {
   constructor(
     @InjectRepository(Attempt)
     private readonly attempts: Repository<Attempt>,
+    @InjectRepository(PairGame)
+    private readonly pairGames: Repository<PairGame>,
     @InjectRepository(BlogBansInfo)
     private readonly blogBansInfo: Repository<BlogBansInfo>,
     @InjectRepository(BlogOwnerInfo)
@@ -88,6 +91,7 @@ export class TestingController {
     await this.comments.delete({});
     await this.posts.delete({});
     await this.blogs.delete({});
+    await this.pairGames.delete({});
     await this.users.delete({});
     return res.sendStatus(204);
   }

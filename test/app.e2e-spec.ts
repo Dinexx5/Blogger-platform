@@ -8,6 +8,7 @@ import { BlogViewModel } from '../src/entities/blogs/blogs.models';
 import { CommentViewModel } from '../src/entities/comments/comments.models';
 import { PostViewModel } from '../src/entities/posts/posts.models';
 import { QuestionViewModel } from '../src/entities/quiz/question.models';
+import { PairGame } from '../src/entities/quiz/domain/pair-game.entity';
 
 jest.setTimeout(120000);
 
@@ -719,7 +720,7 @@ describe('ALL BANS FLOWS (e2e)', () => {
         updatedAt: expect.any(String),
       });
     });
-    it('should noy update question that does not exist', async () => {
+    it('should not update question that does not exist', async () => {
       const updateDto = {
         body: 'newQuestion',
         correctAnswers: ['newAnswer1, newAnswer2'],
@@ -728,6 +729,238 @@ describe('ALL BANS FLOWS (e2e)', () => {
         .put(`/sa/quiz/questions/99999`)
         .auth('admin', 'qwerty', { type: 'basic' })
         .send(updateDto)
+        .expect(404);
+    });
+  });
+  describe('Pair game tests', () => {
+    let user1: SaUserViewModel;
+    let user2: SaUserViewModel;
+    let user3: SaUserViewModel;
+    let validAccessToken1: { accessToken: string };
+    let validAccessToken2: { accessToken: string };
+    let validAccessToken3: { accessToken: string };
+    let currentPair: PairGame;
+
+    beforeAll(async () => {
+      await request(app.getHttpServer()).delete(`/testing/all-data`).expect(204);
+
+      const responseForCreateUser1 = await request(app.getHttpServer())
+        .post(`/sa/users`)
+        .auth('admin', 'qwerty', { type: 'basic' })
+        .send({
+          login: 'player1',
+          password: 'qwerty',
+          email: 'player1@jive.com',
+        })
+        .expect(201);
+      user1 = responseForCreateUser1.body;
+
+      const responseForCreateUser2 = await request(app.getHttpServer())
+        .post(`/sa/users`)
+        .auth('admin', 'qwerty', { type: 'basic' })
+        .send({
+          login: 'player2',
+          password: 'qwerty',
+          email: 'player2@jive.com',
+        })
+        .expect(201);
+      user2 = responseForCreateUser2.body;
+
+      const responseForCreateUser3 = await request(app.getHttpServer())
+        .post(`/sa/users`)
+        .auth('admin', 'qwerty', { type: 'basic' })
+        .send({
+          login: 'player3',
+          password: 'qwerty',
+          email: 'player3@jive.com',
+        })
+        .expect(201);
+      user3 = responseForCreateUser3.body;
+
+      const responseToken1 = await request(app.getHttpServer())
+        .post(`/auth/login`)
+        .set(`User-Agent`, `for test`)
+        .send({ loginOrEmail: 'player1', password: 'qwerty' })
+        .expect(200);
+      validAccessToken1 = responseToken1.body;
+
+      const responseToken2 = await request(app.getHttpServer())
+        .post(`/auth/login`)
+        .set(`User-Agent`, `for test`)
+        .send({ loginOrEmail: 'player2', password: 'qwerty' })
+        .expect(200);
+      validAccessToken2 = responseToken2.body;
+
+      const responseToken3 = await request(app.getHttpServer())
+        .post(`/auth/login`)
+        .set(`User-Agent`, `for test`)
+        .send({ loginOrEmail: 'player3', password: 'qwerty' })
+        .expect(200);
+      validAccessToken3 = responseToken3.body;
+
+      const createQuestionDto = {
+        body: 'What is the capital of France?',
+        correctAnswers: ['Paris, Minsk'],
+      };
+      for (let i = 0; i < 10; i++) {
+        await request(app.getHttpServer())
+          .post('/sa/quiz/questions')
+          .auth('admin', 'qwerty', { type: 'basic' })
+          .send(createQuestionDto);
+      }
+    });
+    it('should create new game-pair', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/pair-game-quiz/pairs/connection')
+        .auth(validAccessToken1.accessToken, { type: 'bearer' })
+        .expect(200);
+      currentPair = response.body;
+      expect(response.body.id).toEqual(expect.any(Number));
+      expect(response.body.pairCreatedDate).toEqual(expect.any(String));
+      expect(response.body.startGameDate).toBeNull();
+      expect(response.body.finishGameDate).toBeNull();
+      expect(response.body.firstPlayerProgress.player.id).toBe(+user1.id);
+      expect(response.body.questions).toBeNull();
+      expect(response.body.status).toBe('PendingSecondPlayer');
+    });
+    it('should not allow first player to connect second time', async () => {
+      await request(app.getHttpServer())
+        .post('/pair-game-quiz/pairs/connection')
+        .auth(validAccessToken1.accessToken, { type: 'bearer' })
+        .expect(403);
+    });
+    it('should start game after second player connected', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/pair-game-quiz/pairs/connection')
+        .auth(validAccessToken2.accessToken, { type: 'bearer' })
+        .expect(200);
+      expect(response.body.id).toEqual(expect.any(Number));
+      expect(response.body.pairCreatedDate).toEqual(expect.any(String));
+      expect(response.body.startGameDate).toEqual(expect.any(String));
+      expect(response.body.finishGameDate).toBeNull();
+      expect(response.body.firstPlayerProgress.player.id).toBe(+user1.id);
+      expect(response.body.secondPlayerProgress.player.id).toBe(+user2.id);
+      expect(response.body.questions).toHaveLength(5);
+      expect(response.body.status).toBe('Active');
+    });
+    it('should not allow second player to connect to active game', async () => {
+      await request(app.getHttpServer())
+        .post('/pair-game-quiz/pairs/connection')
+        .auth(validAccessToken2.accessToken, { type: 'bearer' })
+        .expect(403);
+    });
+    it('should not allow first player to connect to active game', async () => {
+      await request(app.getHttpServer())
+        .post('/pair-game-quiz/pairs/connection')
+        .auth(validAccessToken2.accessToken, { type: 'bearer' })
+        .expect(403);
+    });
+    it('should send correct answer for player1 for question1', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/pair-game-quiz/pairs/my-current/answers')
+        .auth(validAccessToken1.accessToken, { type: 'bearer' })
+        .send({ answer: 'Paris' })
+        .expect(200);
+
+      expect(response.body.questionId).toEqual(expect.any(Number));
+      expect(response.body.answerStatus).toBe('Correct');
+    });
+    it('should send correct answer for player2 for question1', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/pair-game-quiz/pairs/my-current/answers')
+        .auth(validAccessToken2.accessToken, { type: 'bearer' })
+        .send({ answer: 'Paris' })
+        .expect(200);
+
+      expect(response.body.questionId).toEqual(expect.any(Number));
+      expect(response.body.answerStatus).toBe('Correct');
+    });
+    it('should send incorrect answer for player1 for question2', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/pair-game-quiz/pairs/my-current/answers')
+        .auth(validAccessToken1.accessToken, { type: 'bearer' })
+        .send({ answer: 'Berlin' })
+        .expect(200);
+
+      expect(response.body.questionId).toEqual(expect.any(Number));
+      expect(response.body.answerStatus).toBe('Incorrect');
+    });
+    it('should send correct answer for player2 for question2', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/pair-game-quiz/pairs/my-current/answers')
+        .auth(validAccessToken2.accessToken, { type: 'bearer' })
+        .send({ answer: 'Minsk' })
+        .expect(200);
+
+      expect(response.body.questionId).toEqual(expect.any(Number));
+      expect(response.body.answerStatus).toBe('Correct');
+    });
+    it('should return current pair for player1', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/pair-game-quiz/pairs/my-current')
+        .auth(validAccessToken1.accessToken, { type: 'bearer' })
+        .expect(200);
+
+      expect(response.body.firstPlayerProgress.answers).toHaveLength(2);
+      expect(response.body.secondPlayerProgress.answers).toHaveLength(2);
+      expect(response.body.firstPlayerProgress.score).toBe(1);
+      expect(response.body.secondPlayerProgress.score).toBe(2);
+      expect(response.body.questions).toHaveLength(5);
+      expect(response.body.status).toBe('Active');
+    });
+    it('should return current pair for player2', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/pair-game-quiz/pairs/my-current')
+        .auth(validAccessToken2.accessToken, { type: 'bearer' })
+        .expect(200);
+
+      expect(response.body.firstPlayerProgress.answers).toHaveLength(2);
+      expect(response.body.secondPlayerProgress.answers).toHaveLength(2);
+      expect(response.body.firstPlayerProgress.score).toBe(1);
+      expect(response.body.secondPlayerProgress.score).toBe(2);
+      expect(response.body.questions).toHaveLength(5);
+      expect(response.body.status).toBe('Active');
+    });
+    it('should not return game for player who is not participating in the game', async () => {
+      await request(app.getHttpServer())
+        .get('/pair-game-quiz/pairs/my-current')
+        .auth(validAccessToken3.accessToken, { type: 'bearer' })
+        .expect(404);
+    });
+    it('should end the game and give additional points when all questions answered', async () => {
+      for (let i = 0; i < 3; i++) {
+        await request(app.getHttpServer())
+          .post('/pair-game-quiz/pairs/my-current/answers')
+          .auth(validAccessToken2.accessToken, { type: 'bearer' })
+          .send({ answer: 'Paris' });
+      }
+      for (let i = 0; i < 3; i++) {
+        await request(app.getHttpServer())
+          .post('/pair-game-quiz/pairs/my-current/answers')
+          .auth(validAccessToken1.accessToken, { type: 'bearer' })
+          .send({ answer: 'Paris' });
+      }
+      const response = await request(app.getHttpServer())
+        .get(`/pair-game-quiz/pairs/${currentPair.id}`)
+        .auth(validAccessToken1.accessToken, { type: 'bearer' })
+        .expect(200);
+      expect(response.body.firstPlayerProgress.answers).toHaveLength(5);
+      expect(response.body.secondPlayerProgress.answers).toHaveLength(5);
+      expect(response.body.firstPlayerProgress.score).toBe(4);
+      expect(response.body.secondPlayerProgress.score).toBe(6);
+      expect(response.body.status).toBe('Finished');
+      expect(response.body.finishGameDate).toEqual(expect.any(String));
+    });
+    it('should not return finished game to player who did not participated in it', async () => {
+      await request(app.getHttpServer())
+        .get(`/pair-game-quiz/pairs/${currentPair.id}`)
+        .auth(validAccessToken3.accessToken, { type: 'bearer' })
+        .expect(403);
+    });
+    it('should not return game if id not correct', async () => {
+      await request(app.getHttpServer())
+        .get(`/pair-game-quiz/pairs/877657567`)
+        .auth(validAccessToken1.accessToken, { type: 'bearer' })
         .expect(404);
     });
   });

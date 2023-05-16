@@ -12,6 +12,7 @@ import { TestingModule } from './entities/testing/testing.module';
 import { BansModule } from './entities/bans/bans.module';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { QuestionsModule } from './entities/quiz/questions.module';
+import { PairGameModule } from './entities/quiz/pair-game.module';
 
 export const cloudDbRootOptions: TypeOrmModuleOptions = {
   type: 'postgres',
@@ -45,6 +46,7 @@ export const localDbRootOptions: TypeOrmModuleOptions = {
     CommentsModule,
     TestingModule,
     QuestionsModule,
+    PairGameModule,
   ],
   controllers: [AppController],
   providers: [AppService],
