@@ -64,14 +64,12 @@ export class PairGameService {
     return this.pairGameRepository.save(newPair);
   }
   async getRandomQuestions(): Promise<{ id: number; body: string }[]> {
-    const randomQuestions: { id: number; body: string }[] = await this.questionRepository
+    return await this.questionRepository
       .createQueryBuilder()
       .select(['id', 'body'])
       .orderBy('RANDOM()')
       .limit(5)
       .getRawMany();
-
-    return randomQuestions;
   }
   async submitAnswer(userId: number, answerDto: SubmitAnswerDto): Promise<AnswerViewModel> {
     const currentPairGame = await this.pairGameRepository

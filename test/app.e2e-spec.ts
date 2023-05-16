@@ -196,7 +196,7 @@ describe('ALL BANS FLOWS (e2e)', () => {
         })
         .expect(204);
 
-      const responseO = await request(app.getHttpServer()).get(`/blogs/${blog.id}`).expect(404);
+      await request(app.getHttpServer()).get(`/blogs/${blog.id}`).expect(404);
     });
 
     it('should return comment for unbanned user, change user instance', async () => {
@@ -561,8 +561,6 @@ describe('ALL BANS FLOWS (e2e)', () => {
     });
   });
   describe('Questions crud', () => {
-    let user: SaUserViewModel;
-    let validAccessToken: { accessToken: string };
     let question1: QuestionViewModel;
     let question2: QuestionViewModel;
 
