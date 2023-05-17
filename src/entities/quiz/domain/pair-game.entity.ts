@@ -50,4 +50,10 @@ export class PairGame {
 
   @Column({ nullable: true })
   finishGameDate: string;
+
+  @Column()
+  firstPlayerId: number;
+
+  @Column({ nullable: true })
+  secondPlayerId: number;
 }

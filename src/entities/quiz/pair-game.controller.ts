@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseIntPipe,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -12,7 +13,7 @@ import { PairGameService } from './pair-game.service';
 import { PairGame } from './domain/pair-game.entity';
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../shared/decorators/current-user.decorator';
-import { AnswerViewModel, SubmitAnswerDto } from './question.models';
+import { AnswerViewModel, PairGameViewModel, SubmitAnswerDto } from './question.models';
 import { isPairIdIntegerGuard } from '../auth/guards/param.pairId.integer.guard';
 
 @Controller('pair-game-quiz/pairs')
@@ -37,7 +38,7 @@ export class PairGameController {
   @UseGuards(JwtAccessAuthGuard)
   @Get('my-current')
   @HttpCode(HttpStatus.OK)
-  async gerCurrentPair(@CurrentUser() userId): Promise<PairGame | null> {
+  async gerCurrentPair(@CurrentUser() userId): Promise<PairGameViewModel | null> {
     return this.pairGameService.getCurrentPair(userId);
   }
   @UseGuards(JwtAccessAuthGuard, isPairIdIntegerGuard)
@@ -46,7 +47,7 @@ export class PairGameController {
   async getPairById(
     @Param('pairId') pairId: number,
     @CurrentUser() userId,
-  ): Promise<PairGame | null> {
+  ): Promise<PairGameViewModel | null> {
     return this.pairGameService.getPairById(pairId, userId);
   }
 }

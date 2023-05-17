@@ -8,6 +8,7 @@ import {
   Length,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { Column, PrimaryGeneratedColumn } from 'typeorm';
 
 export class createQuestionDto {
   @IsString()
@@ -67,4 +68,45 @@ export class GetQuestionsPaginationDto {
   sortDirection?: string;
   pageNumber?: number;
   pageSize?: number;
+}
+
+export class PairGameViewModel {
+  id: string;
+  firstPlayerProgress: {
+    answers: {
+      questionId: string;
+      answerStatus: 'Correct' | 'Incorrect';
+      addedAt: string;
+    }[];
+    player: {
+      id: string;
+      login: string;
+    };
+    score: number;
+  };
+
+  secondPlayerProgress: {
+    answers: {
+      questionId: string;
+      answerStatus: 'Correct' | 'Incorrect';
+      addedAt: string;
+    }[];
+    player: {
+      id: string;
+      login: string;
+    };
+    score: number;
+  };
+
+  questions: {
+    id: string;
+    body: string;
+  }[];
+  status: 'PendingSecondPlayer' | 'Active' | 'Finished';
+
+  pairCreatedDate: string;
+
+  startGameDate: string | null;
+
+  finishGameDate: string | null;
 }

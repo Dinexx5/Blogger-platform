@@ -821,10 +821,23 @@ describe('ALL BANS FLOWS (e2e)', () => {
       expect(response.body.questions).toBeNull();
       expect(response.body.status).toBe('PendingSecondPlayer');
     });
+    it('should not return game to user who is still not participating', async () => {
+      await request(app.getHttpServer())
+        .get(`/pair-game-quiz/pairs/${currentPair.id}`)
+        .auth(validAccessToken3.accessToken, { type: 'bearer' })
+        .expect(403);
+    });
     it('should not allow first player to connect second time', async () => {
       await request(app.getHttpServer())
         .post('/pair-game-quiz/pairs/connection')
         .auth(validAccessToken1.accessToken, { type: 'bearer' })
+        .expect(403);
+    });
+    it('should not allow first player to answer before game starts', async () => {
+      await request(app.getHttpServer())
+        .post('/pair-game-quiz/pairs/my-current/answers')
+        .auth(validAccessToken1.accessToken, { type: 'bearer' })
+        .send({ answer: 'Paris' })
         .expect(403);
     });
     it('should start game after second player connected', async () => {
@@ -841,17 +854,23 @@ describe('ALL BANS FLOWS (e2e)', () => {
       expect(response.body.questions).toHaveLength(5);
       expect(response.body.status).toBe('Active');
     });
-    it('should not allow second player to connect to active game', async () => {
+    it('should not allow second player to connect while in active game', async () => {
       await request(app.getHttpServer())
         .post('/pair-game-quiz/pairs/connection')
         .auth(validAccessToken2.accessToken, { type: 'bearer' })
         .expect(403);
     });
-    it('should not allow first player to connect to active game', async () => {
+    it('should not allow first player to connect while in active game', async () => {
       await request(app.getHttpServer())
         .post('/pair-game-quiz/pairs/connection')
-        .auth(validAccessToken2.accessToken, { type: 'bearer' })
+        .auth(validAccessToken1.accessToken, { type: 'bearer' })
         .expect(403);
+    });
+    it('should allow third player to create new game', async () => {
+      await request(app.getHttpServer())
+        .post('/pair-game-quiz/pairs/connection')
+        .auth(validAccessToken3.accessToken, { type: 'bearer' })
+        .expect(200);
     });
     it('should send correct answer for player1 for question1', async () => {
       const response = await request(app.getHttpServer())
@@ -932,6 +951,11 @@ describe('ALL BANS FLOWS (e2e)', () => {
           .auth(validAccessToken2.accessToken, { type: 'bearer' })
           .send({ answer: 'Paris' });
       }
+      await request(app.getHttpServer())
+        .post('/pair-game-quiz/pairs/my-current/answers')
+        .auth(validAccessToken2.accessToken, { type: 'bearer' })
+        .send({ answer: 'Minsk' })
+        .expect(403);
       for (let i = 0; i < 3; i++) {
         await request(app.getHttpServer())
           .post('/pair-game-quiz/pairs/my-current/answers')
@@ -960,6 +984,12 @@ describe('ALL BANS FLOWS (e2e)', () => {
         .get(`/pair-game-quiz/pairs/877657567`)
         .auth(validAccessToken1.accessToken, { type: 'bearer' })
         .expect(404);
+    });
+    it('should not return game if id has invalid format', async () => {
+      await request(app.getHttpServer())
+        .get(`/pair-game-quiz/pairs/877657567,`)
+        .auth(validAccessToken1.accessToken, { type: 'bearer' })
+        .expect(400);
     });
   });
 });
