@@ -96,12 +96,10 @@ export class PairGameViewModel {
       login: string;
     };
     score: number;
-  };
+  } | null;
 
-  questions: {
-    id: string;
-    body: string;
-  }[];
+  questions: { id: string; body: string }[] | null;
+
   status: 'PendingSecondPlayer' | 'Active' | 'Finished';
 
   pairCreatedDate: string;

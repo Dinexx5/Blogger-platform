@@ -813,11 +813,11 @@ describe('ALL BANS FLOWS (e2e)', () => {
         .auth(validAccessToken1.accessToken, { type: 'bearer' })
         .expect(200);
       currentPair = response.body;
-      expect(response.body.id).toEqual(expect.any(Number));
+      expect(response.body.id).toEqual(expect.any(String));
       expect(response.body.pairCreatedDate).toEqual(expect.any(String));
       expect(response.body.startGameDate).toBeNull();
       expect(response.body.finishGameDate).toBeNull();
-      expect(response.body.firstPlayerProgress.player.id).toBe(+user1.id);
+      expect(response.body.firstPlayerProgress.player.id).toBe(user1.id);
       expect(response.body.questions).toBeNull();
       expect(response.body.status).toBe('PendingSecondPlayer');
     });
@@ -845,12 +845,12 @@ describe('ALL BANS FLOWS (e2e)', () => {
         .post('/pair-game-quiz/pairs/connection')
         .auth(validAccessToken2.accessToken, { type: 'bearer' })
         .expect(200);
-      expect(response.body.id).toEqual(expect.any(Number));
+      expect(response.body.id).toEqual(expect.any(String));
       expect(response.body.pairCreatedDate).toEqual(expect.any(String));
       expect(response.body.startGameDate).toEqual(expect.any(String));
       expect(response.body.finishGameDate).toBeNull();
-      expect(response.body.firstPlayerProgress.player.id).toBe(+user1.id);
-      expect(response.body.secondPlayerProgress.player.id).toBe(+user2.id);
+      expect(response.body.firstPlayerProgress.player.id).toBe(user1.id);
+      expect(response.body.secondPlayerProgress.player.id).toBe(user2.id);
       expect(response.body.questions).toHaveLength(5);
       expect(response.body.status).toBe('Active');
     });
@@ -979,6 +979,19 @@ describe('ALL BANS FLOWS (e2e)', () => {
         .auth(validAccessToken3.accessToken, { type: 'bearer' })
         .expect(403);
     });
+    it('should not return finished game as current game to player1', async () => {
+      await request(app.getHttpServer())
+        .get(`/pair-game-quiz/pairs/my-current`)
+        .auth(validAccessToken1.accessToken, { type: 'bearer' })
+        .expect(404);
+    });
+    it('should not return finished game as current game to player2', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`/pair-game-quiz/pairs/my-current`)
+        .auth(validAccessToken2.accessToken, { type: 'bearer' })
+        .expect(404);
+      console.log(response.body);
+    });
     it('should not return game if id not correct', async () => {
       await request(app.getHttpServer())
         .get(`/pair-game-quiz/pairs/877657567`)
@@ -989,7 +1002,7 @@ describe('ALL BANS FLOWS (e2e)', () => {
       await request(app.getHttpServer())
         .get(`/pair-game-quiz/pairs/877657567,`)
         .auth(validAccessToken1.accessToken, { type: 'bearer' })
-        .expect(400);
+        .expect(404);
     });
   });
 });

@@ -13,14 +13,13 @@ export class isPairIdIntegerGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
     const request: Request = context.switchToHttp().getRequest();
     const pairId = request.params.pairId;
+    if (pairId.split('').length === 8)
+      throw new BadRequestException({
+        message: 'invalidId',
+        field: 'param',
+      });
     const checkId = Number(pairId);
-    if (isNaN(checkId))
-      throw new BadRequestException([
-        {
-          message: 'invalidId',
-          field: 'pairId',
-        },
-      ]);
+    if (isNaN(checkId)) throw new NotFoundException();
     return true;
   }
 }

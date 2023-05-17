@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import { PairGame } from './domain/pair-game.entity';
 import { Question } from './domain/question.entity';
 import { UsersRepository } from '../users/users.repository';
@@ -16,14 +16,19 @@ export class PairGameService {
     private readonly questionRepository: Repository<Question>,
   ) {}
 
-  async createPair(playerId: number): Promise<PairGame> {
+  async createPair(playerId: number): Promise<PairGameViewModel> {
     const user = await this.usersRepository.findUserById(playerId);
     const isPlayerInActiveGame: PairGame = await this.pairGameRepository
       .createQueryBuilder('pairGame')
       .where('pairGame.status = :status', { status: 'Active' })
-      .andWhere('pairGame.firstPlayerId = :playerId OR pairGame.secondPlayerId = :playerId', {
-        playerId: playerId,
-      })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('pairGame.firstPlayerId = :userId', { userId: playerId }).orWhere(
+            'pairGame.secondPlayerId = :userId',
+            { userId: playerId },
+          );
+        }),
+      )
       .getOne();
 
     if (isPlayerInActiveGame) throw new ForbiddenException();
@@ -51,9 +56,8 @@ export class PairGameService {
       existingPendingPair.status = 'Active';
       existingPendingPair.startGameDate = new Date().toISOString();
 
-      await this.pairGameRepository.save(existingPendingPair);
-
-      return existingPendingPair;
+      const savedExistingPendingPair = await this.pairGameRepository.save(existingPendingPair);
+      return this.mapPairToViewModel(savedExistingPendingPair);
     }
 
     const newPair = await this.pairGameRepository.create();
@@ -70,7 +74,8 @@ export class PairGameService {
     newPair.pairCreatedDate = new Date().toISOString();
     newPair.firstPlayerId = playerId;
 
-    return this.pairGameRepository.save(newPair);
+    const savedNewPair = await this.pairGameRepository.save(newPair);
+    return this.mapPairToViewModel(savedNewPair);
   }
 
   async getRandomQuestions(): Promise<{ id: number; body: string }[]> {
@@ -86,11 +91,15 @@ export class PairGameService {
     const currentPairGame: PairGame = await this.pairGameRepository
       .createQueryBuilder('pairGame')
       .where('pairGame.status = :status', { status: 'Active' })
-      .andWhere('pairGame.firstPlayerId = :playerId OR pairGame.secondPlayerId = :playerId', {
-        playerId: userId,
-      })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('pairGame.firstPlayerId = :userId', { userId: userId }).orWhere(
+            'pairGame.secondPlayerId = :userId',
+            { userId: userId },
+          );
+        }),
+      )
       .getOne();
-
     if (!currentPairGame) {
       throw new ForbiddenException();
     }
@@ -175,11 +184,15 @@ export class PairGameService {
     const existingPair: PairGame = await this.pairGameRepository
       .createQueryBuilder('pairGame')
       .where('pairGame.status = :status', { status: 'Active' })
-      .andWhere('pairGame.firstPlayerId = :playerId OR pairGame.secondPlayerId = :playerId', {
-        playerId: userId,
-      })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('pairGame.firstPlayerId = :userId', { userId: userId }).orWhere(
+            'pairGame.secondPlayerId = :userId',
+            { userId: userId },
+          );
+        }),
+      )
       .getOne();
-
     if (!existingPair) throw new NotFoundException();
     return this.mapPairToViewModel(existingPair);
   }
@@ -217,26 +230,30 @@ export class PairGameService {
         },
         score: pairGame.firstPlayerProgress.score,
       },
-      secondPlayerProgress: {
-        answers: pairGame.secondPlayerProgress.answers.map((answer) => ({
-          questionId: answer.questionId.toString(),
-          answerStatus: answer.answerStatus,
-          addedAt: answer.addedAt,
-        })),
-        player: {
-          id: pairGame.secondPlayerProgress.player.id.toString(),
-          login: pairGame.secondPlayerProgress.player.login,
-        },
-        score: pairGame.secondPlayerProgress.score,
-      },
-      questions: pairGame.questions.map((question) => ({
-        id: question.id.toString(),
-        body: question.body,
-      })),
+      secondPlayerProgress: pairGame.secondPlayerProgress
+        ? {
+            answers: pairGame.secondPlayerProgress.answers.map((answer) => ({
+              questionId: answer.questionId.toString(),
+              answerStatus: answer.answerStatus,
+              addedAt: answer.addedAt,
+            })),
+            player: {
+              id: pairGame.secondPlayerProgress.player.id.toString(),
+              login: pairGame.secondPlayerProgress?.player.login,
+            },
+            score: pairGame.secondPlayerProgress.score,
+          }
+        : null,
+      questions: pairGame.questions
+        ? pairGame.questions.map((question) => ({
+            id: question.id.toString(),
+            body: question.body,
+          }))
+        : null,
       status: pairGame.status,
       pairCreatedDate: pairGame.pairCreatedDate,
-      startGameDate: pairGame.startGameDate,
-      finishGameDate: pairGame.finishGameDate,
+      startGameDate: pairGame.startGameDate || null,
+      finishGameDate: pairGame.finishGameDate || null,
     };
   }
 }
