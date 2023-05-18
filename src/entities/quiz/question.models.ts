@@ -56,7 +56,7 @@ export class SubmitAnswerDto {
 }
 
 export class AnswerViewModel {
-  questionId: number;
+  questionId: string;
   answerStatus: 'Correct' | 'Incorrect';
   addedAt: string;
 }

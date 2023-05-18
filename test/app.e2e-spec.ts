@@ -734,9 +734,11 @@ describe('ALL BANS FLOWS (e2e)', () => {
     let user1: SaUserViewModel;
     let user2: SaUserViewModel;
     let user3: SaUserViewModel;
+    let user4: SaUserViewModel;
     let validAccessToken1: { accessToken: string };
     let validAccessToken2: { accessToken: string };
     let validAccessToken3: { accessToken: string };
+    let validAccessToken4: { accessToken: string };
     let currentPair: PairGame;
 
     beforeAll(async () => {
@@ -775,6 +777,17 @@ describe('ALL BANS FLOWS (e2e)', () => {
         .expect(201);
       user3 = responseForCreateUser3.body;
 
+      const responseForCreateUser4 = await request(app.getHttpServer())
+        .post(`/sa/users`)
+        .auth('admin', 'qwerty', { type: 'basic' })
+        .send({
+          login: 'player4',
+          password: 'qwerty',
+          email: 'play678r3@jive.com',
+        })
+        .expect(201);
+      user4 = responseForCreateUser4.body;
+
       const responseToken1 = await request(app.getHttpServer())
         .post(`/auth/login`)
         .set(`User-Agent`, `for test`)
@@ -795,6 +808,13 @@ describe('ALL BANS FLOWS (e2e)', () => {
         .send({ loginOrEmail: 'player3', password: 'qwerty' })
         .expect(200);
       validAccessToken3 = responseToken3.body;
+
+      const responseToken4 = await request(app.getHttpServer())
+        .post(`/auth/login`)
+        .set(`User-Agent`, `for test`)
+        .send({ loginOrEmail: 'player4', password: 'qwerty' })
+        .expect(200);
+      validAccessToken4 = responseToken4.body;
 
       const createQuestionDto = {
         body: 'What is the capital of France?',
@@ -826,6 +846,13 @@ describe('ALL BANS FLOWS (e2e)', () => {
         .get(`/pair-game-quiz/pairs/${currentPair.id}`)
         .auth(validAccessToken3.accessToken, { type: 'bearer' })
         .expect(403);
+      console.log('hi');
+    });
+    it('should return game to user1 as current', async () => {
+      await request(app.getHttpServer())
+        .get(`/pair-game-quiz/pairs/my-current`)
+        .auth(validAccessToken1.accessToken, { type: 'bearer' })
+        .expect(200);
     });
     it('should not allow first player to connect second time', async () => {
       await request(app.getHttpServer())
@@ -879,7 +906,7 @@ describe('ALL BANS FLOWS (e2e)', () => {
         .send({ answer: 'Paris' })
         .expect(200);
 
-      expect(response.body.questionId).toEqual(expect.any(Number));
+      expect(response.body.questionId).toEqual(expect.any(String));
       expect(response.body.answerStatus).toBe('Correct');
     });
     it('should send correct answer for player2 for question1', async () => {
@@ -889,7 +916,7 @@ describe('ALL BANS FLOWS (e2e)', () => {
         .send({ answer: 'Paris' })
         .expect(200);
 
-      expect(response.body.questionId).toEqual(expect.any(Number));
+      expect(response.body.questionId).toEqual(expect.any(String));
       expect(response.body.answerStatus).toBe('Correct');
     });
     it('should send incorrect answer for player1 for question2', async () => {
@@ -899,7 +926,7 @@ describe('ALL BANS FLOWS (e2e)', () => {
         .send({ answer: 'Berlin' })
         .expect(200);
 
-      expect(response.body.questionId).toEqual(expect.any(Number));
+      expect(response.body.questionId).toEqual(expect.any(String));
       expect(response.body.answerStatus).toBe('Incorrect');
     });
     it('should send correct answer for player2 for question2', async () => {
@@ -909,7 +936,7 @@ describe('ALL BANS FLOWS (e2e)', () => {
         .send({ answer: 'Minsk' })
         .expect(200);
 
-      expect(response.body.questionId).toEqual(expect.any(Number));
+      expect(response.body.questionId).toEqual(expect.any(String));
       expect(response.body.answerStatus).toBe('Correct');
     });
     it('should return current pair for player1', async () => {
@@ -937,11 +964,12 @@ describe('ALL BANS FLOWS (e2e)', () => {
       expect(response.body.secondPlayerProgress.score).toBe(2);
       expect(response.body.questions).toHaveLength(5);
       expect(response.body.status).toBe('Active');
+      console.log(response.body);
     });
     it('should not return game for player who is not participating in the game', async () => {
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .get('/pair-game-quiz/pairs/my-current')
-        .auth(validAccessToken3.accessToken, { type: 'bearer' })
+        .auth(validAccessToken4.accessToken, { type: 'bearer' })
         .expect(404);
     });
     it('should end the game and give additional points when all questions answered', async () => {
@@ -990,7 +1018,6 @@ describe('ALL BANS FLOWS (e2e)', () => {
         .get(`/pair-game-quiz/pairs/my-current`)
         .auth(validAccessToken2.accessToken, { type: 'bearer' })
         .expect(404);
-      console.log(response.body);
     });
     it('should not return game if id not correct', async () => {
       await request(app.getHttpServer())

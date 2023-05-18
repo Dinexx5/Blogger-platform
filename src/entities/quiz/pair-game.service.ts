@@ -177,10 +177,22 @@ export class PairGameService {
 
     await this.pairGameRepository.save(currentPairGame);
 
-    return answerModel;
+    return {
+      questionId: answerModel.questionId.toString(),
+      addedAt: answerModel.addedAt,
+      answerStatus: answerModel.answerStatus,
+    };
   }
 
   async getCurrentPair(userId: number): Promise<PairGameViewModel | null> {
+    const existingPendingPair = await this.pairGameRepository
+      .createQueryBuilder('pairGame')
+      .where('pairGame.status = :status', { status: 'PendingSecondPlayer' })
+      .andWhere('pairGame.firstPlayerId = :userId', { userId: userId })
+      .getOne();
+    if (existingPendingPair) {
+      return this.mapPairToViewModel(existingPendingPair);
+    }
     const existingPair: PairGame = await this.pairGameRepository
       .createQueryBuilder('pairGame')
       .where('pairGame.status = :status', { status: 'Active' })
