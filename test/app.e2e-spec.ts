@@ -1031,5 +1031,14 @@ describe('ALL BANS FLOWS (e2e)', () => {
         .auth(validAccessToken1.accessToken, { type: 'bearer' })
         .expect(404);
     });
+    it('should return game by query repo for player 1', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`/pair-game-quiz/pairs/my`)
+        .auth(validAccessToken1.accessToken, { type: 'bearer' })
+        .expect(200);
+      expect(response.body.items[0].firstPlayerProgress.player.id).toBe(user1.id);
+      expect(response.body.items).toHaveLength(1);
+      console.log(response.body);
+    });
   });
 });

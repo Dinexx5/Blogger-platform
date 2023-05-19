@@ -37,7 +37,7 @@ export const localDbRootOptions: TypeOrmModuleOptions = {
 @Module({
   imports: [
     configModule,
-    TypeOrmModule.forRoot(cloudDbRootOptions),
+    TypeOrmModule.forRoot(localDbRootOptions),
     BansModule,
     UsersModule,
     AuthModule,

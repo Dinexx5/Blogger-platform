@@ -5,6 +5,7 @@ import { PairGame } from './domain/pair-game.entity';
 import { Question } from './domain/question.entity';
 import { UsersRepository } from '../users/users.repository';
 import { AnswerViewModel, PairGameViewModel, SubmitAnswerDto } from './question.models';
+import { PairGameQueryRepository } from './pair-game.query.repository';
 
 @Injectable()
 export class PairGameService {
@@ -12,6 +13,7 @@ export class PairGameService {
     @InjectRepository(PairGame)
     private readonly pairGameRepository: Repository<PairGame>,
     private readonly usersRepository: UsersRepository,
+    private readonly pairGameQueryRepository: PairGameQueryRepository,
     @InjectRepository(Question)
     private readonly questionRepository: Repository<Question>,
   ) {}
@@ -57,7 +59,7 @@ export class PairGameService {
       existingPendingPair.startGameDate = new Date().toISOString();
 
       const savedExistingPendingPair = await this.pairGameRepository.save(existingPendingPair);
-      return this.mapPairToViewModel(savedExistingPendingPair);
+      return this.pairGameQueryRepository.mapPairToViewModel(savedExistingPendingPair);
     }
 
     const newPair = await this.pairGameRepository.create();
@@ -75,7 +77,7 @@ export class PairGameService {
     newPair.firstPlayerId = playerId;
 
     const savedNewPair = await this.pairGameRepository.save(newPair);
-    return this.mapPairToViewModel(savedNewPair);
+    return this.pairGameQueryRepository.mapPairToViewModel(savedNewPair);
   }
 
   async getRandomQuestions(): Promise<{ id: number; body: string }[]> {
@@ -191,7 +193,7 @@ export class PairGameService {
       .andWhere('pairGame.firstPlayerId = :userId', { userId: userId })
       .getOne();
     if (existingPendingPair) {
-      return this.mapPairToViewModel(existingPendingPair);
+      return this.pairGameQueryRepository.mapPairToViewModel(existingPendingPair);
     }
     const existingPair: PairGame = await this.pairGameRepository
       .createQueryBuilder('pairGame')
@@ -206,7 +208,7 @@ export class PairGameService {
       )
       .getOne();
     if (!existingPair) throw new NotFoundException();
-    return this.mapPairToViewModel(existingPair);
+    return this.pairGameQueryRepository.mapPairToViewModel(existingPair);
   }
 
   async getPairById(pairId: number, userId: number): Promise<PairGameViewModel | null> {
@@ -224,48 +226,6 @@ export class PairGameService {
     ) {
       throw new ForbiddenException();
     }
-    return this.mapPairToViewModel(existingPair);
-  }
-
-  mapPairToViewModel(pairGame: PairGame): PairGameViewModel {
-    return {
-      id: pairGame.id.toString(),
-      firstPlayerProgress: {
-        answers: pairGame.firstPlayerProgress.answers.map((answer) => ({
-          questionId: answer.questionId.toString(),
-          answerStatus: answer.answerStatus,
-          addedAt: answer.addedAt,
-        })),
-        player: {
-          id: pairGame.firstPlayerProgress.player.id.toString(),
-          login: pairGame.firstPlayerProgress.player.login,
-        },
-        score: pairGame.firstPlayerProgress.score,
-      },
-      secondPlayerProgress: pairGame.secondPlayerProgress
-        ? {
-            answers: pairGame.secondPlayerProgress.answers.map((answer) => ({
-              questionId: answer.questionId.toString(),
-              answerStatus: answer.answerStatus,
-              addedAt: answer.addedAt,
-            })),
-            player: {
-              id: pairGame.secondPlayerProgress.player.id.toString(),
-              login: pairGame.secondPlayerProgress?.player.login,
-            },
-            score: pairGame.secondPlayerProgress.score,
-          }
-        : null,
-      questions: pairGame.questions
-        ? pairGame.questions.map((question) => ({
-            id: question.id.toString(),
-            body: question.body,
-          }))
-        : null,
-      status: pairGame.status,
-      pairCreatedDate: pairGame.pairCreatedDate,
-      startGameDate: pairGame.startGameDate || null,
-      finishGameDate: pairGame.finishGameDate || null,
-    };
+    return this.pairGameQueryRepository.mapPairToViewModel(existingPair);
   }
 }

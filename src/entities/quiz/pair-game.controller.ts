@@ -6,17 +6,28 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { PairGameService } from './pair-game.service';
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../shared/decorators/current-user.decorator';
-import { AnswerViewModel, PairGameViewModel, SubmitAnswerDto } from './question.models';
+import {
+  AnswerViewModel,
+  GetPairGamesPaginationDto,
+  PairGameViewModel,
+  SubmitAnswerDto,
+} from './question.models';
 import { isPairIdIntegerGuard } from '../auth/guards/param.pairId.integer.guard';
+import { PairGameQueryRepository } from './pair-game.query.repository';
+import { paginatedViewModel } from '../../shared/models/pagination';
 
 @Controller('pair-game-quiz/pairs')
 export class PairGameController {
-  constructor(private readonly pairGameService: PairGameService) {}
+  constructor(
+    private readonly pairGameService: PairGameService,
+    private readonly pairGameQueryRepository: PairGameQueryRepository,
+  ) {}
 
   @UseGuards(JwtAccessAuthGuard)
   @Post('connection')
@@ -38,6 +49,14 @@ export class PairGameController {
   @HttpCode(HttpStatus.OK)
   async gerCurrentPair(@CurrentUser() userId): Promise<PairGameViewModel | null> {
     return this.pairGameService.getCurrentPair(userId);
+  }
+  @UseGuards(JwtAccessAuthGuard)
+  @Get('my')
+  async getAllUserGames(
+    @Query() query: GetPairGamesPaginationDto,
+    @CurrentUser() userId,
+  ): Promise<paginatedViewModel<PairGameViewModel[]>> {
+    return this.pairGameQueryRepository.getAllUserGames(userId, query);
   }
   @UseGuards(JwtAccessAuthGuard, isPairIdIntegerGuard)
   @Get(':pairId')

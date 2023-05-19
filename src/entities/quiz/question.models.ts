@@ -70,6 +70,13 @@ export class GetQuestionsPaginationDto {
   pageSize?: number;
 }
 
+export class GetPairGamesPaginationDto {
+  sortBy?: string;
+  sortDirection?: string;
+  pageNumber?: number;
+  pageSize?: number;
+}
+
 export class PairGameViewModel {
   id: string;
   firstPlayerProgress: {
