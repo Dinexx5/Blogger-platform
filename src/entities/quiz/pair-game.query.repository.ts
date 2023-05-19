@@ -28,7 +28,7 @@ export class PairGameQueryRepository {
       .where('pairGame.firstPlayerId = :userId', { userId })
       .orWhere('pairGame.secondPlayerId = :userId', { userId })
       .orderBy(`pairGame.${sortBy}`, sortDirection === 'desc' ? 'DESC' : 'ASC')
-      .addOrderBy('pairGame.pairCreatedDate', sortDirection === 'desc' ? 'DESC' : 'ASC')
+      .addOrderBy('pairGame.pairCreatedDate', 'DESC')
       .limit(pageSize)
       .offset((pageNumber - 1) * pageSize)
       .getManyAndCount();
