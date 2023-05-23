@@ -1039,7 +1039,7 @@ describe('ALL BANS FLOWS (e2e)', () => {
     });
     it('should show stats for player1', async () => {
       const response = await request(app.getHttpServer())
-        .get(`/pair-game-quiz/pairs/my-statistic`)
+        .get(`/pair-game-quiz/users/my-statistic`)
         .auth(validAccessToken1.accessToken, { type: 'bearer' })
         .expect(200);
       expect(response.body).toEqual({

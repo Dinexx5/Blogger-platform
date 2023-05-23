@@ -7,11 +7,12 @@ import { UsersRepository } from '../users/users.repository';
 import { Question } from './domain/question.entity';
 import { User } from '../users/domain/user.entity';
 import { PairGameQueryRepository } from './pair-game.query.repository';
+import { PairGameUsersController } from './pair-game.users.controller';
 
 @Module({
   imports: [TypeOrmModule.forFeature([PairGame, Question, User])],
   providers: [PairGameService, UsersRepository, PairGameQueryRepository],
-  controllers: [PairGameController],
+  controllers: [PairGameController, PairGameUsersController],
   exports: [],
 })
 export class PairGameModule {}
