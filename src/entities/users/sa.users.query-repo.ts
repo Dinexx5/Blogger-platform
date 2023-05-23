@@ -20,17 +20,6 @@ export class SaUsersQueryRepository {
       banStatus = 'all',
     } = query;
 
-    const skippedUsersCount = (+pageNumber - 1) * +pageSize;
-    const sortDirectionSql: 'ASC' | 'DESC' = sortDirection === 'desc' ? 'DESC' : 'ASC';
-
-    const bannedSubQuery = `${
-      banStatus && banStatus !== 'all'
-        ? `
-          ${banStatus === 'banned' ? `bi."isBanned" = true` : `bi."isBanned" = false`}
-      `
-        : `"isBanned" = true OR "isBanned" = false`
-    }`;
-
     const searchTermQuery = `(${
       searchLoginTerm && !searchEmailTerm
         ? `LOWER(u.login) LIKE LOWER(:searchLoginTerm)`
@@ -41,30 +30,35 @@ export class SaUsersQueryRepository {
                           OR  LOWER(u.email) LIKE LOWER(:searchEmailTerm)`
         : true
     })`;
+
     const orderQuery = `CASE WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
          ELSE 1 END, "${sortBy}"`;
 
     const builder = this.usersTypeOrmRepository
       .createQueryBuilder('u')
       .leftJoinAndSelect('u.banInfo', 'bi')
-      .where(bannedSubQuery)
       .andWhere(searchTermQuery, {
         searchEmailTerm: `%${searchEmailTerm}%`,
         searchLoginTerm: `%${searchLoginTerm}%`,
       });
 
-    const users = await builder
-      .orderBy(orderQuery, sortDirectionSql)
+    if (banStatus && banStatus !== 'all') {
+      builder.andWhere('bi.isBanned = :isBanned', {
+        isBanned: banStatus === 'banned',
+      });
+    }
+    const [users, totalCount] = await builder
+      .orderBy(orderQuery, sortDirection === 'desc' ? 'DESC' : 'ASC')
       .limit(+pageSize)
-      .offset(skippedUsersCount)
-      .getMany();
-    const count = await builder.getCount();
+      .offset((pageNumber - 1) * pageSize)
+      .getManyAndCount();
+
     const usersView = users.map(this.mapDbUserToUserViewModel);
     return {
-      pagesCount: Math.ceil(+count / +pageSize),
+      pagesCount: Math.ceil(totalCount / +pageSize),
       page: +pageNumber,
       pageSize: +pageSize,
-      totalCount: +count,
+      totalCount: totalCount,
       items: usersView,
     };
   }

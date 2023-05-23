@@ -77,6 +77,15 @@ export class GetPairGamesPaginationDto {
   pageSize?: number;
 }
 
+export class StatsViewModel {
+  sumScore: number;
+  avgScores: number;
+  gamesCount: number;
+  winsCount: number;
+  lossesCount: number;
+  drawsCount: number;
+}
+
 export class PairGameViewModel {
   id: string;
   firstPlayerProgress: {

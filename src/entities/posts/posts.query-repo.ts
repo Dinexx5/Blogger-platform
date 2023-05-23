@@ -40,8 +40,6 @@ export class PostsQueryRepository {
   ): Promise<paginatedViewModel<PostViewModel[]>> {
     const { sortDirection = 'desc', sortBy = 'createdAt', pageNumber = 1, pageSize = 10 } = query;
 
-    const skippedPostsCount = (+pageNumber - 1) * +pageSize;
-    const sortDirectionSql: 'ASC' | 'DESC' = sortDirection === 'desc' ? 'DESC' : 'ASC';
     const bannedPostsFromUsers = await this.bansRepository.getBannedPosts();
     const bannedPosts = await this.blogBansRepository.getBannedPosts();
     const allBannedPosts = bannedPosts.concat(bannedPostsFromUsers);
@@ -56,16 +54,19 @@ export class PostsQueryRepository {
 
     const posts = await builder
       .where(subQuery, { allBannedPosts: allBannedPosts, blogId: blogId })
-      .orderBy(orderQuery, sortDirectionSql)
+      .orderBy(orderQuery, sortDirection === 'desc' ? 'DESC' : 'ASC')
       .limit(+pageSize)
-      .offset(skippedPostsCount)
+      .offset((+pageNumber - 1) * +pageSize)
       .getRawMany();
+
     await this.findThreeLatestLikesForPosts(posts);
+
     const count = await builder
       .where(subQuery, { allBannedPosts: allBannedPosts, blogId: blogId })
       .getCount();
 
     const postsView = posts.map(this.mapperToPostViewModel);
+
     return {
       pagesCount: Math.ceil(+count / +pageSize),
       page: +pageNumber,
@@ -105,11 +106,12 @@ export class PostsQueryRepository {
   async findThreeLatestLikesForPosts(posts) {
     const bannedUsers = await this.bansRepository.getBannedUsers();
     const builder = await this.postsLikesTypeOrmRepository.createQueryBuilder('pl');
+    const subQuery = `pl."postId" = :postId AND pl."userId" ${
+      bannedUsers.length ? `NOT IN (:...bannedUsers)` : `IS NOT NULL`
+    } AND pl."likeStatus" = 'Like'`;
+
     for (const post of posts) {
       if (post.likesCount === 0) return;
-      const subQuery = `pl."postId" = :postId AND pl."userId" ${
-        bannedUsers.length ? `NOT IN (:...bannedUsers)` : `IS NOT NULL`
-      } AND pl."likeStatus" = 'Like'`;
       const allLikes = await builder
         .where(subQuery, { postId: post.p_id, bannedUsers: bannedUsers })
         .orderBy('pl.createdAt', 'DESC')

@@ -4,7 +4,12 @@ import { Brackets, Repository } from 'typeorm';
 import { PairGame } from './domain/pair-game.entity';
 import { Question } from './domain/question.entity';
 import { UsersRepository } from '../users/users.repository';
-import { AnswerViewModel, PairGameViewModel, SubmitAnswerDto } from './question.models';
+import {
+  AnswerViewModel,
+  PairGameViewModel,
+  StatsViewModel,
+  SubmitAnswerDto,
+} from './question.models';
 import { PairGameQueryRepository } from './pair-game.query.repository';
 
 @Injectable()
@@ -227,5 +232,45 @@ export class PairGameService {
       throw new ForbiddenException();
     }
     return this.pairGameQueryRepository.mapPairToViewModel(existingPair);
+  }
+  async getStats(userId: number): Promise<StatsViewModel> {
+    const stats = {
+      sumScore: 0,
+      avgScores: 0,
+      gamesCount: 0,
+      winsCount: 0,
+      lossesCount: 0,
+      drawsCount: 0,
+    };
+
+    const games = await this.pairGameRepository
+      .createQueryBuilder('pairGame')
+      .where('pairGame.firstPlayerId = :userId', { userId })
+      .orWhere('pairGame.secondPlayerId = :userId', { userId })
+      .getMany();
+
+    stats.gamesCount = games.length;
+
+    games.forEach((game) => {
+      const playerProgress =
+        game.firstPlayerId === userId ? game.firstPlayerProgress : game.secondPlayerProgress;
+
+      const opponentProgress =
+        game.firstPlayerId === userId ? game.secondPlayerProgress : game.firstPlayerProgress;
+
+      stats.sumScore += playerProgress.score;
+
+      if (playerProgress.score > opponentProgress.score) {
+        stats.winsCount++;
+      } else if (opponentProgress.score > playerProgress.score) {
+        stats.lossesCount++;
+      } else {
+        stats.drawsCount++;
+      }
+    });
+
+    stats.avgScores = +(stats.sumScore / stats.gamesCount || 0).toFixed(2);
+
+    return stats;
   }
 }

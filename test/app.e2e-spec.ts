@@ -846,7 +846,6 @@ describe('ALL BANS FLOWS (e2e)', () => {
         .get(`/pair-game-quiz/pairs/${currentPair.id}`)
         .auth(validAccessToken3.accessToken, { type: 'bearer' })
         .expect(403);
-      console.log('hi');
     });
     it('should return game to user1 as current', async () => {
       await request(app.getHttpServer())
@@ -964,10 +963,9 @@ describe('ALL BANS FLOWS (e2e)', () => {
       expect(response.body.secondPlayerProgress.score).toBe(2);
       expect(response.body.questions).toHaveLength(5);
       expect(response.body.status).toBe('Active');
-      console.log(response.body);
     });
     it('should not return game for player who is not participating in the game', async () => {
-      const response = await request(app.getHttpServer())
+      await request(app.getHttpServer())
         .get('/pair-game-quiz/pairs/my-current')
         .auth(validAccessToken4.accessToken, { type: 'bearer' })
         .expect(404);
@@ -1014,7 +1012,7 @@ describe('ALL BANS FLOWS (e2e)', () => {
         .expect(404);
     });
     it('should not return finished game as current game to player2', async () => {
-      const response = await request(app.getHttpServer())
+      await request(app.getHttpServer())
         .get(`/pair-game-quiz/pairs/my-current`)
         .auth(validAccessToken2.accessToken, { type: 'bearer' })
         .expect(404);
@@ -1038,7 +1036,20 @@ describe('ALL BANS FLOWS (e2e)', () => {
         .expect(200);
       expect(response.body.items[0].firstPlayerProgress.player.id).toBe(user1.id);
       expect(response.body.items).toHaveLength(1);
-      console.log(response.body);
+    });
+    it('should show stats for player1', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`/pair-game-quiz/pairs/my-statistic`)
+        .auth(validAccessToken1.accessToken, { type: 'bearer' })
+        .expect(200);
+      expect(response.body).toEqual({
+        sumScore: expect.any(Number),
+        avgScores: expect.any(Number),
+        gamesCount: expect.any(Number),
+        winsCount: expect.any(Number),
+        lossesCount: expect.any(Number),
+        drawsCount: expect.any(Number),
+      });
     });
   });
 });

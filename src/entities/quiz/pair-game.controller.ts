@@ -16,6 +16,7 @@ import {
   AnswerViewModel,
   GetPairGamesPaginationDto,
   PairGameViewModel,
+  StatsViewModel,
   SubmitAnswerDto,
 } from './question.models';
 import { isPairIdIntegerGuard } from '../auth/guards/param.pairId.integer.guard';
@@ -57,6 +58,12 @@ export class PairGameController {
     @CurrentUser() userId,
   ): Promise<paginatedViewModel<PairGameViewModel[]>> {
     return this.pairGameQueryRepository.getAllUserGames(userId, query);
+  }
+  @UseGuards(JwtAccessAuthGuard)
+  @Get('my-statistic')
+  @HttpCode(HttpStatus.OK)
+  async getStats(@CurrentUser() userId): Promise<StatsViewModel> {
+    return this.pairGameService.getStats(userId);
   }
   @UseGuards(JwtAccessAuthGuard, isPairIdIntegerGuard)
   @Get(':pairId')

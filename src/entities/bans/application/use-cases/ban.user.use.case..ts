@@ -64,8 +64,8 @@ export class BansUserUseCase implements ICommandHandler<BansUserCommand> {
       await this.bansTypeOrmRepository.save(ban);
       return;
     }
-    const bananaInstance = await this.bansRepository.isUserBanned(userId);
-    if (!bananaInstance) {
+    const banInstance = await this.bansRepository.isUserBanned(userId);
+    if (!banInstance) {
       return;
     }
     const userBanInfo = await this.userBanInfoRepository.findOneBy({ userId: userId });
