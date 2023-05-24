@@ -35,17 +35,19 @@ export class PostsService {
   ): Promise<PostViewModel | null> {
     const blog = await this.blogsRepository.findBlogById(blogId);
     if (!blog) throw new NotFoundException();
+
     const blogOwnerInfo = await this.blogOwnerInfoRepository.findOneBy({ blogId: blogId });
     if (blogOwnerInfo.userId !== userId) throw new ForbiddenException();
-    const createdAt = new Date().toISOString();
+
     const post = await this.postsTypeOrmRepository.create();
     post.title = postBody.title;
     post.shortDescription = postBody.shortDescription;
     post.content = postBody.content;
     post.blogId = blogId;
     post.blogName = blog.name;
-    post.createdAt = createdAt;
+    post.createdAt = new Date().toISOString();
     await this.postsTypeOrmRepository.save(post);
+
     return {
       id: post.id.toString(),
       title: post.title,
