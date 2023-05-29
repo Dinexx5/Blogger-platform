@@ -6,7 +6,7 @@ import {
   PrimaryColumn,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { User } from '../../users/domain/user.entity';
+import { User } from '../../admin/users/domain/user.entity';
 
 @Entity()
 export class SaUserBan {

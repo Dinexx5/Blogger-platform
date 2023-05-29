@@ -1,17 +1,17 @@
-import { UsersRepository } from '../../../users/users.repository';
-import { BanModel } from '../../../users/user.models';
+import { UsersRepository } from '../../../admin/users/users.repository';
+import { BanModel } from '../../../admin/users/user.models';
 import { BansRepository } from '../../bans.repository';
-import { BlogsRepository } from '../../../blogs/blogs.repository';
-import { PostsRepository } from '../../../posts/posts.repository';
+import { BlogsRepository } from '../../../public/blogs/blogs.repository';
+import { PostsRepository } from '../../../public/posts/posts.repository';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '../../../users/domain/user.entity';
+import { User } from '../../../admin/users/domain/user.entity';
 import { Repository } from 'typeorm';
-import { UserBanInfo } from '../../../users/domain/banInfo.entity';
+import { UserBanInfo } from '../../../admin/users/domain/ban-info.entity';
 import { Token } from '../../../tokens/domain/token.entity';
-import { Device } from '../../../devices/domain/device.entity';
+import { Device } from '../../../public/devices/domain/device.entity';
 import { SaUserBan } from '../../domain/saUserBan.entity';
-import { CommentsRepository } from '../../../comments/comments.repository';
+import { CommentsRepository } from '../../../public/comments/comments.repository';
 
 export class BansUserCommand {
   constructor(public userId: number, public inputModel: BanModel) {}

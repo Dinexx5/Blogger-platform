@@ -13,7 +13,7 @@ import { AuthService } from './auth-service';
 import { JwtAccessAuthGuard } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { Response } from 'express';
-import { UsersRepository } from '../users/users.repository';
+import { UsersRepository } from '../admin/users/users.repository';
 import {
   ConfirmEmailModel,
   CreateUserModel,
@@ -21,10 +21,10 @@ import {
   PasswordRecoveryModel,
   ResendEmailModel,
   UserTokenMetaModel,
-} from '../users/user.models';
+} from '../admin/users/user.models';
 import { JwtRefreshAuthGuard } from './guards/jwt-refresh.guard';
 import { CurrentUser } from '../../shared/decorators/current-user.decorator';
-import { User } from '../users/domain/user.entity';
+import { User } from '../admin/users/domain/user.entity';
 import { RateLimitGuard } from './guards/rate-limit.guard';
 @Controller('auth')
 export class AuthController {

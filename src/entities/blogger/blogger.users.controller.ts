@@ -15,11 +15,11 @@ import {
   BannedForBlogUserViewModel,
   BanUserModelForBlog,
   UserToBanParamModel,
-} from '../users/user.models';
+} from '../admin/users/user.models';
 import { CommandBus } from '@nestjs/cqrs';
 import { BanUserForBlogCommand } from './application/use-cases/ban.user.for.blog.use-case';
 import { paginatedViewModel } from '../../shared/models/pagination';
-import { blogParamModel } from '../blogs/blogs.models';
+import { blogParamModel } from '../public/blogs/blogs.models';
 import { BloggerBansQueryRepository } from './blogger.bans.query-repository';
 import { CurrentUser } from '../../shared/decorators/current-user.decorator';
 import { isUserIdIntegerGuard } from '../auth/guards/param.integer.guard';

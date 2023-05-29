@@ -1,20 +1,20 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from '../users/users.service';
-import { DevicesService } from '../devices/devices.service';
+import { UsersService } from '../admin/users/users.service';
+import { DevicesService } from '../public/devices/devices.service';
 import { v4 as uuidv4 } from 'uuid';
 import { addDays } from 'date-fns';
 import { EmailAdapter } from '../../adapters/email.adapter';
-import { CreateUserModel, NewPasswordModel, UserTokenMetaModel } from '../users/user.models';
+import { CreateUserModel, NewPasswordModel, UserTokenMetaModel } from '../admin/users/user.models';
 import * as bcrypt from 'bcrypt';
 import { BansRepository } from '../bans/bans.repository';
 import { Repository } from 'typeorm';
-import { User } from '../users/domain/user.entity';
+import { User } from '../admin/users/domain/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserBanInfo } from '../users/domain/banInfo.entity';
-import { EmailConfirmationInfo } from '../users/domain/emailConfirmation.entity';
-import { PasswordRecoveryInfo } from '../users/domain/passwordRecovery.entity';
-import { UsersRepository } from '../users/users.repository';
+import { UserBanInfo } from '../admin/users/domain/ban-info.entity';
+import { EmailConfirmationInfo } from '../admin/users/domain/email-confirmation.entity';
+import { PasswordRecoveryInfo } from '../admin/users/domain/password-recovery.entity';
+import { UsersRepository } from '../admin/users/users.repository';
 import { Token } from '../tokens/domain/token.entity';
 
 @Injectable()

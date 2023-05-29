@@ -1,5 +1,5 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
-import { Blog } from '../../blogs/domain/blog.entity';
+import { Blog } from '../../public/blogs/domain/blog.entity';
 
 @Entity()
 export class SaBlogBan {

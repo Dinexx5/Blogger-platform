@@ -6,9 +6,9 @@ import {
   ValidationArguments,
 } from 'class-validator';
 import { Injectable } from '@nestjs/common';
-import { UsersRepository } from '../../../entities/users/users.repository';
+import { UsersRepository } from '../../../entities/admin/users/users.repository';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '../../../entities/users/domain/user.entity';
+import { User } from '../../../entities/admin/users/domain/user.entity';
 import { Repository } from 'typeorm';
 
 @ValidatorConstraint({ name: 'IsEmailExists', async: true })

@@ -1,10 +1,10 @@
 import { paginatedViewModel, paginationQuerys } from '../../shared/models/pagination';
-import { BlogsRepository } from '../blogs/blogs.repository';
-import { PostsRepository } from '../posts/posts.repository';
-import { commentsForBloggerViewModel } from '../comments/comments.models';
+import { BlogsRepository } from '../public/blogs/blogs.repository';
+import { PostsRepository } from '../public/posts/posts.repository';
+import { commentsForBloggerViewModel } from '../public/comments/comments.models';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Comment } from '../comments/domain/comment.entity';
+import { Comment } from '../public/comments/domain/comment.entity';
 import { BansRepository } from '../bans/bans.repository';
 
 export class BloggerCommentsQueryRepository {

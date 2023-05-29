@@ -1,10 +1,10 @@
 import { paginatedViewModel, paginationQuerys } from '../../shared/models/pagination';
-import { BannedForBlogUserViewModel } from '../users/user.models';
+import { BannedForBlogUserViewModel } from '../admin/users/user.models';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import { BlogsRepository } from '../blogs/blogs.repository';
+import { BlogsRepository } from '../public/blogs/blogs.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { BlogOwnerInfo } from '../blogs/domain/blogOwner.entity';
+import { BlogOwnerInfo } from '../public/blogs/domain/blog-owner-info.entity';
 import { UserBanForBlog } from './domain/userBanForBlog.entity';
 
 export class BloggerBansQueryRepository {

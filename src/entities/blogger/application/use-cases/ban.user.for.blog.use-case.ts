@@ -1,13 +1,13 @@
-import { UsersRepository } from '../../../users/users.repository';
-import { BanUserModelForBlog } from '../../../users/user.models';
-import { BlogsRepository } from '../../../blogs/blogs.repository';
-import { PostsRepository } from '../../../posts/posts.repository';
+import { UsersRepository } from '../../../admin/users/users.repository';
+import { BanUserModelForBlog } from '../../../admin/users/user.models';
+import { BlogsRepository } from '../../../public/blogs/blogs.repository';
+import { PostsRepository } from '../../../public/posts/posts.repository';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { BlogOwnerInfo } from '../../../blogs/domain/blogOwner.entity';
+import { BlogOwnerInfo } from '../../../public/blogs/domain/blog-owner-info.entity';
 import { Repository } from 'typeorm';
-import { User } from '../../../users/domain/user.entity';
+import { User } from '../../../admin/users/domain/user.entity';
 import { UserBanForBlog } from '../../domain/userBanForBlog.entity';
 
 export class BanUserForBlogCommand {

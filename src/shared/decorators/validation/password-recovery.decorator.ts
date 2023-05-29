@@ -8,7 +8,7 @@ import {
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { PasswordRecoveryInfo } from '../../../entities/users/domain/passwordRecovery.entity';
+import { PasswordRecoveryInfo } from '../../../entities/admin/users/domain/password-recovery.entity';
 
 @ValidatorConstraint({ name: 'recoveryCode', async: true })
 @Injectable()

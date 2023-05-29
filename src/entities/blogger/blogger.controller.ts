@@ -10,9 +10,9 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { BlogsService } from '../blogs/blogs.service';
+import { BlogsService } from '../public/blogs/blogs.service';
 import { Response } from 'express';
-import { PostsService } from '../posts/posts.service';
+import { PostsService } from '../public/posts/posts.service';
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-auth.guard';
 import {
   blogAndPostParamModel,
@@ -20,15 +20,15 @@ import {
   BlogViewModel,
   createBlogModel,
   updateBlogModel,
-} from '../blogs/blogs.models';
+} from '../public/blogs/blogs.models';
 import { CurrentUser } from '../../shared/decorators/current-user.decorator';
 import { paginatedViewModel } from '../../shared/models/pagination';
-import { BlogsQueryRepository } from '../blogs/blogs.query-repo';
+import { BlogsQueryRepository } from '../public/blogs/blogs.query-repo';
 import { BloggerCommentsQueryRepository } from './blogger.comments.query-repo';
-import { commentsForBloggerViewModel } from '../comments/comments.models';
+import { commentsForBloggerViewModel } from '../public/comments/comments.models';
 import { isBlogIdIntegerGuard } from '../auth/guards/param.blogId.integer.guard';
 import { isPostIdIntegerGuard } from '../auth/guards/param.postId.isinteger.guard';
-import { createPostModel, updatePostModel } from '../posts/posts.models';
+import { createPostModel, updatePostModel } from '../public/posts/posts.models';
 
 @Controller('blogger/blogs')
 export class BloggerController {
