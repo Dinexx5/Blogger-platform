@@ -1043,13 +1043,38 @@ describe('ALL BANS FLOWS (e2e)', () => {
         .auth(validAccessToken1.accessToken, { type: 'bearer' })
         .expect(200);
       expect(response.body).toEqual({
-        sumScore: expect.any(Number),
-        avgScores: expect.any(Number),
-        gamesCount: expect.any(Number),
-        winsCount: expect.any(Number),
-        lossesCount: expect.any(Number),
-        drawsCount: expect.any(Number),
+        sumScore: 4,
+        avgScores: 4,
+        gamesCount: 1,
+        winsCount: 0,
+        lossesCount: 1,
+        drawsCount: 0,
       });
+    });
+    it('should show stats for player2', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`/pair-game-quiz/users/my-statistic`)
+        .auth(validAccessToken2.accessToken, { type: 'bearer' })
+        .expect(200);
+      expect(response.body).toEqual({
+        sumScore: 6,
+        avgScores: 6,
+        gamesCount: 1,
+        winsCount: 1,
+        lossesCount: 0,
+        drawsCount: 0,
+      });
+    });
+    it('should not show stats for player3', async () => {
+      await request(app.getHttpServer())
+        .get(`/pair-game-quiz/users/my-statistic`)
+        .auth(validAccessToken3.accessToken, { type: 'bearer' })
+        .expect(403);
+    });
+    it('should show top', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`/pair-game-quiz/users/top`)
+        .expect(200);
     });
   });
 });

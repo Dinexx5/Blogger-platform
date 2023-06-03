@@ -8,10 +8,12 @@ import { Question } from '../../admin/questions/domain/question.entity';
 import { User } from '../../admin/users/domain/user.entity';
 import { PairGameQueryRepository } from './pair-game.query.repository';
 import { PairGameUsersController } from './pair-game.users.controller';
+import { TopQueryRepository } from './pair-game.stats.query.repository';
+import { GamesStats } from './domain/stats.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([PairGame, Question, User])],
-  providers: [PairGameService, UsersRepository, PairGameQueryRepository],
+  imports: [TypeOrmModule.forFeature([PairGame, Question, User, GamesStats])],
+  providers: [PairGameService, UsersRepository, PairGameQueryRepository, TopQueryRepository],
   controllers: [PairGameController, PairGameUsersController],
   exports: [],
 })

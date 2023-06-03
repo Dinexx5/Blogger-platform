@@ -59,12 +59,6 @@ export class PairGameController {
   ): Promise<paginatedViewModel<PairGameViewModel[]>> {
     return this.pairGameQueryRepository.getAllUserGames(userId, query);
   }
-  @UseGuards(JwtAccessAuthGuard)
-  @Get('my-statistic')
-  @HttpCode(HttpStatus.OK)
-  async getStats(@CurrentUser() userId): Promise<StatsViewModel> {
-    return this.pairGameService.getStats(userId);
-  }
   @UseGuards(JwtAccessAuthGuard, isPairIdIntegerGuard)
   @Get(':pairId')
   @HttpCode(HttpStatus.OK)

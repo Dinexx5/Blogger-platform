@@ -22,6 +22,7 @@ import { EmailConfirmationInfo } from '../admin/users/domain/email-confirmation.
 import { PasswordRecoveryInfo } from '../admin/users/domain/password-recovery.entity';
 import { Question } from '../admin/questions/domain/question.entity';
 import { PairGame } from '../public/pair-game/domain/pair-game.entity';
+import { GamesStats } from '../public/pair-game/domain/stats.entity';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { PairGame } from '../public/pair-game/domain/pair-game.entity';
       Device,
       Question,
       PairGame,
+      GamesStats,
     ]),
   ],
   providers: [],

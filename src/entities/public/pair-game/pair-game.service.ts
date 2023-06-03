@@ -11,6 +11,7 @@ import {
   SubmitAnswerDto,
 } from '../../admin/questions/question.models';
 import { PairGameQueryRepository } from './pair-game.query.repository';
+import { GamesStats } from './domain/stats.entity';
 
 @Injectable()
 export class PairGameService {
@@ -21,6 +22,8 @@ export class PairGameService {
     private readonly pairGameQueryRepository: PairGameQueryRepository,
     @InjectRepository(Question)
     private readonly questionRepository: Repository<Question>,
+    @InjectRepository(GamesStats)
+    private readonly statsRepository: Repository<GamesStats>,
   ) {}
 
   async createPair(playerId: number): Promise<PairGameViewModel> {
@@ -184,11 +187,99 @@ export class PairGameService {
 
     await this.pairGameRepository.save(currentPairGame);
 
+    const isFirstPlayerWon =
+      currentPairGame.firstPlayerProgress.score > currentPairGame.secondPlayerProgress.score;
+    const isDraw =
+      currentPairGame.firstPlayerProgress.score === currentPairGame.secondPlayerProgress.score;
+    const isSecondPlayerWon =
+      currentPairGame.firstPlayerProgress.score < currentPairGame.secondPlayerProgress.score;
+
+    // Update players stats
+    if (gameFinished) {
+      await this.updateStatisticForFirstPlayer(
+        firstPlayerId,
+        currentPairGame.firstPlayerProgress.score,
+        isFirstPlayerWon,
+        isDraw,
+        isSecondPlayerWon,
+      );
+      await this.updateStatisticForSecondPlayer(
+        secondPlayerId,
+        currentPairGame.secondPlayerProgress.score,
+        isFirstPlayerWon,
+        isDraw,
+        isSecondPlayerWon,
+      );
+    }
+
     return {
       questionId: answerModel.questionId.toString(),
       addedAt: answerModel.addedAt,
       answerStatus: answerModel.answerStatus,
     };
+  }
+  async updateStatisticForFirstPlayer(
+    firstPlayerId: number,
+    firstPlayerScore: number,
+    isFirstPlayerWon: boolean,
+    isDraw: boolean,
+    isSecondPlayerWon: boolean,
+  ) {
+    const firstPlayerStats = await this.statsRepository.findOneBy({ userId: firstPlayerId });
+    if (!firstPlayerStats) {
+      const newFirstPlayerStats = await this.statsRepository.create();
+      newFirstPlayerStats.userId = firstPlayerId;
+      newFirstPlayerStats.gamesCount = 1;
+      newFirstPlayerStats.avgScores = firstPlayerScore;
+      newFirstPlayerStats.sumScore = firstPlayerScore;
+      newFirstPlayerStats.winsCount = isFirstPlayerWon ? 1 : 0;
+      newFirstPlayerStats.drawsCount = isDraw ? 1 : 0;
+      newFirstPlayerStats.lossesCount = isSecondPlayerWon ? 1 : 0;
+      await this.statsRepository.save(newFirstPlayerStats);
+      return;
+    }
+
+    firstPlayerStats.gamesCount += 1;
+    firstPlayerStats.sumScore += firstPlayerScore;
+    firstPlayerStats.avgScores = +(
+      firstPlayerStats.sumScore / firstPlayerStats.gamesCount || 0
+    ).toFixed(2);
+    if (isFirstPlayerWon) firstPlayerStats.winsCount++;
+    if (isDraw) firstPlayerStats.drawsCount++;
+    if (isSecondPlayerWon) firstPlayerStats.lossesCount++;
+    await this.statsRepository.save(firstPlayerStats);
+  }
+  async updateStatisticForSecondPlayer(
+    secondPlayerId: number,
+    secondPlayerScore: number,
+    isFirstPlayerWon: boolean,
+    isDraw: boolean,
+    isSecondPlayerWon: boolean,
+  ) {
+    const secondPlayerStats = await this.statsRepository.findOneBy({ userId: secondPlayerId });
+
+    if (!secondPlayerStats) {
+      const newSecondPlayerStats = await this.statsRepository.create();
+      newSecondPlayerStats.userId = secondPlayerId;
+      newSecondPlayerStats.gamesCount = 1;
+      newSecondPlayerStats.avgScores = secondPlayerScore;
+      newSecondPlayerStats.sumScore = secondPlayerScore;
+      newSecondPlayerStats.winsCount = isFirstPlayerWon ? 0 : 1;
+      newSecondPlayerStats.drawsCount = isDraw ? 1 : 0;
+      newSecondPlayerStats.lossesCount = isSecondPlayerWon ? 0 : 1;
+      await this.statsRepository.save(newSecondPlayerStats);
+      return;
+    }
+
+    secondPlayerStats.gamesCount += 1;
+    secondPlayerStats.sumScore += secondPlayerScore;
+    secondPlayerStats.avgScores = +(
+      secondPlayerStats.sumScore / secondPlayerStats.gamesCount || 0
+    ).toFixed(2);
+    if (isFirstPlayerWon) secondPlayerStats.lossesCount++;
+    if (isDraw) secondPlayerStats.drawsCount++;
+    if (isSecondPlayerWon) secondPlayerStats.winsCount++;
+    await this.statsRepository.save(secondPlayerStats);
   }
 
   async getCurrentPair(userId: number): Promise<PairGameViewModel | null> {
@@ -234,43 +325,15 @@ export class PairGameService {
     return this.pairGameQueryRepository.mapPairToViewModel(existingPair);
   }
   async getStats(userId: number): Promise<StatsViewModel> {
-    const stats = {
-      sumScore: 0,
-      avgScores: 0,
-      gamesCount: 0,
-      winsCount: 0,
-      lossesCount: 0,
-      drawsCount: 0,
+    const stats = await this.statsRepository.findOneBy({ userId: userId });
+    if (!stats) throw new ForbiddenException();
+    return {
+      sumScore: stats.sumScore,
+      avgScores: stats.avgScores,
+      gamesCount: stats.gamesCount,
+      winsCount: stats.winsCount,
+      lossesCount: stats.lossesCount,
+      drawsCount: stats.drawsCount,
     };
-
-    const games = await this.pairGameRepository
-      .createQueryBuilder('pairGame')
-      .where('pairGame.firstPlayerId = :userId', { userId })
-      .orWhere('pairGame.secondPlayerId = :userId', { userId })
-      .getMany();
-
-    stats.gamesCount = games.length;
-
-    games.forEach((game) => {
-      const playerProgress =
-        game.firstPlayerId === userId ? game.firstPlayerProgress : game.secondPlayerProgress;
-
-      const opponentProgress =
-        game.firstPlayerId === userId ? game.secondPlayerProgress : game.firstPlayerProgress;
-
-      stats.sumScore += playerProgress.score;
-
-      if (playerProgress.score > opponentProgress.score) {
-        stats.winsCount++;
-      } else if (opponentProgress.score > playerProgress.score) {
-        stats.lossesCount++;
-      } else {
-        stats.drawsCount++;
-      }
-    });
-
-    stats.avgScores = +(stats.sumScore / stats.gamesCount || 0).toFixed(2);
-
-    return stats;
   }
 }

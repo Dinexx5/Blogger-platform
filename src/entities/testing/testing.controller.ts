@@ -23,6 +23,7 @@ import { Post } from '../public/posts/domain/post.entity';
 import { Blog } from '../public/blogs/domain/blog.entity';
 import { Question } from '../admin/questions/domain/question.entity';
 import { PairGame } from '../public/pair-game/domain/pair-game.entity';
+import { GamesStats } from '../public/pair-game/domain/stats.entity';
 
 @Controller('testing')
 export class TestingController {
@@ -59,6 +60,8 @@ export class TestingController {
     private readonly passwordRecoveryInfo: Repository<PasswordRecoveryInfo>,
     @InjectRepository(UserBanForBlog)
     private readonly userBansForBlog: Repository<UserBanForBlog>,
+    @InjectRepository(GamesStats)
+    private readonly gamesStats: Repository<GamesStats>,
     @InjectRepository(Comment)
     private readonly comments: Repository<Comment>,
     @InjectRepository(Post)
@@ -88,6 +91,7 @@ export class TestingController {
     await this.emailConfirmationInfo.delete({});
     await this.passwordRecoveryInfo.delete({});
     await this.userBansForBlog.delete({});
+    await this.gamesStats.delete({});
     await this.comments.delete({});
     await this.posts.delete({});
     await this.blogs.delete({});

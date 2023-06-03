@@ -14,10 +14,17 @@ import { User } from './domain/user.entity';
 import { EmailConfirmationInfo } from './domain/email-confirmation.entity';
 import { PasswordRecoveryInfo } from './domain/password-recovery.entity';
 import { UserBanInfo } from './domain/ban-info.entity';
+import { GamesStats } from '../../public/pair-game/domain/stats.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, EmailConfirmationInfo, PasswordRecoveryInfo, UserBanInfo]),
+    TypeOrmModule.forFeature([
+      User,
+      EmailConfirmationInfo,
+      PasswordRecoveryInfo,
+      UserBanInfo,
+      GamesStats,
+    ]),
   ],
   providers: [
     UsersService,
