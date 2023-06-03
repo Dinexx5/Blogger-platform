@@ -264,9 +264,9 @@ export class PairGameService {
       newSecondPlayerStats.gamesCount = 1;
       newSecondPlayerStats.avgScores = secondPlayerScore;
       newSecondPlayerStats.sumScore = secondPlayerScore;
-      newSecondPlayerStats.winsCount = isFirstPlayerWon ? 0 : 1;
+      newSecondPlayerStats.winsCount = isSecondPlayerWon ? 1 : 0;
       newSecondPlayerStats.drawsCount = isDraw ? 1 : 0;
-      newSecondPlayerStats.lossesCount = isSecondPlayerWon ? 0 : 1;
+      newSecondPlayerStats.lossesCount = isFirstPlayerWon ? 1 : 0;
       await this.statsRepository.save(newSecondPlayerStats);
       return;
     }
