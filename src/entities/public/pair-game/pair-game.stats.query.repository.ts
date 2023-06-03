@@ -51,7 +51,7 @@ export class TopQueryRepository {
   mapToTopViewModel(playerStats): TopViewModel {
     return {
       sumScore: playerStats.sumScore,
-      avgScores: playerStats.avgScores,
+      avgScores: +playerStats.avgScores,
       gamesCount: playerStats.gamesCount,
       winsCount: playerStats.winsCount,
       lossesCount: playerStats.lossesCount,

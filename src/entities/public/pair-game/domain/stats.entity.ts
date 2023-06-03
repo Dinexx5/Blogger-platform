@@ -13,7 +13,7 @@ export class GamesStats {
   @Column()
   sumScore: number;
 
-  @Column({ nullable: true })
+  @Column({ type: 'decimal', nullable: true })
   avgScores: number;
 
   @Column({ nullable: true })

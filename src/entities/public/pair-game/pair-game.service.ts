@@ -329,7 +329,7 @@ export class PairGameService {
     if (!stats) throw new ForbiddenException();
     return {
       sumScore: stats.sumScore,
-      avgScores: stats.avgScores,
+      avgScores: +stats.avgScores,
       gamesCount: stats.gamesCount,
       winsCount: stats.winsCount,
       lossesCount: stats.lossesCount,
