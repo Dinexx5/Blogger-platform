@@ -1072,9 +1072,7 @@ describe('ALL BANS FLOWS (e2e)', () => {
         .expect(403);
     });
     it('should show top', async () => {
-      const response = await request(app.getHttpServer())
-        .get(`/pair-game-quiz/users/top`)
-        .expect(200);
+      await request(app.getHttpServer()).get(`/pair-game-quiz/users/top`).expect(200);
     });
   });
 });
