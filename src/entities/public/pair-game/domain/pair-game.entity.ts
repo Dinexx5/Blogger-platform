@@ -17,6 +17,7 @@ export class PairGame {
       login: string;
     };
     score: number;
+    allQuestionsAnsweredDate: string;
   };
 
   @Column({ nullable: true, type: 'json' })
@@ -31,6 +32,7 @@ export class PairGame {
       login: string;
     };
     score: number;
+    allQuestionsAnsweredDate: string;
   };
 
   @Column({ nullable: true, type: 'json' })

@@ -12,6 +12,7 @@ import {
 } from '../../admin/questions/question.models';
 import { PairGameQueryRepository } from './pair-game.query.repository';
 import { GamesStats } from './domain/stats.entity';
+import { subSeconds } from 'date-fns';
 
 @Injectable()
 export class PairGameService {
@@ -59,10 +60,10 @@ export class PairGameService {
         },
         answers: [],
         score: 0,
+        allQuestionsAnsweredDate: null,
       };
       existingPendingPair.secondPlayerId = playerId;
-      const randomQuestions = await this.getRandomQuestions();
-      existingPendingPair.questions = randomQuestions;
+      existingPendingPair.questions = await this.getRandomQuestions();
       existingPendingPair.status = 'Active';
       existingPendingPair.startGameDate = new Date().toISOString();
 
@@ -78,6 +79,7 @@ export class PairGameService {
       },
       answers: [],
       score: 0,
+      allQuestionsAnsweredDate: null,
     };
 
     newPair.status = 'PendingSecondPlayer';
@@ -117,12 +119,16 @@ export class PairGameService {
     const secondPlayerId = currentPairGame.secondPlayerProgress.player.id;
     const firstPlayerAnswers = currentPairGame.firstPlayerProgress.answers;
     const secondPlayerAnswers = currentPairGame.secondPlayerProgress.answers;
+    const firstPlayerAnsweredAllQuestionsDate =
+      currentPairGame.firstPlayerProgress.allQuestionsAnsweredDate;
+    const secondPlayerAnsweredAllQuestionsDate =
+      currentPairGame.secondPlayerProgress.allQuestionsAnsweredDate;
 
     if (firstPlayerId !== userId && secondPlayerId !== userId) {
       throw new ForbiddenException();
     }
 
-    // Determine which questions player is trying to answer
+    // Determine which question player is trying to answer
     const currentQuestionIndex =
       firstPlayerId === userId ? firstPlayerAnswers.length : secondPlayerAnswers.length;
     if (currentQuestionIndex === 5) throw new ForbiddenException();
@@ -132,6 +138,25 @@ export class PairGameService {
     const fullQuestion: Question = await this.questionRepository.findOneBy({
       id: currentQuestion.id,
     });
+
+    //Check if there is a time limit for player to answer all questions
+
+    if (
+      (userId === firstPlayerId && secondPlayerAnsweredAllQuestionsDate) ||
+      (userId === secondPlayerId && firstPlayerAnsweredAllQuestionsDate)
+    ) {
+      const isTimeLimitExceeded = await this.checkIfPlayerExceededTimeLimit(
+        userId,
+        currentPairGame,
+      );
+      if (isTimeLimitExceeded)
+        return {
+          questionId: currentQuestion.id.toString(),
+          addedAt: new Date().toISOString(),
+          answerStatus: 'Incorrect',
+        };
+    }
+
     // Compare the given answer with correct answer
     const correctAnswers: string[] = fullQuestion.correctAnswers[0]
       .split(',')
@@ -162,54 +187,32 @@ export class PairGameService {
       currentPairGame.secondPlayerProgress.score += answerStatus === 'Correct' ? 1 : 0;
     }
 
+    // Determine if one of the players answered all questions and set Date
+
+    const firstPlayerAnsweredLastQuestion =
+      currentPairGame.firstPlayerProgress.answers.length === 5 &&
+      firstPlayerAnsweredAllQuestionsDate === null;
+
+    if (firstPlayerAnsweredLastQuestion) {
+      currentPairGame.firstPlayerProgress.allQuestionsAnsweredDate = new Date().toISOString();
+    }
+
+    const secondPlayerAnsweredLastQuestion =
+      currentPairGame.secondPlayerProgress.answers.length === 5 &&
+      secondPlayerAnsweredAllQuestionsDate === null;
+
+    if (secondPlayerAnsweredLastQuestion) {
+      currentPairGame.secondPlayerProgress.allQuestionsAnsweredDate = new Date().toISOString();
+    }
+
     // Game finish
     const gameFinished = firstPlayerAnswers.length === 5 && secondPlayerAnswers.length === 5;
 
-    if (gameFinished) {
-      currentPairGame.status = 'Finished';
-      currentPairGame.finishGameDate = new Date().toISOString();
-    }
-    // Additional score point
-    if (
-      gameFinished &&
-      firstPlayerAnswers[4].addedAt < secondPlayerAnswers[4].addedAt &&
-      firstPlayerAnswers.some((answer) => answer.answerStatus === 'Correct')
-    ) {
-      currentPairGame.firstPlayerProgress.score += 1;
-    }
-    if (
-      gameFinished &&
-      firstPlayerAnswers[4].addedAt > secondPlayerAnswers[4].addedAt &&
-      secondPlayerAnswers.some((answer) => answer.answerStatus === 'Correct')
-    ) {
-      currentPairGame.secondPlayerProgress.score += 1;
-    }
-
+    // Save game changes
     await this.pairGameRepository.save(currentPairGame);
 
-    const isFirstPlayerWon =
-      currentPairGame.firstPlayerProgress.score > currentPairGame.secondPlayerProgress.score;
-    const isDraw =
-      currentPairGame.firstPlayerProgress.score === currentPairGame.secondPlayerProgress.score;
-    const isSecondPlayerWon =
-      currentPairGame.firstPlayerProgress.score < currentPairGame.secondPlayerProgress.score;
-
-    // Update players stats
     if (gameFinished) {
-      await this.updateStatisticForFirstPlayer(
-        firstPlayerId,
-        currentPairGame.firstPlayerProgress.score,
-        isFirstPlayerWon,
-        isDraw,
-        isSecondPlayerWon,
-      );
-      await this.updateStatisticForSecondPlayer(
-        secondPlayerId,
-        currentPairGame.secondPlayerProgress.score,
-        isFirstPlayerWon,
-        isDraw,
-        isSecondPlayerWon,
-      );
+      await this.finishTheGame(currentPairGame);
     }
 
     return {
@@ -218,6 +221,87 @@ export class PairGameService {
       answerStatus: answerModel.answerStatus,
     };
   }
+
+  async finishTheGame(currentPairGame: PairGame) {
+    currentPairGame.status = 'Finished';
+    currentPairGame.finishGameDate = new Date().toISOString();
+
+    // Additional score point
+    if (
+      currentPairGame.firstPlayerProgress.answers[4].addedAt <
+        currentPairGame.secondPlayerProgress.answers[4].addedAt &&
+      currentPairGame.firstPlayerProgress.answers.some(
+        (answer) => answer.answerStatus === 'Correct',
+      )
+    ) {
+      currentPairGame.firstPlayerProgress.score += 1;
+    }
+    if (
+      currentPairGame.firstPlayerProgress.answers[4].addedAt >
+        currentPairGame.secondPlayerProgress.answers[4].addedAt &&
+      currentPairGame.secondPlayerProgress.answers.some(
+        (answer) => answer.answerStatus === 'Correct',
+      )
+    ) {
+      currentPairGame.secondPlayerProgress.score += 1;
+    }
+
+    await this.pairGameRepository.save(currentPairGame);
+
+    // Update players stats
+
+    const isFirstPlayerWon =
+      currentPairGame.firstPlayerProgress.score > currentPairGame.secondPlayerProgress.score;
+    const isDraw =
+      currentPairGame.firstPlayerProgress.score === currentPairGame.secondPlayerProgress.score;
+    const isSecondPlayerWon =
+      currentPairGame.firstPlayerProgress.score < currentPairGame.secondPlayerProgress.score;
+
+    await this.updateStatisticForFirstPlayer(
+      currentPairGame.firstPlayerId,
+      currentPairGame.firstPlayerProgress.score,
+      isFirstPlayerWon,
+      isDraw,
+      isSecondPlayerWon,
+    );
+    await this.updateStatisticForSecondPlayer(
+      currentPairGame.secondPlayerId,
+      currentPairGame.secondPlayerProgress.score,
+      isFirstPlayerWon,
+      isDraw,
+      isSecondPlayerWon,
+    );
+  }
+
+  async checkIfPlayerExceededTimeLimit(
+    userId: number,
+    currentPairGame: PairGame,
+  ): Promise<boolean> {
+    const dateNow = new Date().toISOString();
+    const tenSecondsAgo = subSeconds(new Date(dateNow), 10).toISOString();
+    const currentPlayerProgress =
+      userId === currentPairGame.firstPlayerId
+        ? currentPairGame.firstPlayerProgress
+        : currentPairGame.secondPlayerProgress;
+    const timeLimit =
+      userId === currentPairGame.firstPlayerId
+        ? currentPairGame.secondPlayerProgress.allQuestionsAnsweredDate
+        : currentPairGame.firstPlayerProgress.allQuestionsAnsweredDate;
+    if (tenSecondsAgo > timeLimit) {
+      const currentAnswers = currentPlayerProgress.answers.length;
+      for (let i = currentAnswers + 1; i <= 5; i++) {
+        currentPlayerProgress.answers.push({
+          questionId: currentPairGame.questions[i - 1].id,
+          addedAt: new Date().toISOString(),
+          answerStatus: 'Incorrect',
+        });
+      }
+      await this.finishTheGame(currentPairGame);
+      return true;
+    }
+    return false;
+  }
+
   async updateStatisticForFirstPlayer(
     firstPlayerId: number,
     firstPlayerScore: number,

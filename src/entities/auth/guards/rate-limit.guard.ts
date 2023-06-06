@@ -11,7 +11,6 @@ export class RateLimitGuard implements CanActivate {
     const request: Request = context.switchToHttp().getRequest();
     const { ip, url } = request;
     const requestData = ip + url;
-    console.log(requestData);
     const dateNow = new Date().toISOString();
     await this.attemptsRepository.addNewAttempt(requestData, dateNow);
     const tenSecondsAgo = subSeconds(new Date(dateNow), 10).toISOString();
