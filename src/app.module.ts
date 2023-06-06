@@ -29,7 +29,7 @@ export const localDbRootOptions: TypeOrmModuleOptions = {
   host: 'localhost',
   port: 5000,
   username: process.env.SQL_USERNAME,
-  password: 'privetOLEG',
+  password: process.env.SQL_LOCAL_PASS,
   database: 'typeORMdb',
   autoLoadEntities: true,
   synchronize: true,
