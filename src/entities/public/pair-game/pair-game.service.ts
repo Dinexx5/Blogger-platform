@@ -12,7 +12,6 @@ import {
 } from '../../admin/questions/question.models';
 import { PairGameQueryRepository } from './pair-game.query.repository';
 import { GamesStats } from './domain/stats.entity';
-import { subSeconds } from 'date-fns';
 
 @Injectable()
 export class PairGameService {
@@ -141,21 +140,21 @@ export class PairGameService {
 
     //Check if there is a time limit for player to answer all questions
 
-    if (
-      (userId === firstPlayerId && secondPlayerAnsweredAllQuestionsDate) ||
-      (userId === secondPlayerId && firstPlayerAnsweredAllQuestionsDate)
-    ) {
-      const isTimeLimitExceeded = await this.checkIfPlayerExceededTimeLimit(
-        userId,
-        currentPairGame,
-      );
-      if (isTimeLimitExceeded)
-        return {
-          questionId: currentQuestion.id.toString(),
-          addedAt: new Date().toISOString(),
-          answerStatus: 'Incorrect',
-        };
-    }
+    // if (
+    //   (userId === firstPlayerId && secondPlayerAnsweredAllQuestionsDate) ||
+    //   (userId === secondPlayerId && firstPlayerAnsweredAllQuestionsDate)
+    // ) {
+    //   const isTimeLimitExceeded = await this.checkIfPlayerExceededTimeLimit(
+    //     userId,
+    //     currentPairGame,
+    //   );
+    //   if (isTimeLimitExceeded)
+    //     return {
+    //       questionId: currentQuestion.id.toString(),
+    //       addedAt: new Date().toISOString(),
+    //       answerStatus: 'Incorrect',
+    //     };
+    // }
 
     // Compare the given answer with correct answer
     const correctAnswers: string[] = fullQuestion.correctAnswers[0]
@@ -195,6 +194,7 @@ export class PairGameService {
 
     if (firstPlayerAnsweredLastQuestion) {
       currentPairGame.firstPlayerProgress.allQuestionsAnsweredDate = new Date().toISOString();
+      setTimeout(this.checkIfPlayerExceededTimeLimit.bind(this), 10000, userId, currentPairGame);
     }
 
     const secondPlayerAnsweredLastQuestion =
@@ -203,6 +203,7 @@ export class PairGameService {
 
     if (secondPlayerAnsweredLastQuestion) {
       currentPairGame.secondPlayerProgress.allQuestionsAnsweredDate = new Date().toISOString();
+      setTimeout(this.checkIfPlayerExceededTimeLimit.bind(this), 10000, userId, currentPairGame);
     }
 
     // Game finish
@@ -273,33 +274,24 @@ export class PairGameService {
     );
   }
 
-  async checkIfPlayerExceededTimeLimit(
-    userId: number,
-    currentPairGame: PairGame,
-  ): Promise<boolean> {
-    const dateNow = new Date().toISOString();
-    const tenSecondsAgo = subSeconds(new Date(dateNow), 10).toISOString();
-    const currentPlayerProgress =
+  async checkIfPlayerExceededTimeLimit(userId: number, currentPairGame: PairGame) {
+    console.log(currentPairGame);
+    const opponentsProgress =
       userId === currentPairGame.firstPlayerId
-        ? currentPairGame.firstPlayerProgress
-        : currentPairGame.secondPlayerProgress;
-    const timeLimit =
-      userId === currentPairGame.firstPlayerId
-        ? currentPairGame.secondPlayerProgress.allQuestionsAnsweredDate
-        : currentPairGame.firstPlayerProgress.allQuestionsAnsweredDate;
-    if (tenSecondsAgo > timeLimit) {
-      const currentAnswers = currentPlayerProgress.answers.length;
+        ? currentPairGame.secondPlayerProgress
+        : currentPairGame.firstPlayerProgress;
+
+    if (opponentsProgress.answers.length < 5) {
+      const currentAnswers = opponentsProgress.answers.length;
       for (let i = currentAnswers + 1; i <= 5; i++) {
-        currentPlayerProgress.answers.push({
+        opponentsProgress.answers.push({
           questionId: currentPairGame.questions[i - 1].id,
           addedAt: new Date().toISOString(),
           answerStatus: 'Incorrect',
         });
       }
       await this.finishTheGame(currentPairGame);
-      return true;
     }
-    return false;
   }
 
   async updateStatisticForFirstPlayer(

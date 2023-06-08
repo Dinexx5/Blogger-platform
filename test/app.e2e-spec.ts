@@ -739,7 +739,8 @@ describe('ALL BANS FLOWS (e2e)', () => {
     let validAccessToken2: { accessToken: string };
     let validAccessToken3: { accessToken: string };
     let validAccessToken4: { accessToken: string };
-    let currentPair: PairGame;
+    let firstPair: PairGame;
+    let secondPair: PairGame;
 
     beforeAll(async () => {
       await request(app.getHttpServer()).delete(`/testing/all-data`).expect(204);
@@ -832,7 +833,7 @@ describe('ALL BANS FLOWS (e2e)', () => {
         .post('/pair-game-quiz/pairs/connection')
         .auth(validAccessToken1.accessToken, { type: 'bearer' })
         .expect(200);
-      currentPair = response.body;
+      firstPair = response.body;
       expect(response.body.id).toEqual(expect.any(String));
       expect(response.body.pairCreatedDate).toEqual(expect.any(String));
       expect(response.body.startGameDate).toBeNull();
@@ -843,7 +844,7 @@ describe('ALL BANS FLOWS (e2e)', () => {
     });
     it('should not return game to user who is still not participating', async () => {
       await request(app.getHttpServer())
-        .get(`/pair-game-quiz/pairs/${currentPair.id}`)
+        .get(`/pair-game-quiz/pairs/${firstPair.id}`)
         .auth(validAccessToken3.accessToken, { type: 'bearer' })
         .expect(403);
     });
@@ -989,7 +990,7 @@ describe('ALL BANS FLOWS (e2e)', () => {
           .send({ answer: 'Paris' });
       }
       const response = await request(app.getHttpServer())
-        .get(`/pair-game-quiz/pairs/${currentPair.id}`)
+        .get(`/pair-game-quiz/pairs/${firstPair.id}`)
         .auth(validAccessToken1.accessToken, { type: 'bearer' })
         .expect(200);
       expect(response.body.firstPlayerProgress.answers).toHaveLength(5);
@@ -1001,7 +1002,7 @@ describe('ALL BANS FLOWS (e2e)', () => {
     });
     it('should not return finished game to player who did not participated in it', async () => {
       await request(app.getHttpServer())
-        .get(`/pair-game-quiz/pairs/${currentPair.id}`)
+        .get(`/pair-game-quiz/pairs/${firstPair.id}`)
         .auth(validAccessToken3.accessToken, { type: 'bearer' })
         .expect(403);
     });
@@ -1072,7 +1073,57 @@ describe('ALL BANS FLOWS (e2e)', () => {
         .expect(403);
     });
     it('should show top', async () => {
-      await request(app.getHttpServer()).get(`/pair-game-quiz/users/top`).expect(200);
+      const response = await request(app.getHttpServer())
+        .get(`/pair-game-quiz/users/top`)
+        .expect(200);
+      expect(response.body.items).toHaveLength(2);
     });
+    it('should start another game after second player connected', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/pair-game-quiz/pairs/connection')
+        .auth(validAccessToken4.accessToken, { type: 'bearer' })
+        .expect(200);
+      secondPair = response.body;
+      expect(response.body.id).toEqual(expect.any(String));
+      expect(response.body.pairCreatedDate).toEqual(expect.any(String));
+      expect(response.body.startGameDate).toEqual(expect.any(String));
+      expect(response.body.finishGameDate).toBeNull();
+      expect(response.body.firstPlayerProgress.player.id).toBe(user3.id);
+      expect(response.body.secondPlayerProgress.player.id).toBe(user4.id);
+      expect(response.body.questions).toHaveLength(5);
+      expect(response.body.status).toBe('Active');
+    });
+    // it('should send all correct answers for player 1 and set the timer', async () => {
+    //   for (let i = 0; i < 5; i++) {
+    //     await request(app.getHttpServer())
+    //       .post('/pair-game-quiz/pairs/my-current/answers')
+    //       .auth(validAccessToken3.accessToken, { type: 'bearer' })
+    //       .send({ answer: 'Paris' });
+    //   }
+    //   const response = await request(app.getHttpServer())
+    //     .get('/pair-game-quiz/pairs/my-current')
+    //     .auth(validAccessToken3.accessToken, { type: 'bearer' })
+    //     .expect(200);
+    //   expect(response.body.firstPlayerProgress.score).toBe(5);
+    // });
+    // it('should make game finished after 10 seconds', async () => {
+    //   await request(app.getHttpServer())
+    //     .post('/pair-game-quiz/pairs/my-current/answers')
+    //     .auth(validAccessToken4.accessToken, { type: 'bearer' })
+    //     .send({ answer: 'Paris' });
+    //
+    //   jest.useRealTimers();
+    //
+    //   setTimeout(async function () {
+    //     const response = await request(app.getHttpServer())
+    //       .get(`/pair-game-quiz/pairs/${secondPair.id}`)
+    //       .auth(validAccessToken3.accessToken, { type: 'bearer' })
+    //       .expect(200);
+    //     expect(response.body.status).toBe('Finished');
+    //     expect(response.body.firstPlayerProgress.score).toBe(6);
+    //     expect(response.body.secondPlayerProgress.score).toBe(0);
+    //     console.log(response.body);
+    //   }, 11000);
+    // });
   });
 });
