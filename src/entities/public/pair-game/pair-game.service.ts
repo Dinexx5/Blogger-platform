@@ -194,7 +194,7 @@ export class PairGameService {
 
     if (firstPlayerAnsweredLastQuestion) {
       currentPairGame.firstPlayerProgress.allQuestionsAnsweredDate = new Date().toISOString();
-      setTimeout(this.checkIfPlayerExceededTimeLimit.bind(this), 20000, userId, currentPairGame.id);
+      setTimeout(this.checkIfPlayerExceededTimeLimit.bind(this), 10000, userId, currentPairGame.id);
     }
 
     const secondPlayerAnsweredLastQuestion =
@@ -203,7 +203,7 @@ export class PairGameService {
 
     if (secondPlayerAnsweredLastQuestion) {
       currentPairGame.secondPlayerProgress.allQuestionsAnsweredDate = new Date().toISOString();
-      setTimeout(this.checkIfPlayerExceededTimeLimit.bind(this), 20000, userId, currentPairGame.id);
+      setTimeout(this.checkIfPlayerExceededTimeLimit.bind(this), 10000, userId, currentPairGame.id);
     }
 
     // Game finish
