@@ -194,7 +194,7 @@ export class PairGameService {
 
     if (firstPlayerAnsweredLastQuestion) {
       currentPairGame.firstPlayerProgress.allQuestionsAnsweredDate = new Date().toISOString();
-      setTimeout(this.checkIfPlayerExceededTimeLimit.bind(this), 10000, userId, currentPairGame);
+      setTimeout(this.checkIfPlayerExceededTimeLimit.bind(this), 20000, userId, currentPairGame.id);
     }
 
     const secondPlayerAnsweredLastQuestion =
@@ -203,7 +203,7 @@ export class PairGameService {
 
     if (secondPlayerAnsweredLastQuestion) {
       currentPairGame.secondPlayerProgress.allQuestionsAnsweredDate = new Date().toISOString();
-      setTimeout(this.checkIfPlayerExceededTimeLimit.bind(this), 10000, userId, currentPairGame);
+      setTimeout(this.checkIfPlayerExceededTimeLimit.bind(this), 20000, userId, currentPairGame.id);
     }
 
     // Game finish
@@ -274,8 +274,8 @@ export class PairGameService {
     );
   }
 
-  async checkIfPlayerExceededTimeLimit(userId: number, currentPairGame: PairGame) {
-    console.log(currentPairGame);
+  async checkIfPlayerExceededTimeLimit(userId: number, currentPairGameId: number) {
+    const currentPairGame = await this.pairGameRepository.findOneBy({ id: currentPairGameId });
     const opponentsProgress =
       userId === currentPairGame.firstPlayerId
         ? currentPairGame.secondPlayerProgress
