@@ -3,12 +3,12 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { appSetupTests } from '../src/app.setup.tests';
-import { SaUserViewModel } from '../src/entities/admin/users/user.models';
-import { BlogViewModel } from '../src/entities/public/blogs/blogs.models';
-import { CommentViewModel } from '../src/entities/public/comments/comments.models';
-import { PostViewModel } from '../src/entities/public/posts/posts.models';
-import { QuestionViewModel } from '../src/entities/admin/questions/question.models';
-import { PairGame } from '../src/entities/public/pair-game/domain/pair-game.entity';
+import { SaUserViewModel } from '../src/features/admin/users/user.models';
+import { BlogViewModel } from '../src/features/public/blogs/blogs.models';
+import { CommentViewModel } from '../src/features/public/comments/comments.models';
+import { PostViewModel } from '../src/features/public/posts/posts.models';
+import { QuestionViewModel } from '../src/features/admin/questions/question.models';
+import { PairGame } from '../src/features/public/pair-game/domain/pair-game.entity';
 
 jest.setTimeout(120000);
 

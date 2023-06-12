@@ -7,7 +7,7 @@ import {
 } from 'class-validator';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EmailConfirmationInfo } from '../../../entities/admin/users/domain/email-confirmation.entity';
+import { EmailConfirmationInfo } from '../../../features/admin/users/domain/email-confirmation.entity';
 import { Repository } from 'typeorm';
 
 @ValidatorConstraint({ name: 'confirmationCode', async: true })

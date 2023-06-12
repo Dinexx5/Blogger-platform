@@ -3,16 +3,16 @@ const configModule = ConfigModule.forRoot({ isGlobal: true });
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UsersModule } from './entities/admin/users/users.module';
-import { AuthModule } from './entities/auth/auth.module';
-import { BlogsModule } from './entities/public/blogs/blogs.module';
-import { PostsModule } from './entities/public/posts/posts.module';
-import { CommentsModule } from './entities/public/comments/comments.module';
-import { TestingModule } from './entities/testing/testing.module';
-import { BansModule } from './entities/bans/bans.module';
+import { UsersModule } from './features/admin/users/users.module';
+import { AuthModule } from './features/auth/auth.module';
+import { BlogsModule } from './features/public/blogs/blogs.module';
+import { PostsModule } from './features/public/posts/posts.module';
+import { CommentsModule } from './features/public/comments/comments.module';
+import { TestingModule } from './features/testing/testing.module';
+import { BansModule } from './features/bans/bans.module';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { QuestionsModule } from './entities/admin/questions/questions.module';
-import { PairGameModule } from './entities/public/pair-game/pair-game.module';
+import { QuestionsModule } from './features/admin/questions/questions.module';
+import { PairGameModule } from './features/public/pair-game/pair-game.module';
 
 export const cloudDbRootOptions: TypeOrmModuleOptions = {
   type: 'postgres',

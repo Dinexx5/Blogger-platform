@@ -6,18 +6,18 @@ import {
   ValidationArguments,
 } from 'class-validator';
 import { Injectable } from '@nestjs/common';
-import { BlogsRepository } from '../../../entities/public/blogs/blogs.repository';
+import { BlogsRepository } from '../../../features/public/blogs/blogs.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { BlogOwnerInfo } from '../../../entities/public/blogs/domain/blog-owner-info.entity';
+import { BlogOwnerInfoEntity } from '../../../features/blogger/domain/blog-owner-info.entity';
 
 @ValidatorConstraint({ name: 'IsBlogExists', async: true })
 @Injectable()
 export class IsBlogAttachedDecorator implements ValidatorConstraintInterface {
   constructor(
     private blogsRepository: BlogsRepository,
-    @InjectRepository(BlogOwnerInfo)
-    private readonly blogOwnerRepository: Repository<BlogOwnerInfo>,
+    @InjectRepository(BlogOwnerInfoEntity)
+    private readonly blogOwnerRepository: Repository<BlogOwnerInfoEntity>,
   ) {}
   async validate(blogId: number, args: ValidationArguments) {
     const blog = await this.blogsRepository.findBlogById(blogId);

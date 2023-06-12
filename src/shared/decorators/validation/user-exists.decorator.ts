@@ -6,7 +6,7 @@ import {
   ValidationArguments,
 } from 'class-validator';
 import { Injectable } from '@nestjs/common';
-import { UsersRepository } from '../../../entities/admin/users/users.repository';
+import { UsersRepository } from '../../../features/admin/users/users.repository';
 
 @ValidatorConstraint({ name: 'IsUserExists', async: true })
 @Injectable()

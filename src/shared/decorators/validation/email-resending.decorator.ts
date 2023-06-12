@@ -6,10 +6,10 @@ import {
   ValidationArguments,
 } from 'class-validator';
 import { Injectable } from '@nestjs/common';
-import { UsersRepository } from '../../../entities/admin/users/users.repository';
+import { UsersRepository } from '../../../features/admin/users/users.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { EmailConfirmationInfo } from '../../../entities/admin/users/domain/email-confirmation.entity';
+import { EmailConfirmationInfo } from '../../../features/admin/users/domain/email-confirmation.entity';
 
 @ValidatorConstraint({ name: 'isEmailConfirmed', async: true })
 @Injectable()
