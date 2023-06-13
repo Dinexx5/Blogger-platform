@@ -1,93 +1,23 @@
 import { PostsRepository } from './posts.repository';
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { CommentsService } from '../comments/comments.service';
 import { UsersRepository } from '../../admin/users/users.repository';
-import { BlogsRepository } from '../blogs/blogs.repository';
 import { UsersBansForBlogRepository } from '../../bans/bans.users-for-blog.repository';
 import { CommentViewModel, UpdateCommentModel } from '../comments/comments.models';
-import { createPostModel, PostViewModel, updatePostModel } from './posts.models';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Post } from './domain/post.entity';
-import { BlogOwnerInfoEntity } from '../../blogger/domain/blog-owner-info.entity';
 import { PostLike } from '../../likes/domain/post-like.entity';
 
 @Injectable()
 export class PostsService {
   constructor(
     protected postsRepository: PostsRepository,
-    protected blogsRepository: BlogsRepository,
     protected commentsService: CommentsService,
     protected usersRepository: UsersRepository,
     protected usersBansForBlogsRepo: UsersBansForBlogRepository,
     @InjectRepository(PostLike)
     private readonly postsLikesRepository: Repository<PostLike>,
-    @InjectRepository(BlogOwnerInfoEntity)
-    private readonly blogOwnerInfoRepository: Repository<BlogOwnerInfoEntity>,
-    @InjectRepository(Post)
-    private readonly postsTypeOrmRepository: Repository<Post>,
   ) {}
-
-  async createPost(
-    postBody: createPostModel,
-    blogId: number,
-    userId: number,
-  ): Promise<PostViewModel | null> {
-    const blog = await this.blogsRepository.findBlogById(blogId);
-    if (!blog) throw new NotFoundException();
-
-    const blogOwnerInfo = await this.blogOwnerInfoRepository.findOneBy({ blogId: blogId });
-    if (blogOwnerInfo.userId !== userId) throw new ForbiddenException();
-
-    const post = await this.postsTypeOrmRepository.create();
-    post.title = postBody.title;
-    post.shortDescription = postBody.shortDescription;
-    post.content = postBody.content;
-    post.blogId = blogId;
-    post.blogName = blog.name;
-    post.createdAt = new Date().toISOString();
-    await this.postsTypeOrmRepository.save(post);
-
-    return {
-      id: post.id.toString(),
-      title: post.title,
-      shortDescription: post.shortDescription,
-      content: post.content,
-      blogId: post.blogId.toString(),
-      blogName: post.blogName,
-      createdAt: post.createdAt,
-      extendedLikesInfo: {
-        likesCount: 0,
-        dislikesCount: 0,
-        myStatus: 'None',
-        newestLikes: [],
-      },
-    };
-  }
-
-  async deletePostById(postId: number, blogId: number, userId: number) {
-    const blog = await this.blogsRepository.findBlogById(blogId);
-    if (!blog) throw new NotFoundException();
-    const blogOwnerInfo = await this.blogOwnerInfoRepository.findOneBy({ blogId: blogId });
-    if (blogOwnerInfo.userId !== userId) throw new ForbiddenException();
-    const post = await this.postsRepository.findPostInstance(postId);
-    if (!post) throw new NotFoundException();
-    await this.postsTypeOrmRepository.remove(post);
-  }
-
-  async updatePostById(postBody: updatePostModel, postId: number, blogId: number, userId: number) {
-    const blog = await this.blogsRepository.findBlogById(blogId);
-    if (!blog) throw new NotFoundException();
-    const blogOwnerInfo = await this.blogOwnerInfoRepository.findOneBy({ blogId: blogId });
-    if (blogOwnerInfo.userId !== userId) throw new ForbiddenException();
-    const post = await this.postsRepository.findPostInstance(postId);
-    if (!post) throw new NotFoundException();
-    post.title = postBody.title;
-    post.shortDescription = postBody.shortDescription;
-    post.content = postBody.content;
-    post.blogId = blogId;
-    await this.postsTypeOrmRepository.save(post);
-  }
   async createComment(
     postId: number,
     inputModel: UpdateCommentModel,

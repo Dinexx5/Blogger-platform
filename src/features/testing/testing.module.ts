@@ -6,7 +6,7 @@ import { BlogOwnerInfoEntity } from '../blogger/domain/blog-owner-info.entity';
 import { BlogBanInfoEntity } from '../blogger/domain/blog-ban-info.entity';
 import { SaBlogBan } from '../bans/domain/saBlogBan.entity';
 import { SaUserBan } from '../bans/domain/saUserBan.entity';
-import { UserBanForBlog } from '../blogger/domain/userBanForBlog.entity';
+import { UserBanForBlogEntity } from '../blogger/domain/user-ban-for-blog.entity';
 import { UserBanInfo } from '../admin/users/domain/ban-info.entity';
 import { Token } from '../tokens/domain/token.entity';
 import { Device } from '../public/devices/domain/device.entity';
@@ -16,7 +16,7 @@ import { CommentatorInfo } from '../public/comments/domain/commentatorInfo.entit
 import { PostInfoForComment } from '../public/comments/domain/postInfo.entity';
 import { PostLike } from '../likes/domain/post-like.entity';
 import { CommentLike } from '../likes/domain/comment-like.entity';
-import { Post } from '../public/posts/domain/post.entity';
+import { PostEntity } from '../public/posts/domain/post.entity';
 import { User } from '../admin/users/domain/user.entity';
 import { EmailConfirmationInfo } from '../admin/users/domain/email-confirmation.entity';
 import { PasswordRecoveryInfo } from '../admin/users/domain/password-recovery.entity';
@@ -37,12 +37,12 @@ import { GamesStats } from '../public/pair-game/domain/stats.entity';
       PasswordRecoveryInfo,
       PostInfoForComment,
       PostLike,
-      Post,
+      PostEntity,
       User,
       CommentLike,
       SaBlogBan,
       SaUserBan,
-      UserBanForBlog,
+      UserBanForBlogEntity,
       UserBanInfo,
       Token,
       Device,

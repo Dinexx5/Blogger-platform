@@ -4,15 +4,15 @@ import { BlogBansRepository } from '../../bans/bans.blogs.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PostViewModel } from './posts.models';
-import { Post } from './domain/post.entity';
+import { PostEntity } from './domain/post.entity';
 import { PostLike } from '../../likes/domain/post-like.entity';
 
 export class PostsQueryRepository {
   constructor(
     protected bansRepository: BansRepository,
     protected blogBansRepository: BlogBansRepository,
-    @InjectRepository(Post)
-    private readonly postsTypeOrmRepository: Repository<Post>,
+    @InjectRepository(PostEntity)
+    private readonly postsTypeOrmRepository: Repository<PostEntity>,
     @InjectRepository(PostLike)
     private readonly postsLikesTypeOrmRepository: Repository<PostLike>,
   ) {}

@@ -5,15 +5,15 @@ import { BlogsRepository } from '../public/blogs/blogs.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BlogOwnerInfoEntity } from './domain/blog-owner-info.entity';
-import { UserBanForBlog } from './domain/userBanForBlog.entity';
+import { UserBanForBlogEntity } from './domain/user-ban-for-blog.entity';
 
 export class BloggerBansQueryRepository {
   constructor(
     protected blogsRepository: BlogsRepository,
     @InjectRepository(BlogOwnerInfoEntity)
     private readonly blogOwnerInfoRepository: Repository<BlogOwnerInfoEntity>,
-    @InjectRepository(UserBanForBlog)
-    private readonly userBansTypeOrmRepository: Repository<UserBanForBlog>,
+    @InjectRepository(UserBanForBlogEntity)
+    private readonly userBansTypeOrmRepository: Repository<UserBanForBlogEntity>,
   ) {}
   mapFoundBansToViewModel(ban): BannedForBlogUserViewModel {
     return {

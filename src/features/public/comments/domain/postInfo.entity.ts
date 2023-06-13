@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryColumn } from 'typeorm';
 import { Comment } from './comment.entity';
-import { Post } from '../../posts/domain/post.entity';
+import { PostEntity } from '../../posts/domain/post.entity';
 import { BlogEntity } from '../../../blogger/domain/blog.entity';
 
 @Entity()
@@ -12,9 +12,9 @@ export class PostInfoForComment {
   @Column()
   blogName: string;
 
-  @ManyToOne(() => Post)
+  @ManyToOne(() => PostEntity)
   @JoinColumn()
-  post: Post;
+  post: PostEntity;
 
   @ManyToOne(() => BlogEntity)
   @JoinColumn()

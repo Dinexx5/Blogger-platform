@@ -29,7 +29,7 @@ import { BlogEntity } from '../../blogger/domain/blog.entity';
 import { BlogOwnerInfoEntity } from '../../blogger/domain/blog-owner-info.entity';
 import { BlogBanInfoEntity } from '../../blogger/domain/blog-ban-info.entity';
 import { SaBlogBan } from '../../bans/domain/saBlogBan.entity';
-import { UserBanForBlog } from '../../blogger/domain/userBanForBlog.entity';
+import { UserBanForBlogEntity } from '../../blogger/domain/user-ban-for-blog.entity';
 import { UserBanInfo } from '../../admin/users/domain/ban-info.entity';
 import { Token } from '../../tokens/domain/token.entity';
 import { Device } from '../devices/domain/device.entity';
@@ -38,16 +38,22 @@ import { Comment } from '../comments/domain/comment.entity';
 import { CreateBlogUseCase } from '../../blogger/application/use-cases/create-blog-use.case';
 import { UpdateBlogUseCase } from '../../blogger/application/use-cases/update-blog-use.case';
 import { DeleteBlogUseCase } from '../../blogger/application/use-cases/delete-blog-use.case';
+import { DeletePostUseCase } from '../../blogger/application/use-cases/delete-post-use.case';
+import { CreatePostUseCase } from '../../blogger/application/use-cases/create-post-use.case';
+import { UpdatePostUseCase } from '../../blogger/application/use-cases/update-post-use.case';
+import { PostEntity } from '../posts/domain/post.entity';
+import { BlogsService } from '../../blogger/application/blogs.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       BlogEntity,
+      PostEntity,
       BlogOwnerInfoEntity,
       BlogBanInfoEntity,
       SaBlogBan,
       SaUserBan,
-      UserBanForBlog,
+      UserBanForBlogEntity,
       UserBanInfo,
       Token,
       Device,
@@ -66,6 +72,10 @@ import { DeleteBlogUseCase } from '../../blogger/application/use-cases/delete-bl
     CreateBlogUseCase,
     UpdateBlogUseCase,
     DeleteBlogUseCase,
+    CreatePostUseCase,
+    UpdatePostUseCase,
+    DeletePostUseCase,
+    BlogsService,
     BlogsRepository,
     BlogsQueryRepository,
     IsBlogAttachedDecorator,

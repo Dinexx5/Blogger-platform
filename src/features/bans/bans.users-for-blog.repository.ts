@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UserBanForBlog } from '../blogger/domain/userBanForBlog.entity';
+import { UserBanForBlogEntity } from '../blogger/domain/user-ban-for-blog.entity';
 
 @Injectable()
 export class UsersBansForBlogRepository {
   constructor(
-    @InjectRepository(UserBanForBlog)
-    private readonly usersBansForBlogsRepository: Repository<UserBanForBlog>,
+    @InjectRepository(UserBanForBlogEntity)
+    private readonly usersBansForBlogsRepository: Repository<UserBanForBlogEntity>,
   ) {}
   async countBannedUsers() {
     return await this.usersBansForBlogsRepository.count();

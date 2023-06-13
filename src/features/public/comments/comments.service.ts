@@ -4,7 +4,7 @@ import { UsersRepository } from '../../admin/users/users.repository';
 import { CommentViewModel, CreateCommentModel, UpdateCommentModel } from './comments.models';
 import { PostsRepository } from '../posts/posts.repository';
 import { User } from '../../admin/users/domain/user.entity';
-import { Post } from '../posts/domain/post.entity';
+import { PostEntity } from '../posts/domain/post.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Comment } from './domain/comment.entity';
@@ -33,7 +33,7 @@ export class CommentsService {
     userId: number,
   ): Promise<CommentViewModel> {
     const user: User = await this.usersRepository.findUserById(userId);
-    const post: Post = await this.postsRepository.findPostInstance(postId);
+    const post: PostEntity = await this.postsRepository.findPostInstance(postId);
     const createdAt = new Date().toISOString();
     const comment = await this.commentsTypeOrmRepository.create();
     comment.content = inputModel.content;

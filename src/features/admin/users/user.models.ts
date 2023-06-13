@@ -73,9 +73,9 @@ export class BanModel {
   banReason: string;
 }
 export class BanUserModelForBlog {
-  @IsNumberString()
   @IsNotEmpty()
-  blogId: string;
+  @Transform(({ value }) => +value)
+  blogId: number;
   @IsBoolean()
   @IsNotEmpty()
   isBanned: boolean;

@@ -5,9 +5,8 @@ import { Repository } from 'typeorm';
 import { BlogBanInfoEntity } from '../../domain/blog-ban-info.entity';
 import { BlogOwnerInfoEntity } from '../../domain/blog-owner-info.entity';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import { BlogsRepository } from '../../../public/blogs/blogs.repository';
 import { updateBlogDto } from '../../dto/update-blog-dto';
+import { BlogsService } from '../blogs.service';
 
 export class UpdateBlogCommand {
   constructor(public inputModel: updateBlogDto, public blogId: number, public userId: number) {}
@@ -16,7 +15,7 @@ export class UpdateBlogCommand {
 @CommandHandler(UpdateBlogCommand)
 export class UpdateBlogUseCase implements ICommandHandler<UpdateBlogCommand> {
   constructor(
-    protected blogsRepository: BlogsRepository,
+    protected blogsService: BlogsService,
     protected usersRepository: UsersRepository,
     @InjectRepository(BlogEntity)
     private readonly blogsTypeOrmRepository: Repository<BlogEntity>,
@@ -31,10 +30,8 @@ export class UpdateBlogUseCase implements ICommandHandler<UpdateBlogCommand> {
     const blogId = command.blogId;
     const userId = command.userId;
 
-    const blog = await this.blogsRepository.findBlogById(blogId);
-    const blogOwnerInfo = await this.blogOwnerInfoRepository.findOneBy({ blogId: blogId });
-    if (!blog) throw new NotFoundException();
-    if (blogOwnerInfo.userId !== userId) throw new ForbiddenException();
+    const blog = await this.blogsService.checkBlogId(blogId);
+    await this.blogsService.checkPermission(blogId, userId);
 
     const { name, description, websiteUrl } = blogBody;
 

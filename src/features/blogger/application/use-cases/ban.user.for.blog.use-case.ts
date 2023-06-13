@@ -8,7 +8,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { BlogOwnerInfoEntity } from '../../domain/blog-owner-info.entity';
 import { Repository } from 'typeorm';
 import { User } from '../../../admin/users/domain/user.entity';
-import { UserBanForBlog } from '../../domain/userBanForBlog.entity';
+import { UserBanForBlogEntity } from '../../domain/user-ban-for-blog.entity';
+import { CreateUserBanForBlogDto } from '../../dto/create-user-ban-for-blog.dto';
 
 export class BanUserForBlogCommand {
   constructor(
@@ -26,21 +27,24 @@ export class BanUserForBlogUseCase implements ICommandHandler<BanUserForBlogComm
     protected blogsRepository: BlogsRepository,
     @InjectRepository(BlogOwnerInfoEntity)
     private readonly blogOwnerInfoRepository: Repository<BlogOwnerInfoEntity>,
-    @InjectRepository(UserBanForBlog)
-    private readonly usersBansForBlogsRepository: Repository<UserBanForBlog>,
+    @InjectRepository(UserBanForBlogEntity)
+    private readonly usersBansForBlogsRepository: Repository<UserBanForBlogEntity>,
   ) {}
   async execute(command: BanUserForBlogCommand): Promise<boolean> {
     const ownerId = command.ownerId;
     const userId = command.userId;
     const inputModel = command.inputModel;
-    const blogId = +inputModel.blogId;
+
+    const blogId = inputModel.blogId;
     const blog = await this.blogsRepository.findBlogById(blogId);
     if (!blog) throw new NotFoundException();
+
     const blogOwnerInfo = await this.blogOwnerInfoRepository.findOneBy({ blogId: blogId });
     if (blogOwnerInfo.userId !== ownerId) throw new ForbiddenException();
+
     const userToBan: User = await this.usersRepository.findUserById(userId);
     if (!userToBan) throw new NotFoundException();
-    const login = userToBan.login;
+
     if (inputModel.isBanned === true) {
       const isBannedBefore = await this.usersBansForBlogsRepository.findOneBy({
         blogId: blogId,
@@ -48,15 +52,17 @@ export class BanUserForBlogUseCase implements ICommandHandler<BanUserForBlogComm
       });
       if (isBannedBefore) return;
       const bannedPostsIds: number[] = await this.postsRepository.findPostsForUser([blogId]);
-      const ban = await this.usersBansForBlogsRepository.create();
-      ban.userId = userId;
-      ban.login = login;
-      ban.blogId = blogId;
-      ban.isBanned = true;
-      ban.banReason = inputModel.banReason;
-      ban.banDate = new Date().toISOString();
-      ban.bannedPostsIds = bannedPostsIds;
+
+      const createUserForBlogBanDto: CreateUserBanForBlogDto = {
+        userId,
+        login: userToBan.login,
+        blogId,
+        banReason: inputModel.banReason,
+        bannedPostsIds,
+      };
+      const ban = await UserBanForBlogEntity.createUserBanForBlog(createUserForBlogBanDto);
       await this.usersBansForBlogsRepository.save(ban);
+
       return;
     }
     const ban = await this.usersBansForBlogsRepository.findOneBy({

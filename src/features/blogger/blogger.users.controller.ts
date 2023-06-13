@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Put,
@@ -33,14 +35,15 @@ export class BloggerUsersController {
   ) {}
   @UseGuards(JwtAccessAuthGuard, isUserIdIntegerGuard)
   @Put(':userId/ban')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async banUser(
     @CurrentUser() ownerId,
     @Param() param: UserToBanParamModel,
     @Body() inputModel: BanUserModelForBlog,
-    @Res() res: Response,
   ) {
-    await this.commandBus.execute(new BanUserForBlogCommand(param.userId, inputModel, ownerId));
-    return res.sendStatus(204);
+    return await this.commandBus.execute(
+      new BanUserForBlogCommand(param.userId, inputModel, ownerId),
+    );
   }
   @UseGuards(JwtAccessAuthGuard, isBlogIdIntegerGuard)
   @Get('/blog/:blogId')

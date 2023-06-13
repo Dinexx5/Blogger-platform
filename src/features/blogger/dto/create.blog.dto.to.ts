@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsString, IsUrl, Length } from 'class-validator';
 import { Transform } from 'class-transformer';
 
-export class createBlogDto {
+export class CreateBlogDto {
   @IsString()
   @IsNotEmpty()
   @Length(0, 15)

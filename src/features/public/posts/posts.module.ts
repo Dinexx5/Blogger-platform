@@ -16,7 +16,7 @@ import { BlogBansRepository } from '../../bans/bans.blogs.repository';
 import { CqrsModule } from '@nestjs/cqrs';
 import { UsersBansForBlogRepository } from '../../bans/bans.users-for-blog.repository';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Post } from './domain/post.entity';
+import { PostEntity } from './domain/post.entity';
 import { PostLike } from '../../likes/domain/post-like.entity';
 import { BlogOwnerInfoEntity } from '../../blogger/domain/blog-owner-info.entity';
 import { BlogEntity } from '../../blogger/domain/blog.entity';
@@ -24,13 +24,17 @@ import { UserBanInfo } from '../../admin/users/domain/ban-info.entity';
 import { Token } from '../../tokens/domain/token.entity';
 import { Device } from '../devices/domain/device.entity';
 import { SaUserBan } from '../../bans/domain/saUserBan.entity';
-import { UserBanForBlog } from '../../blogger/domain/userBanForBlog.entity';
+import { UserBanForBlogEntity } from '../../blogger/domain/user-ban-for-blog.entity';
 import { SaBlogBan } from '../../bans/domain/saBlogBan.entity';
+import { CreatePostUseCase } from '../../blogger/application/use-cases/create-post-use.case';
+import { UpdatePostUseCase } from '../../blogger/application/use-cases/update-post-use.case';
+import { DeletePostUseCase } from '../../blogger/application/use-cases/delete-post-use.case';
+import { BlogsService } from '../../blogger/application/blogs.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
-      Post,
+      PostEntity,
       PostLike,
       BlogOwnerInfoEntity,
       BlogEntity,
@@ -38,7 +42,7 @@ import { SaBlogBan } from '../../bans/domain/saBlogBan.entity';
       Token,
       Device,
       SaUserBan,
-      UserBanForBlog,
+      UserBanForBlogEntity,
       SaBlogBan,
     ]),
     CqrsModule,
@@ -49,6 +53,10 @@ import { SaBlogBan } from '../../bans/domain/saBlogBan.entity';
     TokensModule,
   ],
   providers: [
+    CreatePostUseCase,
+    UpdatePostUseCase,
+    DeletePostUseCase,
+    BlogsService,
     PostsService,
     PostsRepository,
     PostsQueryRepository,

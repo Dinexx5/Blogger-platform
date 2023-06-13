@@ -6,10 +6,10 @@ import { Repository } from 'typeorm';
 import { BlogBanInfoEntity } from '../../domain/blog-ban-info.entity';
 import { BlogOwnerInfoEntity } from '../../domain/blog-owner-info.entity';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { createBlogDto } from '../../dto/create.blog.dto.to';
+import { CreateBlogDto } from '../../dto/create.blog.dto.to';
 
 export class CreateBlogCommand {
-  constructor(public inputModel: createBlogDto, public userId: number) {}
+  constructor(public inputModel: CreateBlogDto, public userId: number) {}
 }
 
 @CommandHandler(CreateBlogCommand)
@@ -31,7 +31,6 @@ export class CreateBlogUseCase implements ICommandHandler<CreateBlogCommand> {
     const user = await this.usersRepository.findUserById(userId);
 
     const blog = await BlogEntity.createBlog(inputModel);
-    console.log(blog);
     await this.blogsTypeOrmRepository.save(blog);
 
     const blogBanInfo = await BlogBanInfoEntity.createBlogBanInfo(blog.id);

@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { Post } from './domain/post.entity';
+import { PostEntity } from './domain/post.entity';
 
 @Injectable()
 export class PostsRepository {
   constructor(
-    @InjectRepository(Post)
-    private readonly postsTypeOrmRepository: Repository<Post>,
+    @InjectRepository(PostEntity)
+    private readonly postsTypeOrmRepository: Repository<PostEntity>,
   ) {}
 
   async findPostInstance(postId: number) {

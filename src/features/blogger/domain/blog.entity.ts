@@ -1,7 +1,7 @@
 import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { BlogOwnerInfoEntity } from './blog-owner-info.entity';
 import { BlogBanInfoEntity } from './blog-ban-info.entity';
-import { createBlogDto } from '../dto/create.blog.dto.to';
+import { CreateBlogDto } from '../dto/create.blog.dto.to';
 
 @Entity()
 export class BlogEntity {
@@ -21,7 +21,7 @@ export class BlogEntity {
   blogOwnerInfo: BlogOwnerInfoEntity;
   @OneToOne(() => BlogBanInfoEntity, (bi) => bi.blog)
   banInfo: BlogBanInfoEntity;
-  static createBlog(inputModel: createBlogDto): BlogEntity {
+  static createBlog(inputModel: CreateBlogDto): BlogEntity {
     const blog = new BlogEntity();
     blog.name = inputModel.name;
     blog.description = inputModel.description;

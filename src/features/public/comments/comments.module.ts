@@ -24,13 +24,13 @@ import { CommentatorInfo } from './domain/commentatorInfo.entity';
 import { PostInfoForComment } from './domain/postInfo.entity';
 import { PostLike } from '../../likes/domain/post-like.entity';
 import { BlogOwnerInfoEntity } from '../../blogger/domain/blog-owner-info.entity';
-import { Post } from '../posts/domain/post.entity';
+import { PostEntity } from '../posts/domain/post.entity';
 import { BlogEntity } from '../../blogger/domain/blog.entity';
 import { UserBanInfo } from '../../admin/users/domain/ban-info.entity';
 import { Token } from '../../tokens/domain/token.entity';
 import { SaUserBan } from '../../bans/domain/saUserBan.entity';
 import { Device } from '../devices/domain/device.entity';
-import { UserBanForBlog } from '../../blogger/domain/userBanForBlog.entity';
+import { UserBanForBlogEntity } from '../../blogger/domain/user-ban-for-blog.entity';
 import { SaBlogBan } from '../../bans/domain/saBlogBan.entity';
 
 @Module({
@@ -40,7 +40,7 @@ import { SaBlogBan } from '../../bans/domain/saBlogBan.entity';
       Comment,
       CommentatorInfo,
       PostInfoForComment,
-      Post,
+      PostEntity,
       PostLike,
       CommentLike,
       BlogOwnerInfoEntity,
@@ -48,7 +48,7 @@ import { SaBlogBan } from '../../bans/domain/saBlogBan.entity';
       Token,
       SaUserBan,
       Device,
-      UserBanForBlog,
+      UserBanForBlogEntity,
       SaBlogBan,
     ]),
     CqrsModule,

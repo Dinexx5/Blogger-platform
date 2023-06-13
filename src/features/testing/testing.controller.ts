@@ -17,9 +17,9 @@ import { SaUserBan } from '../bans/domain/saUserBan.entity';
 import { UserBanInfo } from '../admin/users/domain/ban-info.entity';
 import { EmailConfirmationInfo } from '../admin/users/domain/email-confirmation.entity';
 import { PasswordRecoveryInfo } from '../admin/users/domain/password-recovery.entity';
-import { UserBanForBlog } from '../blogger/domain/userBanForBlog.entity';
+import { UserBanForBlogEntity } from '../blogger/domain/user-ban-for-blog.entity';
 import { Comment } from '../public/comments/domain/comment.entity';
-import { Post } from '../public/posts/domain/post.entity';
+import { PostEntity } from '../public/posts/domain/post.entity';
 import { BlogEntity } from '../blogger/domain/blog.entity';
 import { Question } from '../admin/questions/domain/question.entity';
 import { PairGame } from '../public/pair-game/domain/pair-game.entity';
@@ -58,14 +58,14 @@ export class TestingController {
     private readonly emailConfirmationInfo: Repository<EmailConfirmationInfo>,
     @InjectRepository(PasswordRecoveryInfo)
     private readonly passwordRecoveryInfo: Repository<PasswordRecoveryInfo>,
-    @InjectRepository(UserBanForBlog)
-    private readonly userBansForBlog: Repository<UserBanForBlog>,
+    @InjectRepository(UserBanForBlogEntity)
+    private readonly userBansForBlog: Repository<UserBanForBlogEntity>,
     @InjectRepository(GamesStats)
     private readonly gamesStats: Repository<GamesStats>,
     @InjectRepository(Comment)
     private readonly comments: Repository<Comment>,
-    @InjectRepository(Post)
-    private readonly posts: Repository<Post>,
+    @InjectRepository(PostEntity)
+    private readonly posts: Repository<PostEntity>,
     @InjectRepository(BlogEntity)
     private readonly blogs: Repository<BlogEntity>,
     @InjectRepository(User)
