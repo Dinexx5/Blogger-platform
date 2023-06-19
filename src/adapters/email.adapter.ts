@@ -1,19 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
+import { transporterSettings } from './email-adapter.settings';
 
 @Injectable()
 export class EmailAdapter {
-  transporterSettings = {
-    host: 'smtp.mail.ru',
-    port: 587,
-    secure: false,
-    auth: {
-      user: 'd.diubajlo@mail.ru',
-      pass: process.env.MAIL_PASS,
-    },
-  };
   async sendEmailForConfirmation(email: string, code: string) {
-    const transporter = nodemailer.createTransport(this.transporterSettings);
+    const transporter = nodemailer.createTransport(transporterSettings);
     return await transporter.sendMail({
       from: 'd.diubajlo@mail.ru',
       to: email,
@@ -27,7 +19,7 @@ export class EmailAdapter {
     });
   }
   async sendEmailForPasswordRecovery(email: string, code: string) {
-    const transporter = nodemailer.createTransport(this.transporterSettings);
+    const transporter = nodemailer.createTransport(transporterSettings);
 
     return await transporter.sendMail({
       from: 'd.diubajlo@mail.ru',
