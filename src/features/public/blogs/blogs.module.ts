@@ -43,6 +43,7 @@ import { CreatePostUseCase } from '../../blogger/application/use-cases/create-po
 import { UpdatePostUseCase } from '../../blogger/application/use-cases/update-post-use.case';
 import { PostEntity } from '../posts/domain/post.entity';
 import { BlogsService } from '../../blogger/application/blogs.service';
+import { BloggerFilesController } from '../../blogger/blogger.upload-files.controller';
 
 @Module({
   imports: [
@@ -93,6 +94,7 @@ import { BlogsService } from '../../blogger/application/blogs.service';
   ],
   controllers: [
     BloggerController,
+    BloggerFilesController,
     BloggerUsersController,
     BlogsController,
     SuperAdminBlogsController,
