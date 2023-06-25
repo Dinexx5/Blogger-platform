@@ -11,7 +11,7 @@ export class BlogsService {
     @InjectRepository(BlogOwnerInfoEntity)
     private readonly blogOwnerInfoRepository: Repository<BlogOwnerInfoEntity>,
   ) {}
-  async checkBlogId(blogId: number) {
+  async checkBlogExists(blogId: number) {
     const blog = await this.blogsRepository.findBlogById(blogId);
     if (!blog) throw new NotFoundException();
     return blog;

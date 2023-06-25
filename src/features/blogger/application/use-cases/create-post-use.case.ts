@@ -22,7 +22,7 @@ export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
     const userId = command.userId;
     const inputModel = command.inputModel;
 
-    const blog = await this.blogsService.checkBlogId(blogId);
+    const blog = await this.blogsService.checkBlogExists(blogId);
     await this.blogsService.checkPermission(blogId, userId);
 
     const post = await PostEntity.createPost(inputModel, blogId, blog.name);

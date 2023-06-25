@@ -30,7 +30,7 @@ export class UpdateBlogUseCase implements ICommandHandler<UpdateBlogCommand> {
     const blogId = command.blogId;
     const userId = command.userId;
 
-    const blog = await this.blogsService.checkBlogId(blogId);
+    const blog = await this.blogsService.checkBlogExists(blogId);
     await this.blogsService.checkPermission(blogId, userId);
 
     const { name, description, websiteUrl } = blogBody;

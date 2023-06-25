@@ -30,10 +30,10 @@ export class UpdatePostUseCase implements ICommandHandler<UpdatePostCommand> {
     const postId = command.postId;
     const inputModel = command.inputModel;
 
-    await this.blogsService.checkBlogId(blogId);
+    await this.blogsService.checkBlogExists(blogId);
     await this.blogsService.checkPermission(blogId, userId);
 
-    const post = await this.postsRepository.findPostInstance(postId);
+    const post = await this.postsRepository.findPostById(postId);
     if (!post) throw new NotFoundException();
 
     post.title = inputModel.title;

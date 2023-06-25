@@ -13,7 +13,7 @@ import { BansModule } from './features/bans/bans.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { QuestionsModule } from './features/admin/questions/questions.module';
 import { PairGameModule } from './features/public/pair-game/pair-game.module';
-import { cloudDbRootOptions } from './app.db.root';
+import { cloudDbRootOptions, localDbRootOptions } from './app.db.root';
 
 @Module({
   imports: [

@@ -44,6 +44,13 @@ import { UpdatePostUseCase } from '../../blogger/application/use-cases/update-po
 import { PostEntity } from '../posts/domain/post.entity';
 import { BlogsService } from '../../blogger/application/blogs.service';
 import { BloggerFilesController } from '../../blogger/blogger.upload-files.controller';
+import { WallpaperEntity } from '../../blogger/domain/wallpaper.entity';
+import { UploadWallpaperUseCase } from '../../blogger/application/use-cases/upload-wallpaper.use-case';
+import { FileStorageAdapter } from '../../../adapters/file-storage.adapter';
+import { MainPictureEntity } from '../../blogger/domain/main-picture.entity';
+import { UploadMainUseCase } from '../../blogger/application/use-cases/upload-main.use-case';
+import { UploadPostMainUseCase } from '../../blogger/application/use-cases/upload-post-main.use-case';
+import { PostMainPictureEntity } from '../../blogger/domain/post-main-picture.entity';
 
 @Module({
   imports: [
@@ -60,6 +67,9 @@ import { BloggerFilesController } from '../../blogger/blogger.upload-files.contr
       Device,
       SaBlogBan,
       Comment,
+      WallpaperEntity,
+      MainPictureEntity,
+      PostMainPictureEntity,
     ]),
     CqrsModule,
     AuthModule,
@@ -91,6 +101,10 @@ import { BloggerFilesController } from '../../blogger/blogger.upload-files.contr
     BanUserForBlogUseCase,
     BloggerBansQueryRepository,
     BloggerCommentsQueryRepository,
+    UploadWallpaperUseCase,
+    UploadMainUseCase,
+    UploadPostMainUseCase,
+    FileStorageAdapter,
   ],
   controllers: [
     BloggerController,

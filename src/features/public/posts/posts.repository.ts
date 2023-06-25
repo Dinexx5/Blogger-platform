@@ -10,7 +10,7 @@ export class PostsRepository {
     private readonly postsTypeOrmRepository: Repository<PostEntity>,
   ) {}
 
-  async findPostInstance(postId: number) {
+  async findPostById(postId: number) {
     return await this.postsTypeOrmRepository.findOneBy({ id: postId });
   }
   async findPostsForUser(blogs: number[]) {

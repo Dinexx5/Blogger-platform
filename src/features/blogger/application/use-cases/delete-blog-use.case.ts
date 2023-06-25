@@ -28,7 +28,7 @@ export class DeleteBlogUseCase implements ICommandHandler<DeleteBlogCommand> {
     const blogId = command.blogId;
     const userId = command.userId;
 
-    const blog = await this.blogsService.checkBlogId(blogId);
+    const blog = await this.blogsService.checkBlogExists(blogId);
     const blogOwnerInfo = await this.blogsService.checkPermission(blogId, userId);
 
     await this.blogOwnerInfoRepository.remove(blogOwnerInfo);

@@ -24,10 +24,10 @@ export class DeletePostUseCase implements ICommandHandler<DeletePostCommand> {
     const userId = command.userId;
     const postId = command.postId;
 
-    await this.blogsService.checkBlogId(blogId);
+    await this.blogsService.checkBlogExists(blogId);
     await this.blogsService.checkPermission(blogId, userId);
 
-    const post = await this.postsRepository.findPostInstance(postId);
+    const post = await this.postsRepository.findPostById(postId);
     if (!post) throw new NotFoundException();
 
     await this.postsTypeOrmRepository.remove(post);

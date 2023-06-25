@@ -1,5 +1,5 @@
 import { PostsRepository } from './posts.repository';
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CommentsService } from '../comments/comments.service';
 import { UsersRepository } from '../../admin/users/users.repository';
 import { UsersBansForBlogRepository } from '../../bans/bans.users-for-blog.repository';
@@ -18,12 +18,17 @@ export class PostsService {
     @InjectRepository(PostLike)
     private readonly postsLikesRepository: Repository<PostLike>,
   ) {}
+  async checkPostExists(postId: number) {
+    const post = await this.postsRepository.findPostById(postId);
+    if (!post) throw new NotFoundException();
+    return post;
+  }
   async createComment(
     postId: number,
     inputModel: UpdateCommentModel,
     userId: number,
   ): Promise<CommentViewModel | null> {
-    const post = await this.postsRepository.findPostInstance(postId);
+    const post = await this.postsRepository.findPostById(postId);
     if (!post) return null;
     const forbiddenPosts = await this.usersBansForBlogsRepo.getBannedPostsForUser(userId);
     if (forbiddenPosts.includes(postId)) throw new ForbiddenException();
@@ -31,7 +36,7 @@ export class PostsService {
   }
 
   async likePost(postId: number, likeStatus: string, userId: number): Promise<boolean> {
-    const post = await this.postsRepository.findPostInstance(postId);
+    const post = await this.postsRepository.findPostById(postId);
     if (!post) return false;
     const user = await this.usersRepository.findUserById(userId);
     const like = await this.postsLikesRepository.findOneBy({
