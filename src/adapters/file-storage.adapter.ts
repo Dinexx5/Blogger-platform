@@ -65,20 +65,20 @@ export class FileStorageAdapter {
       throw err;
     }
   }
-  async deleteFile(blogId: number, imageType: string): Promise<DeleteObjectCommandOutput> {
-    const bucketParams = {
-      Bucket: 'blogger.platform',
-      Key: `content/blogs/${blogId}/${imageType}/${blogId}_${imageType}`,
-    };
-
-    const command = new DeleteObjectCommand(bucketParams);
-
-    try {
-      const deleteResult: DeleteObjectCommandOutput = await this.s3Client.send(command);
-      return deleteResult;
-    } catch (err) {
-      console.error(err);
-      throw err;
-    }
-  }
+  // async deleteFile(blogId: number, imageType: string): Promise<DeleteObjectCommandOutput> {
+  //   const bucketParams = {
+  //     Bucket: 'blogger.platform',
+  //     Key: `content/blogs/${blogId}/${imageType}/${blogId}_${imageType}`,
+  //   };
+  //
+  //   const command = new DeleteObjectCommand(bucketParams);
+  //
+  //   try {
+  //     const deleteResult: DeleteObjectCommandOutput = await this.s3Client.send(command);
+  //     return deleteResult;
+  //   } catch (err) {
+  //     console.error(err);
+  //     throw err;
+  //   }
+  // }
 }
