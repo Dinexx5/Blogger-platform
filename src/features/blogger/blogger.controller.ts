@@ -104,8 +104,7 @@ export class BloggerController {
   @UseGuards(JwtAccessAuthGuard)
   @Get()
   async getBlogs(@Query() paginationQuery, @CurrentUser() userId) {
-    const returnedBlogs: paginatedViewModel<BlogViewModel[]> =
-      await this.blogsQueryRepo.getAllBlogs(paginationQuery, userId);
+    const returnedBlogs = await this.blogsQueryRepo.getAllBlogs(paginationQuery, userId);
     return returnedBlogs;
   }
 

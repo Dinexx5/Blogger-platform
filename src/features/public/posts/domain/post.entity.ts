@@ -2,6 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColum
 import { BlogEntity } from '../../../blogger/domain/blog.entity';
 import { PostLike } from '../../../likes/domain/post-like.entity';
 import { CreatePostDto } from '../../../blogger/dto/create-post-dto';
+import { PostMainPictureEntity } from '../../../blogger/domain/post-main-picture.entity';
 
 @Entity()
 export class PostEntity {
@@ -24,6 +25,8 @@ export class PostEntity {
   blog: BlogEntity;
   @OneToMany(() => PostLike, (l) => l.post)
   likes: PostLike[];
+  @OneToMany(() => PostMainPictureEntity, (mp) => mp.post)
+  mainPictures: PostMainPictureEntity[];
   static createPost(inputModel: CreatePostDto, blogId: number, blogName: string): PostEntity {
     const post = new PostEntity();
     post.title = inputModel.title;

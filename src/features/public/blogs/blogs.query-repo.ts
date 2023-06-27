@@ -13,7 +13,7 @@ export class BlogsQueryRepository {
     @InjectRepository(BlogEntity)
     private readonly blogsTypeOrmRepository: Repository<BlogEntity>,
   ) {}
-  mapFoundBlogToBlogViewModel(blog): BlogViewModel {
+  mapFoundBlogToBlogViewModel(blog) {
     return {
       name: blog.name,
       description: blog.description,
@@ -21,12 +21,29 @@ export class BlogsQueryRepository {
       isMembership: blog.isMembership,
       createdAt: blog.createdAt,
       id: blog.id.toString(),
+      images: {
+        wallpaper: blog.wallpaper
+          ? {
+              url: blog.wallpaper.url,
+              width: blog.wallpaper.width,
+              height: blog.wallpaper.height,
+              fileSize: blog.wallpaper.fileSize,
+            }
+          : null,
+        main: blog.mainPicture
+          ? [
+              {
+                url: blog.mainPicture.url,
+                width: blog.mainPicture.width,
+                height: blog.mainPicture.height,
+                fileSize: blog.mainPicture.fileSize,
+              },
+            ]
+          : [],
+      },
     };
   }
-  async getAllBlogs(
-    query: paginationQuerys,
-    userId?: string,
-  ): Promise<paginatedViewModel<BlogViewModel[]>> {
+  async getAllBlogs(query: paginationQuerys, userId?: string) {
     const {
       sortDirection = 'desc',
       sortBy = 'createdAt',
@@ -43,7 +60,9 @@ export class BlogsQueryRepository {
 
     const builder = this.blogsTypeOrmRepository
       .createQueryBuilder('b')
-      .leftJoinAndSelect('b.blogOwnerInfo', 'oi');
+      .leftJoinAndSelect('b.blogOwnerInfo', 'oi')
+      .leftJoinAndSelect('b.wallpaper', 'w')
+      .leftJoinAndSelect('b.mainPicture', 'mp');
 
     if (allBannedBlogs.length) {
       builder.andWhere('b.id NOT IN (:...allBannedBlogs)', {
@@ -80,11 +99,18 @@ export class BlogsQueryRepository {
     };
   }
 
-  async findBlogById(blogId: number): Promise<BlogViewModel | null> {
+  async findBlogById(blogId: number) {
     const bannedBlogsFromUsers = await this.bansRepository.getBannedBlogs();
     const bannedBlogs = await this.blogBansRepository.getBannedBlogs();
     const allBannedBlogs = bannedBlogs.concat(bannedBlogsFromUsers);
-    const foundBlog = await this.blogsTypeOrmRepository.findOneBy({ id: blogId });
+    const builder = this.blogsTypeOrmRepository
+      .createQueryBuilder('b')
+      .leftJoinAndSelect('b.wallpaper', 'w')
+      .leftJoinAndSelect('b.mainPicture', 'mp')
+      .where('b.id = :blogId', {
+        blogId: blogId,
+      });
+    const foundBlog = await builder.getOne();
     if (!foundBlog) return null;
     if (allBannedBlogs.includes(foundBlog.id)) return null;
     return this.mapFoundBlogToBlogViewModel(foundBlog);

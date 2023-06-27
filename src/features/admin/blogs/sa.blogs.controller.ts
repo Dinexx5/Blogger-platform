@@ -24,8 +24,7 @@ export class SuperAdminBlogsController {
   @UseGuards(AuthGuard)
   @Get()
   async getBlogs(@Query() paginationQuery) {
-    const returnedBlogs: paginatedViewModel<BlogSAViewModel[]> =
-      await this.superAdminBlogsQueryRepository.getAllBlogs(paginationQuery);
+    const returnedBlogs = await this.superAdminBlogsQueryRepository.getAllBlogs(paginationQuery);
     return returnedBlogs;
   }
 

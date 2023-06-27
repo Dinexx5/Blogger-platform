@@ -62,10 +62,13 @@ export class UploadPostMainUseCase implements ICommandHandler<UploadPostMainComm
       );
       const fileMeta = await sharp(resizedBuffer).metadata();
       const fileSize = fileMeta.size;
-      const newMainPicture = PostMainPictureEntity.create(
+      const newMainPicture = await PostMainPictureEntity.create(
         blogId,
         postId,
         userId,
+        height,
+        width,
+        sizeName,
         uploadResult.ETag,
         fileSize,
       );

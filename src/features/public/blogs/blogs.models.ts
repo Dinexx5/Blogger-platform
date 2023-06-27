@@ -2,6 +2,7 @@ import { IsBoolean, IsNotEmpty } from 'class-validator';
 import { IsBlogAttached } from '../../../shared/decorators/validation/blog-bound.decorator';
 import { IsUserExists } from '../../../shared/decorators/validation/user-exists.decorator';
 import { Transform } from 'class-transformer';
+import { PictureViewModel } from '../../blogger/dto/post-picture-view-model.dto';
 
 export class blogParamModel {
   // @IsBlogExists()
@@ -33,25 +34,16 @@ export class blogAndUserParamModel {
 }
 
 export class BlogViewModel {
-  constructor(
-    public id: string,
-    public name: string,
-    public description: string,
-    public isMembership: boolean,
-    public websiteUrl: string,
-    public createdAt: string,
-  ) {}
+  id: string;
+  name: string;
+  description: string;
+  isMembership: boolean;
+  websiteUrl: string;
+  createdAt: string;
+  images: { wallpaper: PictureViewModel | null; main: PictureViewModel[] | [] };
 }
 
-export class BlogSAViewModel {
-  constructor(
-    public id: string,
-    public name: string,
-    public description: string,
-    public isMembership: boolean,
-    public websiteUrl: string,
-    public createdAt: string,
-    public blogOwnerInfo: object,
-    public banInfo: object,
-  ) {}
+export class BlogSAViewModel extends BlogViewModel {
+  blogOwnerInfo: object;
+  banInfo: object;
 }

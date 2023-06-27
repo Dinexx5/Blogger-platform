@@ -50,6 +50,7 @@ export class CreateBlogUseCase implements ICommandHandler<CreateBlogCommand> {
       isMembership: blog.isMembership,
       createdAt: blog.createdAt,
       id: blog.id.toString(),
+      images: { wallpaper: null, main: [] },
     };
   }
 }

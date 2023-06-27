@@ -18,14 +18,13 @@ export class BlogsController {
 
   @Get()
   async getBlogs(@Query() paginationQuery) {
-    const returnedBlogs: paginatedViewModel<BlogViewModel[]> =
-      await this.blogsQueryRepository.getAllBlogs(paginationQuery);
+    const returnedBlogs = await this.blogsQueryRepository.getAllBlogs(paginationQuery);
     return returnedBlogs;
   }
   @UseGuards(isBlogIdIntegerGuard)
   @Get(':blogId')
   async getBlog(@Param('blogId', ParseIntPipe) id: number, @Res() res: Response) {
-    const blog: BlogViewModel | null = await this.blogsQueryRepository.findBlogById(id);
+    const blog = await this.blogsQueryRepository.findBlogById(id);
     if (!blog) {
       return res.sendStatus(404);
     }
@@ -41,8 +40,11 @@ export class BlogsController {
   ) {
     const blog = await this.blogsQueryRepository.findBlogById(blogId);
     if (!blog) return res.sendStatus(404);
-    const returnedPosts: paginatedViewModel<PostViewModel[]> =
-      await this.postsQueryRepository.getAllPosts(paginationQuery, blogId, userId);
+    const returnedPosts = await this.postsQueryRepository.getAllPosts(
+      paginationQuery,
+      blogId,
+      userId,
+    );
     return res.send(returnedPosts);
   }
 }

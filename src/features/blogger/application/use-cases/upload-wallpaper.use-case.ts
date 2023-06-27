@@ -62,7 +62,7 @@ export class UploadWallpaperUseCase implements ICommandHandler<UploadWallpaperCo
       main: mainPicture
         ? [
             {
-              url: mainPicture.relativeUrl,
+              url: mainPicture.url,
               width: 156,
               height: 156,
               fileSize: mainPicture.fileSize,

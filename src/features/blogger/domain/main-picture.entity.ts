@@ -15,18 +15,24 @@ export class MainPictureEntity {
   @Column()
   userId: number;
   @Column()
-  relativeUrl: string;
+  width: number;
+  @Column()
+  height: number;
+  @Column()
+  url: string;
   @Column()
   fileSize: number;
   @Column()
   uploadId: string;
   static create(blogId: number, userId: number, ETag: string, fileSize: number): MainPictureEntity {
-    const wallpaper = new MainPictureEntity();
-    wallpaper.userId = userId;
-    wallpaper.blogId = blogId;
-    wallpaper.uploadId = ETag;
-    wallpaper.fileSize = fileSize;
-    wallpaper.relativeUrl = `content/blogs/${blogId}/main/${blogId}_main.png`;
-    return wallpaper;
+    const main = new MainPictureEntity();
+    main.userId = userId;
+    main.blogId = blogId;
+    main.width = 156;
+    main.height = 156;
+    main.uploadId = ETag;
+    main.fileSize = fileSize;
+    main.url = `content/blogs/${blogId}/main/${blogId}_main.png`;
+    return main;
   }
 }

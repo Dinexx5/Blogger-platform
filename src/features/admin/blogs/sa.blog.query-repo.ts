@@ -9,7 +9,7 @@ export class BlogsSAQueryRepository {
     @InjectRepository(BlogEntity)
     private readonly blogsTypeOrmRepository: Repository<BlogEntity>,
   ) {}
-  mapFoundBlogToBlogViewModel(blog): BlogSAViewModel {
+  mapFoundBlogToBlogViewModel(blog) {
     return {
       name: blog.name,
       description: blog.description,
@@ -27,7 +27,7 @@ export class BlogsSAQueryRepository {
       },
     };
   }
-  async getAllBlogs(query: paginationQuerys): Promise<paginatedViewModel<BlogSAViewModel[]>> {
+  async getAllBlogs(query: paginationQuerys) {
     const {
       sortDirection = 'desc',
       sortBy = 'createdAt',

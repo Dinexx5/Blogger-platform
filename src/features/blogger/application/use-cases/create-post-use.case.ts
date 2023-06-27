@@ -18,9 +18,7 @@ export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
   ) {}
 
   async execute(command: CreatePostCommand): Promise<PostViewModel> {
-    const blogId = command.blogId;
-    const userId = command.userId;
-    const inputModel = command.inputModel;
+    const { blogId, userId, inputModel } = command;
 
     const blog = await this.blogsService.checkBlogExists(blogId);
     await this.blogsService.checkPermission(blogId, userId);
@@ -42,6 +40,7 @@ export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
         myStatus: 'None',
         newestLikes: [],
       },
+      images: { main: [] },
     };
   }
 }

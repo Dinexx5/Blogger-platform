@@ -1,3 +1,5 @@
+import { PictureViewModel } from '../../blogger/dto/post-picture-view-model.dto';
+
 export class NewestLikes {
   addedAt: string;
   userId: string;
@@ -5,19 +7,18 @@ export class NewestLikes {
 }
 
 export class PostViewModel {
-  constructor(
-    public id: string,
-    public title: string,
-    public shortDescription: string,
-    public content: string,
-    public blogId: string,
-    public blogName: string,
-    public createdAt: string,
-    public extendedLikesInfo: {
-      likesCount: number;
-      dislikesCount: number;
-      myStatus: string;
-      newestLikes: NewestLikes[];
-    },
-  ) {}
+  id: string;
+  title: string;
+  shortDescription: string;
+  content: string;
+  blogId: string;
+  blogName: string;
+  createdAt: string;
+  extendedLikesInfo: {
+    likesCount: number;
+    dislikesCount: number;
+    myStatus: string;
+    newestLikes: NewestLikes[];
+  };
+  images: { main: PictureViewModel[] | [] };
 }

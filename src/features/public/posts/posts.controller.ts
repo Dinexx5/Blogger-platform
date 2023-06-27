@@ -32,8 +32,11 @@ export class PostsController {
   @UseGuards(GetUserGuard)
   @Get()
   async getPosts(@CurrentUser() userId, @Query() paginationQuery) {
-    const returnedPosts: paginatedViewModel<PostViewModel[]> =
-      await this.postsQueryRepository.getAllPosts(paginationQuery, undefined, userId);
+    const returnedPosts = await this.postsQueryRepository.getAllPosts(
+      paginationQuery,
+      undefined,
+      userId,
+    );
 
     return returnedPosts;
   }

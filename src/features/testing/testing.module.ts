@@ -23,10 +23,16 @@ import { PasswordRecoveryInfo } from '../admin/users/domain/password-recovery.en
 import { Question } from '../admin/questions/domain/question.entity';
 import { PairGame } from '../public/pair-game/domain/pair-game.entity';
 import { GamesStats } from '../public/pair-game/domain/stats.entity';
+import { WallpaperEntity } from '../blogger/domain/wallpaper.entity';
+import { MainPictureEntity } from '../blogger/domain/main-picture.entity';
+import { PostMainPictureEntity } from '../blogger/domain/post-main-picture.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
+      WallpaperEntity,
+      MainPictureEntity,
+      PostMainPictureEntity,
       Attempt,
       BlogEntity,
       BlogOwnerInfoEntity,

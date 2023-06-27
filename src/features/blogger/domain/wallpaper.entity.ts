@@ -15,7 +15,11 @@ export class WallpaperEntity {
   @Column()
   userId: number;
   @Column()
-  relativeUrl: string;
+  url: string;
+  @Column()
+  width: number;
+  @Column()
+  height: number;
   @Column()
   fileSize: number;
   @Column()
@@ -24,9 +28,11 @@ export class WallpaperEntity {
     const wallpaper = new WallpaperEntity();
     wallpaper.userId = userId;
     wallpaper.blogId = blogId;
+    wallpaper.width = 1028;
+    wallpaper.height = 312;
     wallpaper.uploadId = ETag;
     wallpaper.fileSize = fileSize;
-    wallpaper.relativeUrl = `content/blogs/${blogId}/wallpapers/${blogId}_wallpaper.png`;
+    wallpaper.url = `content/blogs/${blogId}/wallpapers/${blogId}_wallpaper.png`;
     return wallpaper;
   }
 }

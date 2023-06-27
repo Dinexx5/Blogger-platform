@@ -24,10 +24,19 @@ import { BlogEntity } from '../blogger/domain/blog.entity';
 import { Question } from '../admin/questions/domain/question.entity';
 import { PairGame } from '../public/pair-game/domain/pair-game.entity';
 import { GamesStats } from '../public/pair-game/domain/stats.entity';
+import { WallpaperEntity } from '../blogger/domain/wallpaper.entity';
+import { MainPictureEntity } from '../blogger/domain/main-picture.entity';
+import { PostMainPictureEntity } from '../blogger/domain/post-main-picture.entity';
 
 @Controller('testing')
 export class TestingController {
   constructor(
+    @InjectRepository(WallpaperEntity)
+    private readonly wallpapers: Repository<WallpaperEntity>,
+    @InjectRepository(MainPictureEntity)
+    private readonly mainPictures: Repository<MainPictureEntity>,
+    @InjectRepository(PostMainPictureEntity)
+    private readonly postMainPictures: Repository<PostMainPictureEntity>,
     @InjectRepository(Attempt)
     private readonly attempts: Repository<Attempt>,
     @InjectRepository(PairGame)
@@ -75,6 +84,9 @@ export class TestingController {
   ) {}
   @Delete('all-data')
   async deleteAll(@Res() res: Response) {
+    await this.wallpapers.delete({});
+    await this.mainPictures.delete({});
+    await this.postMainPictures.delete({});
     await this.questions.delete({});
     await this.attempts.delete({});
     await this.blogBansInfo.delete({});

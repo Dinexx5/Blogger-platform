@@ -16,28 +16,34 @@ export class PostsQueryRepository {
     @InjectRepository(PostLike)
     private readonly postsLikesTypeOrmRepository: Repository<PostLike>,
   ) {}
-  mapperToPostViewModel(post): PostViewModel {
+  mapperToPostViewModel(post) {
     return {
-      id: post.p_id.toString(),
-      title: post.p_title,
-      shortDescription: post.p_shortDescription,
-      content: post.p_content,
-      blogId: post.p_blogId.toString(),
-      blogName: post.p_blogName,
-      createdAt: post.p_createdAt,
+      id: post.id.toString(),
+      title: post.title,
+      shortDescription: post.shortDescription,
+      content: post.content,
+      blogId: post.blogId.toString(),
+      blogName: post.blogName,
+      createdAt: post.createdAt,
       extendedLikesInfo: {
         likesCount: +post.likesCount || 0,
         dislikesCount: +post.dislikesCount || 0,
         myStatus: post.myStatus || 'None',
         newestLikes: post.newestLikes || [],
       },
+      images: {
+        main: post.mainPictures
+          ? post.mainPictures.map((picture) => ({
+              url: picture.relativeUrl,
+              width: picture.width,
+              height: picture.height,
+              fileSize: picture.fileSize,
+            }))
+          : [],
+      },
     };
   }
-  async getAllPosts(
-    query: paginationQuerys,
-    blogId?: number,
-    userId?: number | null,
-  ): Promise<paginatedViewModel<PostViewModel[]>> {
+  async getAllPosts(query: paginationQuerys, blogId?: number, userId?: number | null) {
     const { sortDirection = 'desc', sortBy = 'createdAt', pageNumber = 1, pageSize = 10 } = query;
 
     const bannedPostsFromUsers = await this.bansRepository.getBannedPosts();
@@ -57,7 +63,7 @@ export class PostsQueryRepository {
       .orderBy(orderQuery, sortDirection === 'desc' ? 'DESC' : 'ASC')
       .limit(+pageSize)
       .offset((+pageNumber - 1) * +pageSize)
-      .getRawMany();
+      .getMany();
 
     await this.findThreeLatestLikesForPosts(posts);
 
@@ -80,6 +86,7 @@ export class PostsQueryRepository {
     return this.postsTypeOrmRepository
       .createQueryBuilder('p')
       .leftJoin('p.likes', 'l')
+      .leftJoinAndSelect('p.mainPictures', 'mp', 'p."id" = mp."postId"')
       .addSelect([
         `(select COUNT(*) FROM post_like where l."postId" = p."id" AND
          l."likeStatus" = 'Like'
@@ -126,14 +133,14 @@ export class PostsQueryRepository {
       });
     }
   }
-  async findPostById(postId: number, userId?: number | null): Promise<PostViewModel | null> {
+  async findPostById(postId: number, userId?: number | null) {
     const bannedPostsFromUsers = await this.bansRepository.getBannedPosts();
     const bannedPosts = await this.blogBansRepository.getBannedPosts();
     const allBannedPosts = bannedPosts.concat(bannedPostsFromUsers);
     const builder = await this.getBuilder(userId);
-    const post = await builder.where('p.id = :postId', { postId: postId }).getRawOne();
+    const post = await builder.where('p.id = :postId', { postId: postId }).getOne();
     if (!post) return null;
-    if (allBannedPosts.includes(post.p_id)) return null;
+    if (allBannedPosts.includes(post.id)) return null;
     await this.findThreeLatestLikesForPosts([post]);
     return this.mapperToPostViewModel(post);
   }
