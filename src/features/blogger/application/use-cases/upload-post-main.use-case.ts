@@ -74,7 +74,7 @@ export class UploadPostMainUseCase implements ICommandHandler<UploadPostMainComm
       );
       await this.postMainPicturesRepository.save(newMainPicture);
       uploadedImages.push({
-        url: `content/blogs/${blogId}/posts/${postId}/main/${postId}_main_${sizeName}`,
+        url: `https://storage.yandexcloud.net/blogger.platform/content/blogs/${blogId}/posts/${postId}/main/${postId}_main_${sizeName}.png`,
         width: width,
         height: height,
         fileSize: fileSize,

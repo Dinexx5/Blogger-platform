@@ -65,10 +65,10 @@ export class BloggerFilesController {
   // @Post('upload')
   // @UseInterceptors(FileInterceptor('file'))
   // async upload(
-  //   @UploadedFile()
+  //   @UploadedFile(WallpaperValidationPipe)
   //   picture: Express.Multer.File,
   // ) {
-  //   return await this.commandBus.execute(new UploadPostMainCommand(30, 9, 1434, picture.buffer));
+  //   return await this.commandBus.execute(new UploadWallpaperCommand(30, 1434, picture.buffer));
   // }
   // @Get('form')
   // async getForm() {

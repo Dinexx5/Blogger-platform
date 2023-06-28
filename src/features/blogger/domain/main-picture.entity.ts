@@ -32,7 +32,7 @@ export class MainPictureEntity {
     main.height = 156;
     main.uploadId = ETag;
     main.fileSize = fileSize;
-    main.url = `content/blogs/${blogId}/main/${blogId}_main.png`;
+    main.url = `https://storage.yandexcloud.net/blogger.platform/content/blogs/${blogId}/main/${blogId}_main.png`;
     return main;
   }
 }

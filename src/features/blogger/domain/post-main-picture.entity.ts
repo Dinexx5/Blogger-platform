@@ -41,7 +41,7 @@ export class PostMainPictureEntity {
     mainPicture.height = height;
     mainPicture.uploadId = ETag;
     mainPicture.fileSize = fileSize;
-    mainPicture.relativeUrl = `content/blogs/${blogId}/posts/${postId}/main/${postId}_main_${sizeName}`;
+    mainPicture.relativeUrl = `https://storage.yandexcloud.net/blogger.platform/content/blogs/${blogId}/posts/${postId}/main/${postId}_main_${sizeName}.png`;
     return mainPicture;
   }
 }
