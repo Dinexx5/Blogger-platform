@@ -18,11 +18,11 @@ export class PostMainPictureEntity {
   width: number;
   @Column()
   height: number;
-  @Column()
+  @PrimaryColumn()
   relativeUrl: string;
   @Column()
   fileSize: number;
-  @PrimaryColumn()
+  @Column()
   uploadId: string;
   static async create(
     blogId: number,

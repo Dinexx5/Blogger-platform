@@ -86,7 +86,7 @@ export class PostsQueryRepository {
     return this.postsTypeOrmRepository
       .createQueryBuilder('p')
       .leftJoin('p.likes', 'l')
-      .leftJoinAndSelect('p.mainPictures', 'mp', 'p."id" = mp."postId"')
+      .leftJoinAndSelect('p.mainPictures', 'mp')
       .addSelect([
         `(select COUNT(*) FROM post_like where l."postId" = p."id" AND
          l."likeStatus" = 'Like'
