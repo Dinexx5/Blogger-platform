@@ -33,18 +33,20 @@ export class PostsQueryRepository {
       },
       images: {
         main: post.mainPictures
-          ? post.mainPictures.map((picture) => ({
-              url: picture.relativeUrl,
-              width: picture.width,
-              height: picture.height,
-              fileSize: picture.fileSize,
-            }))
+          ? post.mainPictures
+              .sort((a, b) => b.fileSize - a.fileSize)
+              .map((picture) => ({
+                url: picture.relativeUrl,
+                width: picture.width,
+                height: picture.height,
+                fileSize: picture.fileSize,
+              }))
           : [],
       },
     };
   }
   async getAllPosts(query: paginationQuerys, blogId?: number, userId?: number | null) {
-    const { sortDirection = 'desc', sortBy = 'createdAt', pageNumber = 1, pageSize = 10 } = query;
+    const { sortDirection = 'asc', sortBy = 'createdAt', pageNumber = 1, pageSize = 10 } = query;
 
     const bannedPostsFromUsers = await this.bansRepository.getBannedPosts();
     const bannedPosts = await this.blogBansRepository.getBannedPosts();
