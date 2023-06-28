@@ -32,7 +32,7 @@ export class WallpaperEntity {
     wallpaper.height = 312;
     wallpaper.uploadId = ETag;
     wallpaper.fileSize = fileSize;
-    wallpaper.url = `https://storage.yandexcloud.net/blogger.platform/content/blogs/${blogId}/wallpapers/${blogId}_wallpaper.png`;
+    wallpaper.url = `https://storage.yandexcloud.net/blogger.platform/content/blogs/${blogId}/wallpaper/${blogId}_wallpaper.png`;
     return wallpaper;
   }
 }

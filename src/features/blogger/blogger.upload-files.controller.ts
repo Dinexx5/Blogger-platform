@@ -21,6 +21,7 @@ import { MainValidationPipe } from '../../shared/pipes/main-validation.pipe';
 import { UploadMainCommand } from './application/use-cases/upload-main.use-case';
 import { PostMainValidationPipe } from '../../shared/pipes/post-main-validation.pipe';
 import { UploadPostMainCommand } from './application/use-cases/upload-post-main.use-case';
+import { isPostIdIntegerGuard } from '../auth/guards/param.postId.isinteger.guard';
 
 @Controller('blogger/blogs')
 export class BloggerFilesController {
@@ -50,7 +51,7 @@ export class BloggerFilesController {
       new UploadMainCommand(params.blogId, userId, mainPicture.buffer),
     );
   }
-  @UseGuards(JwtAccessAuthGuard, isBlogIdIntegerGuard)
+  @UseGuards(JwtAccessAuthGuard, isBlogIdIntegerGuard, isPostIdIntegerGuard)
   @Post(':blogId/posts/:postId/images/main')
   @UseInterceptors(FileInterceptor('file'))
   async uploadPostMainPicture(
