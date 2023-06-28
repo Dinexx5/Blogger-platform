@@ -65,7 +65,7 @@ export class UploadMainUseCase implements ICommandHandler<UploadMainCommand> {
         : null,
       main: [
         {
-          url: `https://storage.yandexcloud.net/blogger.platform/content/blogs/${blogId}/main/${blogId}_main`,
+          url: `https://storage.yandexcloud.net/blogger.platform/content/blogs/${blogId}/main/${blogId}_main.png`,
           width: 156,
           height: 156,
           fileSize: fileSize,

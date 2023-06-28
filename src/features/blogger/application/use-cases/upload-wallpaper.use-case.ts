@@ -54,7 +54,7 @@ export class UploadWallpaperUseCase implements ICommandHandler<UploadWallpaperCo
     });
     return {
       wallpaper: {
-        url: `https://storage.yandexcloud.net/blogger.platform/content/blogs/${blogId}/wallpaper/${blogId}_wallpaper`,
+        url: `https://storage.yandexcloud.net/blogger.platform/content/blogs/${blogId}/wallpaper/${blogId}_wallpaper.png`,
         width: 1028,
         height: 312,
         fileSize: fileSize,
