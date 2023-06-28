@@ -53,23 +53,27 @@ export class PostsQueryRepository {
     const subQuery = `p.id ${allBannedPosts.length ? `NOT IN (:...allBannedPosts)` : `IS NOT NULL`} 
     AND (${blogId ? `p.blogId = :blogId` : true})`;
 
-    const orderQuery = `CASE WHEN p."${sortBy}" = LOWER(p."${sortBy}") THEN 2
-         ELSE 1 END, p."${sortBy}"`;
+    const orderQuery = `CASE WHEN p.${sortBy} = LOWER(p.${sortBy}) THEN 2
+         ELSE 1 END, p.${sortBy}`;
 
     const builder = await this.getBuilder(userId);
+
+    // const SQLquery = builder
+    //   .where(subQuery, { allBannedPosts: allBannedPosts, blogId: blogId })
+    //   .orderBy(orderQuery, sortDirection === 'desc' ? 'DESC' : 'ASC')
+    //   .offset((+pageNumber - 1) * +pageSize)
+    //   .getQuery();
+    // console.log(SQLquery);
 
     const posts = await builder
       .where(subQuery, { allBannedPosts: allBannedPosts, blogId: blogId })
       .orderBy(orderQuery, sortDirection === 'desc' ? 'DESC' : 'ASC')
-      .limit(+pageSize)
       .offset((+pageNumber - 1) * +pageSize)
       .getMany();
 
     await this.findThreeLatestLikesForPosts(posts);
 
-    const count = await builder
-      .where(subQuery, { allBannedPosts: allBannedPosts, blogId: blogId })
-      .getCount();
+    const count = posts.length;
 
     const postsView = posts.map(this.mapperToPostViewModel);
 
@@ -120,7 +124,7 @@ export class PostsQueryRepository {
     for (const post of posts) {
       if (post.likesCount === 0) return;
       const allLikes = await builder
-        .where(subQuery, { postId: post.p_id, bannedUsers: bannedUsers })
+        .where(subQuery, { postId: post.id, bannedUsers: bannedUsers })
         .orderBy('pl.createdAt', 'DESC')
         .getMany();
       const threeLatestLikes = allLikes.slice(0, 3);
