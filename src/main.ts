@@ -4,6 +4,7 @@ import { HttpExceptionFilter } from './shared/exceptions/exceptions.filter';
 import cookieParser from 'cookie-parser';
 import { useContainer } from 'class-validator';
 import { validationPipeBadRequest } from './shared/pipes/badrequest.pipe';
+import { TelegramAdapter } from './adapters/telegram.adapter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -13,6 +14,8 @@ async function bootstrap() {
   app.useGlobalPipes(validationPipeBadRequest);
   app.useGlobalFilters(new HttpExceptionFilter());
   await app.listen(3001);
+  const telegramAdapter = await app.resolve<TelegramAdapter>(TelegramAdapter);
+  await telegramAdapter.sendTelegramWebhook();
   console.log('Successfully running');
 }
 bootstrap();

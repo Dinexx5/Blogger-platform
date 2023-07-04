@@ -51,6 +51,9 @@ import { MainPictureEntity } from '../../blogger/domain/main-picture.entity';
 import { UploadMainUseCase } from '../../blogger/application/use-cases/upload-main.use-case';
 import { UploadPostMainUseCase } from '../../blogger/application/use-cases/upload-post-main.use-case';
 import { PostMainPictureEntity } from '../../blogger/domain/post-main-picture.entity';
+import { SubscribeToBlogUseCase } from '../../integrations/application/use-cases/subsrcibe-to-blog.use-case';
+import { SubscriptionEntity } from '../../integrations/domain/subscription.entity';
+import { TgAuthCodeEntity } from '../../integrations/domain/tg-auth-code.entity';
 
 @Module({
   imports: [
@@ -70,6 +73,8 @@ import { PostMainPictureEntity } from '../../blogger/domain/post-main-picture.en
       WallpaperEntity,
       MainPictureEntity,
       PostMainPictureEntity,
+      SubscriptionEntity,
+      TgAuthCodeEntity,
     ]),
     CqrsModule,
     AuthModule,
@@ -80,6 +85,7 @@ import { PostMainPictureEntity } from '../../blogger/domain/post-main-picture.en
     TokensModule,
   ],
   providers: [
+    SubscribeToBlogUseCase,
     CreateBlogUseCase,
     UpdateBlogUseCase,
     DeleteBlogUseCase,

@@ -5,6 +5,7 @@ import { BlogBansRepository } from '../../bans/bans.blogs.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BlogEntity } from '../../blogger/domain/blog.entity';
+import { NotFoundException } from '@nestjs/common';
 
 export class BlogsQueryRepository {
   constructor(
@@ -43,7 +44,10 @@ export class BlogsQueryRepository {
       },
     };
   }
-  async getAllBlogs(query: paginationQuerys, userId?: string) {
+  async getAllBlogs(
+    query: paginationQuerys,
+    userId?: string,
+  ): Promise<paginatedViewModel<BlogViewModel[]>> {
     const {
       sortDirection = 'desc',
       sortBy = 'createdAt',
@@ -99,7 +103,7 @@ export class BlogsQueryRepository {
     };
   }
 
-  async findBlogById(blogId: number) {
+  async findBlogById(blogId: number): Promise<BlogViewModel> {
     const bannedBlogsFromUsers = await this.bansRepository.getBannedBlogs();
     const bannedBlogs = await this.blogBansRepository.getBannedBlogs();
     const allBannedBlogs = bannedBlogs.concat(bannedBlogsFromUsers);
@@ -111,7 +115,7 @@ export class BlogsQueryRepository {
         blogId: blogId,
       });
     const foundBlog = await builder.getOne();
-    if (!foundBlog) return null;
+    if (!foundBlog) throw new NotFoundException();
     if (allBannedBlogs.includes(foundBlog.id)) return null;
     return this.mapFoundBlogToBlogViewModel(foundBlog);
   }

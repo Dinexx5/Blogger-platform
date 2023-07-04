@@ -14,10 +14,18 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { QuestionsModule } from './features/admin/questions/questions.module';
 import { PairGameModule } from './features/public/pair-game/pair-game.module';
 import { cloudDbRootOptions, localDbRootOptions } from './app.db.root';
+import { TelegramController } from './features/integrations/telegram.controller';
+import { TelegramAdapter } from './adapters/telegram.adapter';
+import { CqrsModule } from '@nestjs/cqrs';
+import { TelegramService } from './features/integrations/application/telegram-service';
+import { HandleRegistrationMessageUseCase } from './features/integrations/application/use-cases/handle-registration-message.use-case';
+import { TgAuthCodeEntity } from './features/integrations/domain/tg-auth-code.entity';
+import { SubscriptionEntity } from './features/integrations/domain/subscription.entity';
 
 @Module({
   imports: [
     configModule,
+    TypeOrmModule.forFeature([TgAuthCodeEntity, SubscriptionEntity]),
     TypeOrmModule.forRoot(cloudDbRootOptions),
     BansModule,
     UsersModule,
@@ -28,8 +36,9 @@ import { cloudDbRootOptions, localDbRootOptions } from './app.db.root';
     TestingModule,
     QuestionsModule,
     PairGameModule,
+    CqrsModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController, TelegramController],
+  providers: [AppService, TelegramAdapter, TelegramService, HandleRegistrationMessageUseCase],
 })
 export class AppModule {}

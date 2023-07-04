@@ -13,9 +13,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { PostsService } from '../public/posts/posts.service';
 import { JwtAccessAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { blogAndPostParamModel, blogParamModel, BlogViewModel } from '../public/blogs/blogs.models';
+import { blogAndPostParamModel, blogParamModel } from '../public/blogs/blogs.models';
 import { CurrentUser } from '../../shared/decorators/current-user.decorator';
 import { paginatedViewModel } from '../../shared/models/pagination';
 import { BlogsQueryRepository } from '../public/blogs/blogs.query-repo';
