@@ -37,7 +37,7 @@ export class SubscribeToBlogUseCase implements ICommandHandler<SubscribeToBlogCo
       return;
     }
 
-    if (IsUserSubscribedBefore.tgId && !subscription) {
+    if (IsUserSubscribedBefore && IsUserSubscribedBefore.tgId && !subscription) {
       const newSubscription = await SubscriptionEntity.createSubscription(
         blogId,
         userId,
