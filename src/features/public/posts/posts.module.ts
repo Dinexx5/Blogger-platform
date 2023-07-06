@@ -30,6 +30,8 @@ import { CreatePostUseCase } from '../../blogger/application/use-cases/create-po
 import { UpdatePostUseCase } from '../../blogger/application/use-cases/update-post-use.case';
 import { DeletePostUseCase } from '../../blogger/application/use-cases/delete-post-use.case';
 import { BlogsService } from '../../blogger/application/blogs.service';
+import { TelegramAdapter } from '../../../adapters/telegram.adapter';
+import { SubscriptionEntity } from '../../integrations/domain/subscription.entity';
 
 @Module({
   imports: [
@@ -44,6 +46,7 @@ import { BlogsService } from '../../blogger/application/blogs.service';
       SaUserBan,
       UserBanForBlogEntity,
       SaBlogBan,
+      SubscriptionEntity,
     ]),
     CqrsModule,
     AuthModule,
@@ -66,6 +69,7 @@ import { BlogsService } from '../../blogger/application/blogs.service';
     BansRepository,
     BlogBansRepository,
     UsersBansForBlogRepository,
+    TelegramAdapter,
   ],
   controllers: [PostsController],
   exports: [

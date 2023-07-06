@@ -29,17 +29,21 @@ export class BlogsController {
     protected postsQueryRepository: PostsQueryRepository,
     private commandBus: CommandBus,
   ) {}
-
+  @UseGuards(GetUserGuard)
   @Get()
-  async getBlogs(@Query() paginationQuery): Promise<paginatedViewModel<BlogViewModel[]>> {
-    const returnedBlogs = await this.blogsQueryRepository.getAllBlogs(paginationQuery);
+  async getBlogs(@CurrentUser() viewerId, @Query() paginationQuery) {
+    const returnedBlogs = await this.blogsQueryRepository.getAllBlogs(
+      paginationQuery,
+      null,
+      viewerId,
+    );
     return returnedBlogs;
   }
 
-  @UseGuards(isBlogIdIntegerGuard)
+  @UseGuards(GetUserGuard, isBlogIdIntegerGuard)
   @Get(':blogId')
-  async getBlog(@Param() params: blogParamModel): Promise<BlogViewModel> {
-    return await this.blogsQueryRepository.findBlogById(params.blogId);
+  async getBlog(@CurrentUser() viewerId, @Param() params: blogParamModel) {
+    return await this.blogsQueryRepository.findBlogById(params.blogId, viewerId);
   }
 
   @UseGuards(GetUserGuard, isBlogIdIntegerGuard)

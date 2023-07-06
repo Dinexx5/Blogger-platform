@@ -21,6 +21,7 @@ import { TelegramService } from './features/integrations/application/telegram-se
 import { HandleRegistrationMessageUseCase } from './features/integrations/application/use-cases/handle-registration-message.use-case';
 import { TgAuthCodeEntity } from './features/integrations/domain/tg-auth-code.entity';
 import { SubscriptionEntity } from './features/integrations/domain/subscription.entity';
+import { GetTgAuthLinkUseCase } from './features/integrations/application/use-cases/get-tg-auth-link.use-case';
 
 @Module({
   imports: [
@@ -39,6 +40,12 @@ import { SubscriptionEntity } from './features/integrations/domain/subscription.
     CqrsModule,
   ],
   controllers: [AppController, TelegramController],
-  providers: [AppService, TelegramAdapter, TelegramService, HandleRegistrationMessageUseCase],
+  providers: [
+    AppService,
+    TelegramAdapter,
+    TelegramService,
+    HandleRegistrationMessageUseCase,
+    GetTgAuthLinkUseCase,
+  ],
 })
 export class AppModule {}

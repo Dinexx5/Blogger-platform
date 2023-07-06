@@ -10,13 +10,19 @@ export class TelegramAdapter {
   }
   async sendTelegramWebhook() {
     await this.axiosInstance.post(`setWebhook`, {
-      url: `/integrations/telegram/webhook`,
+      url: `https://blogger-platform-typeorm.onrender.com/integrations/telegram/webhook`,
     });
   }
   async sendMessage(text: string, recipientId: number) {
     await this.axiosInstance.post(`sendMessage`, {
       chat_id: recipientId,
       text: text,
+    });
+  }
+  async sendNotificationMessage(blogName: string, tgId: number) {
+    await this.axiosInstance.post(`sendMessage`, {
+      chat_id: tgId,
+      text: `New post published for blog ${blogName}`,
     });
   }
 }

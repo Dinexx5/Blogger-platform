@@ -51,6 +51,8 @@ export class CreateBlogUseCase implements ICommandHandler<CreateBlogCommand> {
       createdAt: blog.createdAt,
       id: blog.id.toString(),
       images: { wallpaper: null, main: [] },
+      currentUserSubscriptionStatus: 'None',
+      subscribersCount: 0,
     };
   }
 }

@@ -16,38 +16,37 @@ export class BlogsQueryRepository {
   ) {}
   mapFoundBlogToBlogViewModel(blog) {
     return {
-      name: blog.name,
-      description: blog.description,
-      websiteUrl: blog.websiteUrl,
-      isMembership: blog.isMembership,
-      createdAt: blog.createdAt,
-      id: blog.id.toString(),
+      name: blog.b_name,
+      description: blog.b_description,
+      websiteUrl: blog.b_websiteUrl,
+      isMembership: blog.b_isMembership,
+      createdAt: blog.b_createdAt,
+      id: blog.b_id.toString(),
       images: {
-        wallpaper: blog.wallpaper
+        wallpaper: blog.w_url
           ? {
-              url: blog.wallpaper.url,
-              width: blog.wallpaper.width,
-              height: blog.wallpaper.height,
-              fileSize: blog.wallpaper.fileSize,
+              url: blog.w_url,
+              width: blog.w_width,
+              height: blog.w_height,
+              fileSize: blog.w_fileSize,
             }
           : null,
-        main: blog.mainPicture
+        main: blog.mp_url
           ? [
               {
-                url: blog.mainPicture.url,
-                width: blog.mainPicture.width,
-                height: blog.mainPicture.height,
-                fileSize: blog.mainPicture.fileSize,
+                url: blog.mp_url,
+                width: blog.mp_width,
+                height: blog.mp_height,
+                fileSize: blog.mp_fileSize,
               },
             ]
           : [],
       },
+      currentUserSubscriptionStatus: blog.currentUserSubscriptionStatus || 'None',
+      subscribersCount: blog.subscribersCount,
     };
   }
-  async getAllBlogs(
-    query: paginationQuerys,
-    userId?: string,
-  ): Promise<paginatedViewModel<BlogViewModel[]>> {
+  async getAllBlogs(query: paginationQuerys, userId?: number, viewerId?: number) {
     const {
       sortDirection = 'desc',
       sortBy = 'createdAt',
@@ -66,7 +65,12 @@ export class BlogsQueryRepository {
       .createQueryBuilder('b')
       .leftJoinAndSelect('b.blogOwnerInfo', 'oi')
       .leftJoinAndSelect('b.wallpaper', 'w')
-      .leftJoinAndSelect('b.mainPicture', 'mp');
+      .leftJoinAndSelect('b.mainPicture', 'mp')
+      .leftJoinAndSelect('b.subscriptions', 's')
+      .addSelect([
+        `(select COUNT(*) FROM subscription_entity where s."status" = 'Subscribed' AND s."blogId" = b."id")
+                 as "subscribersCount"`,
+      ]);
 
     if (allBannedBlogs.length) {
       builder.andWhere('b.id NOT IN (:...allBannedBlogs)', {
@@ -83,15 +87,23 @@ export class BlogsQueryRepository {
         userId: userId,
       });
     }
+    if (viewerId) {
+      builder.addSelect([
+        `(select s."status" FROM subscription_entity where s."userId" = ${viewerId} AND s."blogId" = b."id")
+         as "currentUserSubscriptionStatus"`,
+      ]);
+    }
 
     const orderQuery = `CASE WHEN "${sortBy}" = LOWER("${sortBy}") THEN 2
          ELSE 1 END, "${sortBy}"`;
 
-    const [blogs, count] = await builder
+    const blogs = await builder
       .orderBy(orderQuery, sortDirection === 'desc' ? 'DESC' : 'ASC')
       .limit(+pageSize)
       .offset(skippedBlogsCount)
-      .getManyAndCount();
+      .getRawMany();
+
+    const count = blogs.length;
 
     const blogsView = blogs.map(this.mapFoundBlogToBlogViewModel);
     return {
@@ -103,7 +115,7 @@ export class BlogsQueryRepository {
     };
   }
 
-  async findBlogById(blogId: number): Promise<BlogViewModel> {
+  async findBlogById(blogId: number, viewerId?: number) {
     const bannedBlogsFromUsers = await this.bansRepository.getBannedBlogs();
     const bannedBlogs = await this.blogBansRepository.getBannedBlogs();
     const allBannedBlogs = bannedBlogs.concat(bannedBlogsFromUsers);
@@ -111,10 +123,21 @@ export class BlogsQueryRepository {
       .createQueryBuilder('b')
       .leftJoinAndSelect('b.wallpaper', 'w')
       .leftJoinAndSelect('b.mainPicture', 'mp')
+      .leftJoinAndSelect('b.subscriptions', 's')
       .where('b.id = :blogId', {
         blogId: blogId,
-      });
-    const foundBlog = await builder.getOne();
+      })
+      .addSelect([
+        `(select COUNT(*) FROM subscription_entity where s."status" = 'Subscribed' AND s."blogId" = b."id")
+                 as "subscribersCount"`,
+      ]);
+    if (viewerId) {
+      builder.addSelect([
+        `(select s."status" FROM subscription_entity where s."userId" = ${viewerId} AND s."blogId" = b."id")
+         as "currentUserSubscriptionStatus"`,
+      ]);
+    }
+    const foundBlog = await builder.getRawOne();
     if (!foundBlog) throw new NotFoundException();
     if (allBannedBlogs.includes(foundBlog.id)) return null;
     return this.mapFoundBlogToBlogViewModel(foundBlog);

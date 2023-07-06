@@ -26,10 +26,14 @@ import { GamesStats } from '../public/pair-game/domain/stats.entity';
 import { WallpaperEntity } from '../blogger/domain/wallpaper.entity';
 import { MainPictureEntity } from '../blogger/domain/main-picture.entity';
 import { PostMainPictureEntity } from '../blogger/domain/post-main-picture.entity';
+import { TgAuthCodeEntity } from '../integrations/domain/tg-auth-code.entity';
+import { SubscriptionEntity } from '../integrations/domain/subscription.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
+      TgAuthCodeEntity,
+      SubscriptionEntity,
       WallpaperEntity,
       MainPictureEntity,
       PostMainPictureEntity,

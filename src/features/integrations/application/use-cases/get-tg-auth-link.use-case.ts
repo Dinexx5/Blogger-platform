@@ -14,7 +14,7 @@ export class GetTgAuthLinkCommand {
 }
 
 @CommandHandler(GetTgAuthLinkCommand)
-export class GetTgAuthLinkCase implements ICommandHandler<GetTgAuthLinkCommand> {
+export class GetTgAuthLinkUseCase implements ICommandHandler<GetTgAuthLinkCommand> {
   constructor(
     protected usersRepository: UsersRepository,
     @InjectRepository(TgAuthCodeEntity)

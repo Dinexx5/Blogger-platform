@@ -54,6 +54,8 @@ import { PostMainPictureEntity } from '../../blogger/domain/post-main-picture.en
 import { SubscribeToBlogUseCase } from '../../integrations/application/use-cases/subsrcibe-to-blog.use-case';
 import { SubscriptionEntity } from '../../integrations/domain/subscription.entity';
 import { TgAuthCodeEntity } from '../../integrations/domain/tg-auth-code.entity';
+import { TelegramAdapter } from '../../../adapters/telegram.adapter';
+import { UnsubscribeFromBlogUseCase } from '../../integrations/application/use-cases/unsubscribe-from-blog.use-case';
 
 @Module({
   imports: [
@@ -111,6 +113,8 @@ import { TgAuthCodeEntity } from '../../integrations/domain/tg-auth-code.entity'
     UploadMainUseCase,
     UploadPostMainUseCase,
     FileStorageAdapter,
+    TelegramAdapter,
+    UnsubscribeFromBlogUseCase,
   ],
   controllers: [
     BloggerController,

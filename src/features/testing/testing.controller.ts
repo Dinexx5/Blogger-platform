@@ -27,10 +27,16 @@ import { GamesStats } from '../public/pair-game/domain/stats.entity';
 import { WallpaperEntity } from '../blogger/domain/wallpaper.entity';
 import { MainPictureEntity } from '../blogger/domain/main-picture.entity';
 import { PostMainPictureEntity } from '../blogger/domain/post-main-picture.entity';
+import { SubscriptionEntity } from '../integrations/domain/subscription.entity';
+import { TgAuthCodeEntity } from '../integrations/domain/tg-auth-code.entity';
 
 @Controller('testing')
 export class TestingController {
   constructor(
+    @InjectRepository(SubscriptionEntity)
+    private readonly subscriptions: Repository<SubscriptionEntity>,
+    @InjectRepository(TgAuthCodeEntity)
+    private readonly tgAuthCodes: Repository<TgAuthCodeEntity>,
     @InjectRepository(WallpaperEntity)
     private readonly wallpapers: Repository<WallpaperEntity>,
     @InjectRepository(MainPictureEntity)
@@ -84,6 +90,8 @@ export class TestingController {
   ) {}
   @Delete('all-data')
   async deleteAll(@Res() res: Response) {
+    await this.subscriptions.delete({});
+    await this.tgAuthCodes.delete({});
     await this.wallpapers.delete({});
     await this.mainPictures.delete({});
     await this.postMainPictures.delete({});

@@ -23,14 +23,14 @@ export class UnsubscribeFromBlogUseCase implements ICommandHandler<UnsubscribeFr
 
     await this.blogsService.checkBlogExists(blogId);
 
-    const subscriptionToDelete = await this.subscriptionsRepository.findOneBy({
+    const subscriptionToModify = await this.subscriptionsRepository.findOneBy({
       blogId: blogId,
       userId: userId,
     });
-    if (!subscriptionToDelete) {
+    if (!subscriptionToModify) {
       throw new NotFoundException();
     }
-
-    await this.subscriptionsRepository.remove(subscriptionToDelete);
+    subscriptionToModify.status = 'Unsubscribed';
+    await this.subscriptionsRepository.save(subscriptionToModify);
   }
 }

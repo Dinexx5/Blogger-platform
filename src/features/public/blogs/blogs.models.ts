@@ -41,6 +41,8 @@ export class BlogViewModel {
   websiteUrl: string;
   createdAt: string;
   images: { wallpaper: PictureViewModel | null; main: PictureViewModel[] | [] };
+  currentUserSubscriptionStatus: 'Subscribed' | 'Unsubscribed' | 'None';
+  subscribersCount: number;
 }
 
 export class BlogSAViewModel extends BlogViewModel {

@@ -16,6 +16,6 @@ export class TelegramController {
   @UseGuards(JwtAccessAuthGuard)
   @Get('auth-bot-link')
   async getAuthLink(@CurrentUser() userId) {
-    await this.commandBus.execute(new GetTgAuthLinkCommand(userId));
+    return await this.commandBus.execute(new GetTgAuthLinkCommand(userId));
   }
 }
