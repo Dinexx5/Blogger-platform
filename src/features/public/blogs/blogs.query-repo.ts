@@ -43,7 +43,7 @@ export class BlogsQueryRepository {
           : [],
       },
       currentUserSubscriptionStatus: blog.currentUserSubscriptionStatus || 'None',
-      subscribersCount: blog.subscribersCount,
+      subscribersCount: +blog.subscribersCount || 0,
     };
   }
   async getAllBlogs(query: paginationQuerys, userId?: number, viewerId?: number) {
@@ -66,10 +66,9 @@ export class BlogsQueryRepository {
       .leftJoinAndSelect('b.blogOwnerInfo', 'oi')
       .leftJoinAndSelect('b.wallpaper', 'w')
       .leftJoinAndSelect('b.mainPicture', 'mp')
-      .leftJoinAndSelect('b.subscriptions', 's')
       .addSelect([
-        `(select COUNT(*) FROM subscription_entity where s."status" = 'Subscribed' AND s."blogId" = b."id")
-                 as "subscribersCount"`,
+        `(select COUNT(*) FROM subscription_entity s where s."status" = 'Subscribed' AND s."blogId" = b."id")
+             as "subscribersCount"`,
       ]);
 
     if (allBannedBlogs.length) {
@@ -89,7 +88,7 @@ export class BlogsQueryRepository {
     }
     if (viewerId) {
       builder.addSelect([
-        `(select s."status" FROM subscription_entity where s."userId" = ${viewerId} AND s."blogId" = b."id")
+        `(select s."status" FROM subscription_entity s where s."userId" = ${viewerId} AND s."blogId" = b."id")
          as "currentUserSubscriptionStatus"`,
       ]);
     }
@@ -123,17 +122,16 @@ export class BlogsQueryRepository {
       .createQueryBuilder('b')
       .leftJoinAndSelect('b.wallpaper', 'w')
       .leftJoinAndSelect('b.mainPicture', 'mp')
-      .leftJoinAndSelect('b.subscriptions', 's')
       .where('b.id = :blogId', {
         blogId: blogId,
       })
       .addSelect([
-        `(select COUNT(*) FROM subscription_entity where s."status" = 'Subscribed' AND s."blogId" = b."id")
+        `(select COUNT(*) FROM subscription_entity s where s."status" = 'Subscribed' AND s."blogId" = b."id")
                  as "subscribersCount"`,
       ]);
     if (viewerId) {
       builder.addSelect([
-        `(select s."status" FROM subscription_entity where s."userId" = ${viewerId} AND s."blogId" = b."id")
+        `(select s."status" FROM subscription_entity s where s."userId" = ${viewerId} AND s."blogId" = b."id")
          as "currentUserSubscriptionStatus"`,
       ]);
     }

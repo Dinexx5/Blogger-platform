@@ -23,7 +23,7 @@ export class BlogEntity {
   @OneToOne(() => BlogOwnerInfoEntity, (ow) => ow.blog)
   blogOwnerInfo: BlogOwnerInfoEntity;
   @OneToMany(() => SubscriptionEntity, (s) => s.blog)
-  subscriptions: SubscriptionEntity;
+  subscriptions: SubscriptionEntity[];
   @OneToOne(() => WallpaperEntity, (w) => w.blog)
   wallpaper: WallpaperEntity;
   @OneToOne(() => MainPictureEntity, (mp) => mp.blog)

@@ -1,9 +1,18 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryColumn,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { User } from '../../admin/users/domain/user.entity';
 import { BlogEntity } from '../../blogger/domain/blog.entity';
 
 @Entity()
 export class SubscriptionEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
   @ManyToOne(() => BlogEntity)
   @JoinColumn()
   blog: BlogEntity;
@@ -12,7 +21,7 @@ export class SubscriptionEntity {
   user: User;
   @Column()
   userId: number;
-  @PrimaryColumn()
+  @Column()
   blogId: number;
   @Column({ nullable: true })
   tgId: number;
