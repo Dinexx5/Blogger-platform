@@ -43,7 +43,7 @@ export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
 
     for (let i = 0; i < recipientsIds.length; i++) {
       const tgId = recipientsIds[i];
-      await this.telegramAdapter.sendNotificationMessage(blog.name, tgId);
+      await this.telegramAdapter.sendNotificationMessage(blog.name, +tgId);
     }
 
     return {
