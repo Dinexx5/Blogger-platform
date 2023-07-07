@@ -8,14 +8,16 @@ export class TelegramService {
 
   async handleIncomingMessage(payload: TgMessagePayload) {
     console.log(payload);
-    const text = payload.message.text;
-
-    if (text && text.startsWith('/start code=')) {
-      const code = text.split('=')[1];
-      await this.commandBus.execute(
-        new HandleRegistrationMessageCommand(payload.message.from.id, code),
-      );
+    if (payload.message) {
+      const text = payload.message.text;
+      if (text && text.startsWith('/start code=')) {
+        const code = text.split('=')[1];
+        await this.commandBus.execute(
+          new HandleRegistrationMessageCommand(payload.message.from.id, code),
+        );
+      }
     }
+    return;
   }
 }
 
