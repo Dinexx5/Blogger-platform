@@ -23,7 +23,8 @@ export class HandleRegistrationMessageUseCase
     private readonly tgAuthRepository: Repository<TgAuthCodeEntity>,
   ) {}
   async execute(command: HandleRegistrationMessageCommand) {
-    const { tgId, code } = command;
+    const code = command.code;
+    const tgId = +command.tgId;
 
     const authEntity = await this.tgAuthRepository.findOneBy({ code: code });
     if (!authEntity) {

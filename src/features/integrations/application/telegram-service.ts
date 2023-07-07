@@ -7,6 +7,7 @@ export class TelegramService {
   constructor(private commandBus: CommandBus) {}
 
   async handleIncomingMessage(payload: TgMessagePayload) {
+    console.log(payload);
     const text = payload.message.text;
 
     if (text && text.startsWith('/start code=')) {
@@ -15,7 +16,6 @@ export class TelegramService {
         new HandleRegistrationMessageCommand(payload.message.from.id, code),
       );
     }
-    console.log(payload);
   }
 }
 
