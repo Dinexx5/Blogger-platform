@@ -31,6 +31,10 @@ export class SubscribeToBlogUseCase implements ICommandHandler<SubscribeToBlogCo
       blogId: blogId,
     });
 
+    if (subscription && subscription.status === 'Subscribed') {
+      return;
+    }
+
     if (subscription && subscription.status === 'Unsubscribed') {
       subscription.status = 'Subscribed';
       await this.subscriptionsRepository.save(subscription);

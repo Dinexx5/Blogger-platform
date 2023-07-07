@@ -20,7 +20,7 @@ export class GetTgAuthLinkUseCase implements ICommandHandler<GetTgAuthLinkComman
     @InjectRepository(TgAuthCodeEntity)
     private readonly tgAuthCodesRepository: Repository<TgAuthCodeEntity>,
   ) {}
-  async execute(command: GetTgAuthLinkCommand): Promise<string> {
+  async execute(command: GetTgAuthLinkCommand) {
     const userId = command.userId;
     const isAlreadyRegistered = await this.tgAuthCodesRepository.findOneBy({ userId: userId });
 
@@ -32,6 +32,6 @@ export class GetTgAuthLinkUseCase implements ICommandHandler<GetTgAuthLinkComman
     const authLink = `https://t.me/blogger_platform_bot?code=${uniqueCode}`;
     const newAuthCode = await TgAuthCodeEntity.createAuthCode(uniqueCode, userId);
     await this.tgAuthCodesRepository.save(newAuthCode);
-    return authLink;
+    return { link: authLink.toString() };
   }
 }
