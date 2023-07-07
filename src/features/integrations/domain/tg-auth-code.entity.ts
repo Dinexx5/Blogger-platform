@@ -11,7 +11,7 @@ export class TgAuthCodeEntity {
   @PrimaryColumn()
   code: string;
   @Column({ nullable: true })
-  tgId: number;
+  tgId: string;
   static async createAuthCode(code: string, userId: number) {
     const authCode = new TgAuthCodeEntity();
     authCode.code = code;

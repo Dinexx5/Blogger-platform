@@ -17,10 +17,10 @@ export class SubscriptionEntity {
   @Column()
   blogId: number;
   @Column({ nullable: true })
-  tgId: number;
+  tgId: string;
   @Column()
   status: 'Subscribed' | 'Unsubscribed';
-  static async createSubscription(blogId: number, userId: number, tgId?: number) {
+  static async createSubscription(blogId: number, userId: number, tgId?: string) {
     const subscription = new SubscriptionEntity();
     subscription.blogId = blogId;
     subscription.userId = userId;

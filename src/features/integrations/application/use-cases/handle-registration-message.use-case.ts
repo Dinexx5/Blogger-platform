@@ -24,37 +24,30 @@ export class HandleRegistrationMessageUseCase
   ) {}
   async execute(command: HandleRegistrationMessageCommand) {
     const code = command.code;
-    const tgId = +command.tgId;
+    const tgId = command.tgId.toString();
 
     const authEntity = await this.tgAuthRepository.findOneBy({ code: code });
     if (!authEntity) {
       await this.TelegramAdapter.sendMessage(
         'you need to receive invitational link first or your code is incorrect',
-        tgId,
+        +tgId,
       );
       return;
     }
     if (authEntity.tgId) {
-      await this.TelegramAdapter.sendMessage('you have already activated your subscription', tgId);
+      await this.TelegramAdapter.sendMessage('you have already activated your subscription', +tgId);
       return;
     }
     authEntity.tgId = tgId;
     console.log(authEntity);
     await this.tgAuthRepository.save(authEntity);
 
-    const SQL = this.subscriptionsRepository
-      .createQueryBuilder()
-      .update(SubscriptionEntity)
-      .set({ tgId: +tgId })
-      .where('userId = :id', { id: authEntity.userId })
-      .getSql();
-    console.log(SQL);
     await this.subscriptionsRepository
       .createQueryBuilder()
       .update(SubscriptionEntity)
-      .set({ tgId: +tgId })
+      .set({ tgId: tgId })
       .where('userId = :id', { id: authEntity.userId })
       .execute();
-    await this.TelegramAdapter.sendMessage('successfully subscribed', tgId);
+    await this.TelegramAdapter.sendMessage('successfully subscribed', +tgId);
   }
 }
