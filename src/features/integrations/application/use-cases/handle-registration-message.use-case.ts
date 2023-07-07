@@ -39,11 +39,20 @@ export class HandleRegistrationMessageUseCase
       return;
     }
     authEntity.tgId = tgId;
+    console.log(authEntity);
     await this.tgAuthRepository.save(authEntity);
+
+    const SQL = this.subscriptionsRepository
+      .createQueryBuilder()
+      .update(SubscriptionEntity)
+      .set({ tgId: +tgId })
+      .where('userId = :id', { id: authEntity.userId })
+      .getSql();
+    console.log(SQL);
     await this.subscriptionsRepository
       .createQueryBuilder()
       .update(SubscriptionEntity)
-      .set({ tgId: tgId })
+      .set({ tgId: +tgId })
       .where('userId = :id', { id: authEntity.userId })
       .execute();
     await this.TelegramAdapter.sendMessage('successfully subscribed', tgId);
