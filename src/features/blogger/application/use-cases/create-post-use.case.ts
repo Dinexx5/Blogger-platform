@@ -31,6 +31,8 @@ export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
     const post = await PostEntity.createPost(inputModel, blogId, blog.name);
     await this.postsTypeOrmRepository.save(post);
 
+    console.log(blogId);
+
     const subscriptions: SubscriptionEntity[] = await this.subscriptionsRepository.find({
       where: {
         blogId: blogId,
@@ -38,6 +40,7 @@ export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
         status: 'Subscribed',
       },
     });
+    console.log(subscriptions);
 
     const recipientsIds = subscriptions.map((subs) => subs.tgId);
     console.log(recipientsIds);
