@@ -26,7 +26,7 @@ export class GetTgAuthLinkUseCase implements ICommandHandler<GetTgAuthLinkComman
     }
 
     const uniqueCode = uuidv4();
-    const authLink = `https://t.me/test_ht30_bot?code=${uniqueCode}`;
+    const authLink = `https://t.me/test_ht30_Bot?code=${uniqueCode}`;
     const newAuthCode = await TgAuthCodeEntity.createAuthCode(uniqueCode, userId);
     await this.tgAuthCodesRepository.save(newAuthCode);
     return { link: authLink.toString() };
