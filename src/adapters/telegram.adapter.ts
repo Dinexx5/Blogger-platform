@@ -24,6 +24,7 @@ export class TelegramAdapter {
     });
   }
   async sendNotificationMessage(blogName: string, tgId: number) {
+    console.log('sending notification');
     await this.axiosInstance.post(`sendMessage`, {
       chat_id: tgId,
       text: `New post published for blog ${blogName}`,

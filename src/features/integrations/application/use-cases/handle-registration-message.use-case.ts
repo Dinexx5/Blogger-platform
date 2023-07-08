@@ -39,7 +39,6 @@ export class HandleRegistrationMessageUseCase
       return;
     }
     authEntity.tgId = tgId;
-    console.log(authEntity);
     await this.tgAuthRepository.save(authEntity);
 
     await this.subscriptionsRepository

@@ -40,6 +40,7 @@ export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
     });
 
     const recipientsIds = subscriptions.map((subs) => subs.tgId);
+    console.log(recipientsIds);
 
     for (let i = 0; i < recipientsIds.length; i++) {
       const tgId = recipientsIds[i];
