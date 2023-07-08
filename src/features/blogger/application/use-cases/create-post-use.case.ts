@@ -33,7 +33,7 @@ export class CreatePostUseCase implements ICommandHandler<CreatePostCommand> {
 
     const subscriptions: SubscriptionEntity[] = await this.subscriptionsRepository.find({
       where: {
-        userId: userId,
+        blogId: blogId,
         tgId: Not(IsNull()),
         status: 'Subscribed',
       },
