@@ -14,6 +14,9 @@ export class TelegramAdapter {
     });
   }
   async sendMessage(text: string, recipientId: number) {
+    this.axiosInstance.interceptors.response.use((request) => {
+      return request;
+    });
     await this.axiosInstance.post(`sendMessage`, {
       chat_id: recipientId,
       text: text,
